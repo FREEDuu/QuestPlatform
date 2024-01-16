@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.84.0">
-    <title>Headers · Bootstrap v5.0</title>
+    <title>QUIZ</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/headers/">
 
@@ -59,9 +59,7 @@
     <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
   </symbol>
 </svg>
-
-<main>
-  <header>
+<header>
     <div class="px-3 py-2 bg-dark text-white">
       <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
@@ -86,91 +84,70 @@
       </div>
     </div>
   </header>
-  <div class="col-lg-8 mx-auto p-3 py-md-5">
-    <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
-      
-      <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-        <svg class="bi d-block mx-auto mb-1" width="50" height="50"><use xlink:href="#people-circle"/></svg>
-        <span class="fs-4">Ciao UTENTE</span>
-      </a>
-    </header>
-  
+
+<main>
+  <div class="col-lg-8 mx-auto py-md-3">
     <main>
       <div class="mb-5">
-        <a href="../examples/" class="btn btn-primary btn-lg px-4">Crea Test</a>
+        
         
               </div>
                 <div class="row g-5">
                   <div class="col-md-6">
                     <div class="my-3 p-3 bg-body rounded shadow-lg">
-                      <h6 class="border-bottom pb-2 mb-0">TEST IN PROGRAMMA <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button></h6>
+                        <h6 class="border-bottom pb-2 mb-0">CREAZIONE MANUALE</h6>
                         <p></p>
-                        <div class="d-flex text-muted pt-3">
-                        
-                          <p class="pb-3 mb-0 small lh-sm border-bottom">
-                            <strong class="d-block text-gray-dark"><h8>DATA E ORA</h8></strong>
-                            
-                            <strong class="d-block text-gray-dark">QUI VANNO I TEST CREATI DALL'UTENTE</strong>
-                          </p>
-                        
-                        </div>
+                    <h6 class="border-bottom pb-2 mb-0">QUANTI TEST VUOI CREARE ?</h6>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">TEST</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
+                      </div>
+                      
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">IN SEQUENZA</label>
+                      </div>
+                      <p></p>
+                    
+                      <h6 class="border-bottom pb-2 mb-0">QUANTI SECONDI DI RITARDO DESIDERI ?</h6>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
+                      </div>
+                      <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="button">CREA</button>
+                      </div>
                   </div>
-                          <div class="my-3 p-3 bg-body rounded shadow-lg">
-                            <h6 class="border-bottom pb-2 mb-0">TEST COLLETTIVI IN PROGRAMMA</h6>
-                                    <div class="d-flex text-muted pt-3">
-                                    
-                                      <p class="pb-3 mb-0 small lh-sm border-bottom">
-                                        <strong class="d-block text-gray-dark">data e ora</strong>
-                                        <strong class="d-block text-gray-dark">QUI VANNO I TEST COLLETTIVI CREATI DALL'ADMIN</strong>
-                                      </p>
-                                    
-                                    </div>
-                          </div>
+                          
                 </div>
                 <div class="col-md-6">
-                  <div class="my-3 p-3 bg-body rounded shadow-lg">
-                    <h6 class="border-bottom pb-2 mb-0">STATISTICHE E RISULTATI</h6>
-                    <p></p>
-                    <div class="container text-center">
-                      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5">
-                        <div class="col">N test</div>
-                        <div class="col">MAX</div>
-                        <div class="col">MIN</div>
-                        <div class="col">AVRG</div>
-                        <div class="col">UNDER 30s</div>
-
+                    <div class="my-3 p-3 bg-body rounded shadow-lg">
+                        <h6 class="border-bottom pb-2 mb-0">ORARIO ESATTO</h6>
+                        <p></p>
+                    <h6 class="border-bottom pb-2 mb-0">QUANTI TEST VUOI CREARE ?</h6>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">TEST</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
+                      </div>
+                      
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">IN SEQUENZA</label>
                       </div>
                       <p></p>
-                      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5">
-                        <div class="col">314</div>
-                        <div class="col">42.4</div>
-                        <div class="col">22</div>
-                        <div class="col">31</div>
-                        <div class="col">43.90%</div>
+                    
+                      <h6 class="border-bottom pb-2 mb-0">QUANTI SECONDI DI RITARDO DESIDERI ?</h6>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
                       </div>
-                    </div>
-                </div>
-                <div class="my-3 p-3 bg-body rounded shadow-lg">
-                    <div class="container text-center">
-                      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-                        <div class="col">N test</div>
-                        <div class="col">MAX</div>
-                        <div class="col">MIN</div>
-                        
+                      <div class="d-grid gap-2">
+                        <button class="btn btn-primary" type="button">CREA</button>
                       </div>
-                      <p></p>
-                      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-                        <div class="col">314</div>
-                        <div class="col">42.4</div>
-                        <div class="col">22</div>
-                        
-                      </div>
-                    </div>
-                </div>
               </div>
               
           </div>
-          
+    
         
       </div>
     </main>
