@@ -14,8 +14,9 @@ RUN set -ex && \
     pip install --upgrade pip && \
     pip install -r /tmp/requirements.txt && \
     rm -rf /root/.cache/
+
 COPY . /code
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "questApplication.wsgi"]
+CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "MyQuestApp.wsgi"]

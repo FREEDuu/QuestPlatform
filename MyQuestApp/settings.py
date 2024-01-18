@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-h)q*ms73h19kdl&x+)11ch7aqub+561^8%$&k3=0v9x7n*&2)+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['questplatform.fly.dev', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -123,6 +123,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [ 
     os.path.join(BASE_DIR,'static'),
