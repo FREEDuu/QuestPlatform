@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.84.0">
-    <title>PAGINA</title>
+    <title>Login</title>
 
   
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/headers/">
@@ -34,7 +34,8 @@
 
     
     <!-- Custom styles for this template -->
-    <link href="signin.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
   </head>
   <body class="text-center">
     
@@ -57,7 +58,7 @@
         <input type="checkbox" value="remember-me"> Ricordami
       </label>
     </div>
-    <a href="main"class="w-100 btn btn-lg btn-primary" type="submit">Login</a>
+    <a href="home"class="w-100 btn btn-lg btn-primary" type="submit">Login</a>
     <p class="mt-5 mb-3 text-muted">&copy; dal 2023</p>
   </form>
 </main>
