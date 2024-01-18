@@ -10,7 +10,7 @@ def home(req):
 
 def test(req):
 
-    return render(req, 'home/test.html')
+    return render(req, 'test/test.html')
 
 
 
