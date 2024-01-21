@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'webapp'
+    'webapp.apps.WebappConfig'
 ]
 
 MIDDLEWARE = [
@@ -81,9 +81,13 @@ WSGI_APPLICATION = 'MyQuestApp.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "questApplication",
+        "USER": "carl",
+        "PASSWORD": "pondsama",
+        "HOST": "2.56.212.172",
+        "PORT": "5432",
     }
 }
 
@@ -127,7 +131,6 @@ STATIC_URL = 'static/'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [ 
-    os.path.join(BASE_DIR,'static'),
      "webapp/static",
 ]
 
