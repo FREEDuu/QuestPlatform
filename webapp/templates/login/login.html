@@ -38,19 +38,20 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
   </head>
   <body class="text-center">
-    
+
 <main class="form-signin">
-  <form>
+  <form method="POST">
     <img class="mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-
+    {% csrf_token %}
+    {{ form.as_p }}
     <div class="form-floating">
-      <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-      <label for="floatingInput">Email</label>
+      <input type="username" class="form-control" id="username" placeholder="username" name="username">
+      <label for="username">Username</label>
     </div>
     <div class="form-floating">
-      <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-      <label for="floatingPassword">Password</label>
+      <input type="password" class="form-control" id="password" placeholder="Password" name="password">
+      <label for="password">Password</label>
     </div>
 
     <div class="checkbox mb-3">
@@ -58,7 +59,9 @@
         <input type="checkbox" value="remember-me"> Ricordami
       </label>
     </div>
-    <a href="home"class="w-100 btn btn-lg btn-primary" type="submit">Login</a>
+
+    
+    <button href="{% url 'home' %}" type="button submit" class="w-100 btn btn-primary btn-lg btn-block">  Login</button>
     <p class="mt-5 mb-3 text-muted">&copy; dal 2023</p>
   </form>
 </main>

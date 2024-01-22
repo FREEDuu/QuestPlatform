@@ -12,7 +12,7 @@
 
         <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
           <svg class="bi d-block mx-auto mb-1" width="50" height="50"><use xlink:href="#people-circle"/></svg>
-          <span class="fs-4">Ciao UTENTE</span>
+          <span class="fs-4">Ciao {{ request.user.username }}</span>
   
         </a>
       </div>
@@ -105,22 +105,14 @@
       <div class="col-md-6">
           <div class="panel panel-default">
               <div class="panel-heading">
-                  <h3>Line Series</h3>
+                  <h3>GRAFICI DEI RISULTATI</h3>
               </div>
               <div class="panel-body">
                   <div id="chart1"></div>
               </div>
           </div>
       </div>
-      <div class="col-md-6">
-          <div class="panel panel-default">
-              <div class="panel-heading">
-                  <h3>Multiple Line Series</h3>
-              </div>
-              <div id="chart2" class="panel-body">
-              </div>
-          </div>
-      </div>
+      
   </div>   
 </div>
 
