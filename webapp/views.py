@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import SuspiciousOperation
 from .forms import LoginForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 def log_in(req):
 
@@ -26,18 +27,24 @@ def log_in(req):
                 
                 return redirect('home')
             else :
-                
-                return HttpResponse('passowrd o username sbagliato/i')    
+                messages.error(req, 'username o password non corretti')    
             
     return render(req, "login/login.html")
 
+
+@login_required(login_url='login')
 def home(req):
     return render(req, 'home/home.html')
 
-def test(req):
-    return render(req, 'test/test.html')
+@login_required(login_url='login')
+def creazioneTest(req):
+    return render(req, 'test/creazioneTest.html')
 
+#@login_required(login_url='login')
+#def creaTestManuale(req)
+    
 
+@login_required(login_url='login')
 def preTest(req, test_id):
     try:
         test = Test.objects.get(idTest=test_id)

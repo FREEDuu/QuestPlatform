@@ -37,34 +37,49 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
   </head>
+
+
+
+
   <body class="text-center">
 
-<main class="form-signin">
-  <form method="POST">
-    <img class="mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
-    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <div class="form-floating">
-      <input type="username" class="form-control" id="username" placeholder="username" name="username">
-      <label for="username">Username</label>
-    </div>
-    <div class="form-floating">
-      <input type="password" class="form-control" id="password" placeholder="Password" name="password">
-      <label for="password">Password</label>
-    </div>
+    <main class="form-signin">
+      <form method="POST">
 
-    <div class="checkbox mb-3">
-      <label>
-        <input type="checkbox" value="remember-me"> Ricordami
-      </label>
-    </div>
+        <img class="mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
-    
-    <button href="{% url 'home' %}" type="button submit" class="w-100 btn btn-primary btn-lg btn-block">  Login</button>
-    <p class="mt-5 mb-3 text-muted">&copy; dal 2023</p>
-  </form>
-</main>
+        <!-- ERROR BANNER -->
+        {% if messages %}
+        <div class="alert alert-danger">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-floating">
+          <input type="username" class="form-control" id="username" placeholder="username" name="username">
+          <label for="username">Username</label>
+        </div>
+        <div class="form-floating">
+          <input type="password" class="form-control" id="password" placeholder="Password" name="password">
+          <label for="password">Password</label>
+        </div>
+
+        <div class="checkbox mb-3">
+          <label>
+            <input type="checkbox" value="remember-me"> Ricordami
+          </label>
+        </div>
+
+        
+        <button href="{% url 'home' %}" type="button submit" class="w-100 btn btn-primary btn-lg btn-block">  Login</button>
+        <p class="mt-5 mb-3 text-muted">&copy; dal 2023</p>
+      </form>
+    </main>
 
 
     

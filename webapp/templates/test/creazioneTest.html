@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<body>
+  {% extends 'base.html' %}
+  {% block title %}Creazione test{% endblock %}
+
+
+
+  {% block content %}
+  <script>
+    function creaTest(tipo) {
+      // Perform the server-side creation logic here
+      // Assume the creation is successful for demonstration purposes
+      // You should replace the following line with your actual logic
+      var creationSuccessful = true;
+
+      if (creationSuccessful) {
+        // Redirect to the homepage
+        window.location.href = "{% url 'home' %}";
+      } else {
+        // Handle the case when creation is not successful
+        // For example, display an error message
+        alert('Creation failed. Please try again.');
+      }
+    }
+  </script>
+
+
+  <main>
+    <div class="col-lg-8 mx-auto py-md-3">
+      <main>
+        <div class="mb-5">
+
+        </div>
+        <div class="row g-5">
+          <!-- RITARDO MANUALE -->
+          <form action="{% url 'webapp:creaTestManuale' %}" method="post">
+            {% csrf_token %}
+            <div class="col-md-6">
+              <div class="my-3 p-3 bg-body rounded shadow-lg">
+                <h6 class="border-bottom pb-2 mb-0">Creazione manuale</h6>
+                <p></p>
+                <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi creare?</h6>
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Test</span>
+                  <input type="text" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-default">
+                </div>
+
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                  <label class="form-check-label" for="flexSwitchCheckDefault">In sequenza</label>
+                </div>
+                <p></p>
+
+                <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                  <input type="text" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-default">
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-primary" type="button">Crea</button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- ORARIO ESATTO -->
+          <form method="post">
+            {% csrf_token %}
+            <div class="col-md-6">
+              <div class="my-3 p-3 bg-body rounded shadow-lg">
+                <h6 class="border-bottom pb-2 mb-0">Orario esatto</h6>
+                <p></p>
+                <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi creare?</h6>
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Test</span>
+                  <input type="text" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-default">
+                </div>
+
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                  <label class="form-check-label" for="flexSwitchCheckDefault">In sequenza</label>
+                </div>
+                <p></p>
+
+                <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+                <div class="input-group mb-3">
+                  <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                  <input type="text" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-default">
+                </div>
+                <div class="d-grid gap-2">
+                  <button class="btn btn-primary" type="button" onclick="creaTest('orario')">Crea</button>
+                </div>
+              </div>
+            </div>
+          </form>
+
+
+        </div>
+      </main>
+      {% endblock %}
+
+    </div>
+</body>
+
+</html>
