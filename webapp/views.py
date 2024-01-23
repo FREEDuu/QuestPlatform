@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import SuspiciousOperation
 from .forms import LoginForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 def log_in(req):
@@ -28,13 +29,15 @@ def log_in(req):
                 return redirect('home')
             else :
                 
-                messages.error(req, 'credenziali sbagliate(?)')   
+                messages.error(req, 'username/password errati')   
             
     return render(req, "login/login.html")
 
+@login_required(login_url= 'login')
 def home(req):
     return render(req, 'home/home.html')
 
+@login_required(login_url= 'login')
 def test(req):
     if req.method == 'POST':
         messages.success(req, 'Creazione del test riuscita')
@@ -49,3 +52,6 @@ def preTest(req, test_id):
     except Test.DoesNotExist:
         raise Http404("Test non esistente")
     return render(req, "test/preTest.html", { "test": test, })
+
+def rendpreTest(req):
+    return render(req, 'test/preTest.html')
