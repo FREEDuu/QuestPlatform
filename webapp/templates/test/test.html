@@ -92,34 +92,38 @@
         
         
               </div>
-                <div class="row g-5">
-                  <div class="col-md-6">
-                    <div class="my-3 p-3 bg-body rounded shadow-lg">
-                        <h6 class="border-bottom pb-2 mb-0">CREAZIONE MANUALE</h6>
+                <form method="POST">
+                  {% csrf_token %}
+                  {{ form.as_p }}
+                  <div class="row g-5">
+                    <div class="col-md-6">
+                      <div class="my-3 p-3 bg-body rounded shadow-lg">
+                          <h6 class="border-bottom pb-2 mb-0">CREAZIONE MANUALE</h6>
+                          <p></p>
+                      <h6 class="border-bottom pb-2 mb-0">QUANTI TEST VUOI CREARE ?</h6>
+                      <div class="input-group mb-3">
+                          <span class="input-group-text" id="inputGroup-sizing-default">TEST</span>
+                          <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
+                        </div>
+                        
+                      <div class="form-check form-switch">
+                          <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                          <label class="form-check-label" for="flexSwitchCheckDefault">IN SEQUENZA</label>
+                        </div>
                         <p></p>
-                    <h6 class="border-bottom pb-2 mb-0">QUANTI TEST VUOI CREARE ?</h6>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="inputGroup-sizing-default">TEST</span>
-                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
-                      </div>
                       
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-                        <label class="form-check-label" for="flexSwitchCheckDefault">IN SEQUENZA</label>
-                      </div>
-                      <p></p>
-                    
-                      <h6 class="border-bottom pb-2 mb-0">QUANTI SECONDI DI RITARDO DESIDERI ?</h6>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
-                        <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
-                      </div>
-                      <div class="d-grid gap-2">
-                        <button class="btn btn-primary" type="button">CREA</button>
-                      </div>
+                        <h6 class="border-bottom pb-2 mb-0">QUANTI SECONDI DI RITARDO DESIDERI ?</h6>
+                      <div class="input-group mb-3">
+                          <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                          <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
+                        </div>
+                        <div class="d-grid gap-2">
+                          <button  href="{% url 'test' %}"  class="btn btn-primary" type="button submit">CREA</button>
+                        </div>
+                    </div>
+                            
                   </div>
-                          
-                </div>
+                </form>
                 <div class="col-md-6">
                     <div class="my-3 p-3 bg-body rounded shadow-lg">
                         <h6 class="border-bottom pb-2 mb-0">ORARIO ESATTO</h6>
@@ -142,7 +146,7 @@
                         <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" >
                       </div>
                       <div class="d-grid gap-2">
-                        <button class="btn btn-primary" type="button">CREA</button>
+                        <button  href="{% url 'test' %}"  class="btn btn-primary" type="button submit">CREA</button>
                       </div>
               </div>
               

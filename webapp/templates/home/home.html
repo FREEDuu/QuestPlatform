@@ -5,6 +5,16 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+{% for message in messages %}
+<div class="container-fluid p-0">
+  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
+    
+      <span aria-hidden="True">&times;</span>
+    </button>
+    {{ message }}
+  </div>
+</div>
+{% endfor %}</h7>
 <main>
   <div class="col-lg-8 mx-auto py-md-5">
     <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
@@ -98,22 +108,61 @@
           </div>
           </h6>
 
-          
-
-<div class="container">
-  <div class="row">
-      <div class="col-md-6">
-          <div class="panel panel-default">
-              <div class="panel-heading">
-                  <h3>GRAFICI DEI RISULTATI</h3>
-              </div>
-              <div class="panel-body">
-                  <div id="chart1"></div>
-              </div>
+      <section class="mb-4">
+        <div class="card">
+          <div class="card-header py-3">
+            <h5 class="mb-0 text-center"><strong>GRAFICO DEI TUOI RISULTATI</strong></h5>
           </div>
-      </div>
-      
-  </div>   
+          <div class="card-body">
+            <canvas class="my-4 w-100" id="myChart" height="55"></canvas>
+          </div>
+        </div>
+      </section>
+      <script>
+        import Chart from 'chart.js';
+
+        var ctx = document.getElementById("myChart");
+        var myChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: [
+              "Sunday",
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+            ],
+            datasets: [
+              {
+                data: [15339, 21345, 18483, 24003, 23489, 24092, 12034],
+                lineTension: 0,
+                backgroundColor: "transparent",
+                borderColor: "#007bff",
+                borderWidth: 4,
+                pointBackgroundColor: "#007bff",
+              },
+            ],
+          },
+          options: {
+            scales: {
+              yAxes: [
+                {
+                  ticks: {
+                    beginAtZero: false,
+                  },
+                },
+              ],
+            },
+            legend: {
+              display: true,
+            },
+          },
+        });
+        myChart.render();
+      </script>
+  
 </div>
 
 <style>

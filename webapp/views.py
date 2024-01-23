@@ -7,6 +7,7 @@ from django.core.exceptions import SuspiciousOperation
 from .forms import LoginForm
 from django.contrib import messages
 
+
 def log_in(req):
 
     logout(req)
@@ -27,7 +28,7 @@ def log_in(req):
                 return redirect('home')
             else :
                 
-                return HttpResponse('passowrd o username sbagliato/i')    
+                messages.error(req, 'credenziali sbagliate(?)')   
             
     return render(req, "login/login.html")
 
@@ -35,6 +36,9 @@ def home(req):
     return render(req, 'home/home.html')
 
 def test(req):
+    if req.method == 'POST':
+        messages.success(req, 'Creazione del test riuscita')
+        return render(req,'home/home.html')
     return render(req, 'test/test.html')
 
 
