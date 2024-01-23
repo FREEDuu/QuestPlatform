@@ -4,7 +4,7 @@ from webapp.models import Utenti, Domande, Varianti, Test, Test_Utenti
 from django.http import Http404
 from django.contrib.auth import authenticate, login, logout 
 from django.core.exceptions import SuspiciousOperation
-from .forms import LoginForm
+from .forms import LoginForm, TestManualeForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
@@ -38,11 +38,34 @@ def home(req):
 
 @login_required(login_url='login')
 def creazioneTest(req):
-    return render(req, 'test/creazioneTest.html')
+    form = TestManualeForm()
+    print(form)
+    rendered_form = form.render("forms/creaTestManualeForm.html")
 
-#@login_required(login_url='login')
-#def creaTestManuale(req)
+    context = {"creaTestManualeForm": rendered_form}
+
+    return render(req, 'test/creazioneTest.html', context)
+
+
+
+@login_required(login_url='login')
+def creaTestManuale(req):
+    if req.method == 'POST':
+        print('ENTER POST')
+        form = TestManualeForm(req.POST)
+        print(form)
+        if form.is_valid():
+            testNumber = form.cleaned_data['username']
+            inSequenza = form.cleaned_data['password']
+            secondiRitardo = form.cleaned_data['password']
+
+            rendered_form = form.render("creaTestManualeForm.html")
+            context = {"creaTestManualeForm": rendered_form}
+
+    return render(req, 'test/creazioneTest.html', context)
     
+
+
 
 @login_required(login_url='login')
 def preTest(req, test_id):
