@@ -52,6 +52,3 @@ def preTest(req, test_id):
     except Test.DoesNotExist:
         raise Http404("Test non esistente")
     return render(req, "test/preTest.html", { "test": test, })
-
-def rendpreTest(req):
-    return render(req, 'test/preTest.html')
