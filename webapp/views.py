@@ -39,30 +39,26 @@ def home(req):
 @login_required(login_url='login')
 def creazioneTest(req):
     form = TestManualeForm()
-    print(form)
-    rendered_form = form.render("forms/creaTestManualeForm.html")
-
-    context = {"creaTestManualeForm": rendered_form}
-
+    context = {"creaTestManualeForm": form}
     return render(req, 'test/creazioneTest.html', context)
+
 
 
 
 @login_required(login_url='login')
 def creaTestManuale(req):
     if req.method == 'POST':
-        print('ENTER POST')
         form = TestManualeForm(req.POST)
-        print(form)
         if form.is_valid():
-            testNumber = form.cleaned_data['username']
-            inSequenza = form.cleaned_data['password']
-            secondiRitardo = form.cleaned_data['password']
+            testNumber = form.cleaned_data['testNumber']
+            inSequenza = form.cleaned_data['inSequenza']
+            secondiRitardo = form.cleaned_data['secondiRitardo']
+            print("testNumber",testNumber)
+            print("inSequenza",inSequenza)
+            print("secondiRitardo",secondiRitardo)
+            # crea Form su DB
 
-            rendered_form = form.render("creaTestManualeForm.html")
-            context = {"creaTestManualeForm": rendered_form}
-
-    return render(req, 'test/creazioneTest.html', context)
+    return render(req, 'test/creazioneTest.html')
     
 
 

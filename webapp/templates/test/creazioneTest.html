@@ -1,62 +1,87 @@
 <!doctype html>
 <html lang="en">
 
-  <body>
-    {% extends 'base.html' %}
-    {% block title %}Creazione test{% endblock %}
+<body>
+  {% extends 'base.html' %}
+  {% block title %}Creazione test{% endblock %}
+  {% load crispy_forms_tags %}
 
-    {% block content %}
-    <main>
-      <div class="col-lg-8 mx-auto py-md-3">
-        <main>
-          <div class="mb-5"></div>
+  {% block content %}
+  <main>
+    <div class="col-lg-8 mx-auto py-md-3">
+      <div class="mb-5"></div>
 
-            {{ creaTestManualeForm }}
+      <div class="row">
 
-            <div class="col-md-6">
-              <div class="my-3 p-3 bg-body rounded shadow-lg">
-                <h6 class="border-bottom pb-2 mb-0">Creazione con orario
-                  esatto</h6>
-                <p></p>
-                <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
-                  creare?</h6>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    id="inputGroup-sizing-default">Test</span>
-                  <input type="text" class="form-control"
-                    aria-label="Sizing example input"
-                    aria-describedby="inputGroup-sizing-default">
-                </div>
-
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" role="switch"
-                    id="flexSwitchCheckDefault">
-                  <label class="form-check-label"
-                    for="flexSwitchCheckDefault">In sequenza</label>
-                </div>
-                <p></p>
-
-                <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo
-                  desideri?</h6>
-                <div class="input-group mb-3">
-                  <span class="input-group-text"
-                    id="inputGroup-sizing-default">sec</span>
-                  <input type="text" class="form-control"
-                    aria-label="Sizing example input"
-                    aria-describedby="inputGroup-sizing-default">
-                </div>
-                <div class="d-grid gap-2">
-                  <button href="{% url 'test' %}" class="btn btn-primary"
-                    type="button submit">Crea</button>
-                </div>
+        <!-- FORM RITARDO MANUALE -->
+        <form class="col-md-6" action="{% url 'creaTestManuale' %}" method="POST">
+          {% csrf_token %}
+            <div class="my-3 p-3 bg-body rounded shadow-lg">
+              <h6 class="border-bottom pb-2 mb-0">Creazione con ritardo manuale</h6>
+              <p></p>
+              <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi creare?</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text " id="inputGroup-sizing-default">Test</span>
+                {{ creaTestManualeForm.testNumber }}
               </div>
 
-            </div>
+              <div class="form-switch">
+                {{ creaTestManualeForm.inSequenza|as_crispy_field }}
+              </div>
+              <p></p>
 
-          </div>
-        </main>
-        {% endblock %}
+              <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                {{ creaTestManualeForm.secondiRitardo }}
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Crea</button>
+              </div>
+            </div>
+        </form>
+
+        <!-- FORM ORARIO ESATTO -->
+        <form class="col-md-6" action="{% url 'creaTestManuale' %}" method="POST">
+            <div class="my-3 p-3 bg-body rounded shadow-lg">
+              <h6 class="border-bottom pb-2 mb-0">Creazione con orario esatto</h6>
+              <p></p>
+              <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
+                creare?</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">Test</span>
+                <input type="text" class="form-control" aria-label="Sizing example input"
+                  aria-describedby="inputGroup-sizing-default">
+              </div>
+
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                <label class="form-check-label" for="flexSwitchCheckDefault">In sequenza</label>
+              </div>
+              <p></p>
+
+              <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo
+                desideri?</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+                <input type="text" class="form-control" aria-label="Sizing example input"
+                  aria-describedby="inputGroup-sizing-default">
+              </div>
+              <div class="d-grid gap-2">
+                <button href="{% url 'test' %}" class="btn btn-primary" type="button submit">Crea</button>
+              </div>
+            </div>
+        </form>
+
 
       </div>
-    </body>
-  </html>
+
+    </div>
+  </main>
+  {% endblock %}
+
+  </div>
+</body>
+
+</html>
