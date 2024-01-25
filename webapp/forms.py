@@ -9,7 +9,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 class TestManualeForm(forms.Form):
-    testNumber = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False)
+    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False)
     inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
     secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False)
     
