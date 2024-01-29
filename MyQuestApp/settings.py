@@ -14,6 +14,8 @@ from pathlib import Path
 import mimetypes
 import os
 
+from django.contrib.messages import constants as messages
+
 mimetypes.add_type("text/css", ".css", True)
 mimetypes.add_type("text/html", ".html", True)
 
@@ -155,3 +157,12 @@ INTERNAL_IPS = [
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'bg-warning-subtle',
+    messages.INFO: 'bg-info',
+    messages.SUCCESS: 'bg-success',
+    messages.WARNING: 'bg-warning',
+    messages.ERROR: 'bg-danger',
+}
