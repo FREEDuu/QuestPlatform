@@ -22,7 +22,7 @@ class Varianti(models.Model):
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.corpo
     
@@ -42,8 +42,9 @@ class Test(models.Model):
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.idTest,self.nrGruppo,self.tipo)
-    
+        #return str(self.idTest)
+        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza}'
+
     @classmethod
     def get_next_gruppo(cls):
         max_gruppo = cls.objects.aggregate(Max('nrGruppo'))['nrGruppo__max']
@@ -62,11 +63,16 @@ class Test_Domande_Varianti(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     variante = models.ForeignKey(Varianti, on_delete=models.CASCADE)
-
+    
+    def __str__(self):
+        return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
+    
 # Segna il tempo speso dall'utente per completare ogni test (altro?)
 class Statistiche(models.Model):
     idStatistica = models.AutoField(primary_key=True)
+    utente = models.ForeignKey(User, on_delete=models.CASCADE)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     tempo = models.FloatField(default=0)
 
-
+    def __str__(self):
+        return f'id: {self.idStatistica} | utente: {self.utente} | test: {self.test.idTest} | tempo: {self.tempo}'
