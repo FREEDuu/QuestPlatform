@@ -65,9 +65,11 @@ def creaTestManuale(req):
 
             try:
                 with transaction.atomic():
-                    # Crea i test
                     for _ in range(numeroTest):
+                        # Crea il test
                         nuovo_test = Test.objects.create(nrGruppo=nrGruppo, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale')
+                        # Associa il test all'utente loggato
+                        Test_Utenti.objects.create(test=nuovo_test,utente=req.user)
                         # Associa domande casuali con la relativa variante casuale al nuovo test creato
                         for _ in range(10):
                             # Scegli una domanda random 
@@ -78,6 +80,7 @@ def creaTestManuale(req):
                             print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
                             # Associa domanda e variante al nuovo test creato
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+
 
                 print("Test creati con successo")
                 messages.success(req, 'Test creati con successo.')
