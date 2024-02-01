@@ -7,13 +7,9 @@ from django.core.exceptions import SuspiciousOperation
 from .forms import LoginForm, TestManualeForm, TestOrarioEsattoForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
-
-=======
 from django.db import transaction
 from .services import reformat_date
 from django.utils.datastructures import MultiValueDict
->>>>>>> origin/dev
 
 
 # LOGIN
@@ -36,32 +32,6 @@ def log_in(req):
                 
                 return redirect('home')
             else :
-<<<<<<< HEAD
-                
-                messages.error(req, 'username/password errati')   
-            
-    return render(req, "login/login.html")
-
-@login_required(login_url= 'login')
-def home(req):
-    return render(req, 'home/home.html')
-
-@login_required(login_url= 'login')
-def test(req):
-    if req.method == 'POST':
-        messages.success(req, 'Creazione del test riuscita')
-        return render(req,'home/home.html')
-    return render(req, 'test/test.html')
-
-
-def preTest(req, test_id):
-    try:
-        test = Test.objects.get(idTest=test_id)
-        print(test)
-    except Test.DoesNotExist:
-        raise Http404("Test non esistente")
-    return render(req, "test/preTest.html", { "test": test, })
-=======
                 messages.error(req, 'username o password non corretti')    
             
     return render(req, "login/login.html")
@@ -178,4 +148,3 @@ def creaTestOrarioEsatto(req):
             return redirect('/creazione-test', context)
 
     return redirect('/home')
->>>>>>> origin/dev

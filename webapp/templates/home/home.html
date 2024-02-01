@@ -1,35 +1,10 @@
 <!doctype html>
 <html lang="en">
-<style>
-  .themed-grid-col {
-    padding-top: .75rem;
-    padding-bottom: .75rem;
-    background-color: rgba(125, 151, 7, 0.15);
-    border: 1px solid rgba(86, 61, 124, .2);
-  }
-  
-  .themed-container {
-    padding: .75rem;
-    margin-bottom: 1.5rem;
-    background-color: rgba(205, 213, 221, 0.15);
-    border: 1px solid rgba(2, 5, 8, 0.2);
-  }
-  
-</style>
+
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 
 {% block content %}
-{% for message in messages %}
-<div class="container-fluid p-0">
-  <div class="alert {{ message.tags }} alert-dismissible" role="alert" >
-    
-      <span aria-hidden="True">&times;</span>
-    </button>
-    {{ message }}
-  </div>
-</div>
-{% endfor %}</h7>
 <main>
   <div class="col-lg-8 mx-auto py-md-5">
     <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
@@ -37,13 +12,7 @@
 
         <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
           <svg class="bi d-block mx-auto mb-1" width="50" height="50"><use xlink:href="#people-circle"/></svg>
-<<<<<<< HEAD
-          <a></a>
-          <span class="fs-4">Ciao {{ request.user.username }}</span>
-  
-=======
           <span class="fs-4 ms-2">Ciao  {{ request.user.username }}</span>
->>>>>>> origin/dev
         </a>
       </div>
       
@@ -53,12 +22,7 @@
   
     <main>
       <div class="mb-5">
-<<<<<<< HEAD
-        <style ></style>
-        <a href="{% url 'test' %}" class="btn btn-primary btn-lg px-4">Crea Test</a>
-=======
         <a href="/creazione-test" class="btn btn-primary btn-lg px-4">Crea Test</a>
->>>>>>> origin/dev
         
               </div>
                 <div class="row g-5">
@@ -67,21 +31,11 @@
                       <h6 class="border-bottom pb-2 mb-0">TEST IN PROGRAMMA <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button></h6>
                         <p></p>
                         <div class="d-flex text-muted pt-3">
-                          
                         
                           <p class="pb-3 mb-0 small lh-sm border-bottom">
-                            <p></p>
-                            <div class="input-group mb-3">
-                              <input type="text" class="form-control" placeholder="TEST CREATI DA TE" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                              <div class="input-group-append">
-                                <form>
-                                  <button class="btn btn-success" type="button submit" href = "">INIZIA</button>
-
-                                </form>
-                              </div>
-                            </div>
+                            <strong class="d-block text-gray-dark"><h8>DATA E ORA</h8></strong>
                             
-
+                            <strong class="d-block text-gray-dark">QUI VANNO I TEST CREATI DALL'UTENTE</strong>
                           </p>
                         
                         </div>
@@ -90,13 +44,10 @@
                             <h6 class="border-bottom pb-2 mb-0">TEST COLLETTIVI IN PROGRAMMA</h6>
                                     <div class="d-flex text-muted pt-3">
                                     
-                                      <div class="input-group mb-3">
-                                        <input type="text" class="form-control" placeholder="TEST PROGRAMMATI" aria-label="Recipient's username" aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                          <button class="btn btn-success" type="button">INIZIA</button>
-                                        </div>
-                                        
-                                      </div>
+                                      <p class="pb-3 mb-0 small lh-sm border-bottom">
+                                        <strong class="d-block text-gray-dark">data e ora</strong>
+                                        <strong class="d-block text-gray-dark">QUI VANNO I TEST COLLETTIVI CREATI DALL'ADMIN</strong>
+                                      </p>
                                     
                                     </div>
                           </div>
@@ -107,35 +58,36 @@
                     <p></p>
                     <div class="container text-center">
                       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5">
-                        <div class="col themed-grid-col">N TEST</div>
-                        <div class="col themed-grid-col">AVRG</div>
-                        <div class="col themed-grid-col">MAX</div>
-                        <div class="col themed-grid-col">MIN</div>
-                        <div class="col themed-grid-col">UNDER 30</div>
+                        <div class="col">N test</div>
+                        <div class="col">MAX</div>
+                        <div class="col">MIN</div>
+                        <div class="col">AVRG</div>
+                        <div class="col">UNDER 30s</div>
 
                       </div>
+                      <p></p>
                       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5">
-                        <div class="col themed-grid-col">314</div>
-                        <div class="col themed-grid-col">30</div>
-                        <div class="col themed-grid-col">55</div>
-                        <div class="col themed-grid-col">14</div>
-                        <div class="col themed-grid-col">33.3%</div>
+                        <div class="col">314</div>
+                        <div class="col">42.4</div>
+                        <div class="col">22</div>
+                        <div class="col">31</div>
+                        <div class="col">43.90%</div>
                       </div>
                     </div>
                 </div>
                 <div class="my-3 p-3 bg-body rounded shadow-lg">
-                  <h6 class="border-bottom pb-2 mb-0">STATISTICHE ULTIMA SETTIMANA</h6>
-                  <div class="container text-center">
+                    <div class="container text-center">
                       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-                        <div class="col themed-grid-col">TEST</div>
-                        <div class="col themed-grid-col">AVRG</div>
-                        <div class="col themed-grid-col">MIN</div>
+                        <div class="col">N test</div>
+                        <div class="col">MAX</div>
+                        <div class="col">MIN</div>
                         
                       </div>
+                      <p></p>
                       <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3">
-                        <div class="col themed-grid-col">314</div>
-                        <div class="col themed-grid-col">30</div>
-                        <div class="col themed-grid-col">14</div>
+                        <div class="col">314</div>
+                        <div class="col">42.4</div>
+                        <div class="col">22</div>
                         
                       </div>
                     </div>
@@ -145,61 +97,22 @@
           </div>
           </h6>
 
-      <section class="mb-4">
-        <div class="card">
-          <div class="card-header py-3">
-            <h5 class="mb-0 text-center"><strong>GRAFICO DEI TUOI RISULTATI</strong></h5>
-          </div>
-          <div class="card-body">
-            <canvas class="my-4 w-100" id="myChart" height="55"></canvas>
-          </div>
-        </div>
-      </section>
-      <script>
-        import Chart from 'chart.js';
+          
 
-        var ctx = document.getElementById("myChart");
-        var myChart = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: [
-              "Sunday",
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-            ],
-            datasets: [
-              {
-                data: [15339, 21345, 18483, 24003, 23489, 24092, 12034],
-                lineTension: 0,
-                backgroundColor: "transparent",
-                borderColor: "#007bff",
-                borderWidth: 4,
-                pointBackgroundColor: "#007bff",
-              },
-            ],
-          },
-          options: {
-            scales: {
-              yAxes: [
-                {
-                  ticks: {
-                    beginAtZero: false,
-                  },
-                },
-              ],
-            },
-            legend: {
-              display: true,
-            },
-          },
-        });
-        myChart.render();
-      </script>
-  
+<div class="container">
+  <div class="row">
+      <div class="col-md-6">
+          <div class="panel panel-default">
+              <div class="panel-heading">
+                  <h3>GRAFICI DEI RISULTATI</h3>
+              </div>
+              <div class="panel-body">
+                  <div id="chart1"></div>
+              </div>
+          </div>
+      </div>
+      
+  </div>   
 </div>
 
 <style>
