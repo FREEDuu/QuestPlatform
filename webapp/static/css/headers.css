@@ -30,3 +30,11 @@
 .dropdown-toggle {
   outline: 0;
 }
+
+.nav-element {
+  color: white;
+}
+
+.nav-element:hover {
+  color: #d4d4d4;
+}

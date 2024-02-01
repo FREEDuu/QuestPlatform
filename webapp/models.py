@@ -1,20 +1,20 @@
 from django.db import models
-
-class Utenti(models.Model):
-    idUtente = models.AutoField(primary_key=True)
-    nome = models.CharField(max_length=30)
-    cognome = models.CharField(max_length=30)
-    email = models.CharField(max_length=30)
-    password = models.CharField(max_length=30)
-    ruolo = models.CharField(max_length=30)
-    dataOraInserimento = models.DateTimeField(auto_now_add=True)
+from django.contrib.auth.models import User
+from django.db.models import Max
 
 class Domande(models.Model):
     idDomanda = models.AutoField(primary_key=True)
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
         return self.corpo
+    
+    # @classmethod: when this method is called, we pass the class as the first argument instead of the instance of that class
+    @classmethod
+    def get_random_domanda(cls):
+        random_domanda = cls.objects.order_by('?').first()
+        return random_domanda
 
 
 class Varianti(models.Model):
@@ -22,22 +22,57 @@ class Varianti(models.Model):
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.corpo
+    
+    @classmethod
+    def get_random_variante(cls, idDomanda):
+        random_variante = cls.objects.filter(domanda=idDomanda).order_by('?').first()
+        return random_variante
 
 class Test(models.Model):
     idTest = models.AutoField(primary_key=True)
-    durataMax = models.IntegerField()
-    dataOraInizio = models.DateTimeField(auto_now_add=True)
+    nrGruppo = models.IntegerField(default=0)
+    tipo = models.CharField(max_length=50, default="manuale")
+    inSequenza = models.BooleanField(null=False, default=False)
+    secondiRitardo = models.IntegerField(default=1)
+    durataMax = models.IntegerField(default=60)
+    dataOraInizio = models.DateTimeField(null=True)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return str(self.durataMax)
+        #return str(self.idTest)
+        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza}'
 
+    @classmethod
+    def get_next_gruppo(cls):
+        max_gruppo = cls.objects.aggregate(Max('nrGruppo'))['nrGruppo__max']
+        return max_gruppo + 1 if max_gruppo is not None else 1
 
+# Associa ad ogni singolo test uno o molteplici utenti
 class Test_Utenti(models.Model):
     idTest_Utenti = models.AutoField(primary_key=True)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
-    utente = models.ForeignKey(Utenti, on_delete=models.CASCADE)
+    utente = models.ForeignKey(User, on_delete=models.CASCADE)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
-      
+
+
+# Associa ad ogni singolo test molteplici domande, ognuna con la sua variante selezionata.
+class Test_Domande_Varianti(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
+    variante = models.ForeignKey(Varianti, on_delete=models.CASCADE)
     
+    def __str__(self):
+        return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
+    
+# Segna il tempo speso dall'utente per completare ogni test (altro?)
+class Statistiche(models.Model):
+    idStatistica = models.AutoField(primary_key=True)
+    utente = models.ForeignKey(User, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    tempo = models.FloatField(default=0)
+
+    def __str__(self):
+        return f'id: {self.idStatistica} | utente: {self.utente} | test: {self.test.idTest} | tempo: {self.tempo}'
