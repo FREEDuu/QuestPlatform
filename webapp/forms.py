@@ -24,6 +24,7 @@ class TestManualeForm(forms.Form):
 class TestOrarioEsattoForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
     inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
+    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
     dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={
             "class": "form-control",

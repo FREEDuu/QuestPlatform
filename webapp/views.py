@@ -18,7 +18,7 @@ def log_in(req):
     logout(req)
 
     if req.method == 'POST':
-        print('ENTER POST')
+
         form = LoginForm(req.POST)
         
         if form.is_valid():
@@ -112,6 +112,7 @@ def creaTestOrarioEsatto(req):
         if form.is_valid():
             numeroTest = form.cleaned_data['numeroTest']
             inSequenza = form.cleaned_data['inSequenza']
+            secondiRitardo = form.cleaned_data['secondiRitardo']
             dataOraInizio = form.cleaned_data['dataOraInizio']
             nrGruppo=Test.get_next_gruppo()
 
@@ -119,12 +120,16 @@ def creaTestOrarioEsatto(req):
                 with transaction.atomic():
                     # Crea i test
                     for _ in range(numeroTest):
-                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, inSequenza=inSequenza, dataOraInizio=dataOraInizio, tipo='orario')
+                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
                         # Associa domande casuali con la relativa variante casuale al nuovo test creato
+                        Test_Utenti.objects.create(test=nuovo_test,utente=req.user)
+                        # Associa il test all'utente loggato
+
                         for _ in range(10):
                             # Scegli una domanda random 
                             idDomandaCasuale = Domande.get_random_domanda().idDomanda
                             print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
+                            print(secondiRitardo)
                             # Scegli una variante random 
                             idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
                             print(f"Selected idVarianteCasuale: {idVarianteCasuale}")

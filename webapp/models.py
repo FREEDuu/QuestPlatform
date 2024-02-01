@@ -37,7 +37,6 @@ class Test(models.Model):
     tipo = models.CharField(max_length=50, default="manuale")
     inSequenza = models.BooleanField(null=False, default=False)
     secondiRitardo = models.IntegerField(default=1)
-    durataMax = models.IntegerField(default=60)
     dataOraInizio = models.DateTimeField(null=True)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
 
