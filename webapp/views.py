@@ -1,14 +1,15 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.template import loader
-from webapp.models import Domande, Varianti, Test, Test_Utenti, Test_Domande_Varianti
+from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti
 from django.http import Http404
 from django.contrib.auth import authenticate, login, logout 
 from django.core.exceptions import SuspiciousOperation
-from .forms import LoginForm, TestManualeForm, TestOrarioEsattoForm
+from .forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, GruppiForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from .services import reformat_date
+from .models import *
 from django.utils.datastructures import MultiValueDict
 
 
@@ -40,7 +41,34 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
-    return render(req, 'home/home.html')
+    
+    display_test = Test.objects.prefetch_related().filter(utente = req.user.id).values('nrGruppo', 'dataOraInserimento')
+    gruppi = {}
+    date = {}
+
+    for test in display_test:
+        if(test['nrGruppo'] in gruppi.keys()):
+            gruppi[test['nrGruppo']] += 1
+            
+        else:
+            gruppi[test['nrGruppo']] = 1
+            date[test['nrGruppo']] = test['dataOraInserimento']
+
+
+    return render(req, 'home/home.html', {'gruppi' : gruppi, 'date' : '#TODO'})
+
+@login_required(login_url='login')
+def delete_all_user_test(req):
+
+    Test.objects.filter(utente = req.user.id).delete()
+
+    return render(req, 'home/home.html') 
+
+def cancella_un_test(req, nGruppo):
+    
+    Test.objects.filter(nrGruppo = nGruppo).delete()
+
+    return home(req)
 
 
 # TEST
@@ -67,17 +95,15 @@ def creaTestManuale(req):
                 with transaction.atomic():
                     for _ in range(numeroTest):
                         # Crea il test
-                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale')
+                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale')
                         # Associa il test all'utente loggato
-                        Test_Utenti.objects.create(test=nuovo_test,utente=req.user)
-                        # Associa domande casuali con la relativa variante casuale al nuovo test creato
                         for _ in range(10):
                             # Scegli una domanda random 
                             idDomandaCasuale = Domande.get_random_domanda().idDomanda
-                            print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
+                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
                             # Scegli una variante random 
                             idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
-                            print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
+                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
                             # Associa domanda e variante al nuovo test creato
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
@@ -120,19 +146,16 @@ def creaTestOrarioEsatto(req):
                 with transaction.atomic():
                     # Crea i test
                     for _ in range(numeroTest):
-                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
+                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
                         # Associa domande casuali con la relativa variante casuale al nuovo test creato
-                        Test_Utenti.objects.create(test=nuovo_test,utente=req.user)
-                        # Associa il test all'utente loggato
-
                         for _ in range(10):
                             # Scegli una domanda random 
                             idDomandaCasuale = Domande.get_random_domanda().idDomanda
-                            print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
+                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
                             print(secondiRitardo)
                             # Scegli una variante random 
                             idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
-                            print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
+                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
                             # Associa domanda e variante al nuovo test creato
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
@@ -153,3 +176,27 @@ def creaTestOrarioEsatto(req):
             return redirect('/creazione-test', context)
 
     return redirect('/home')
+
+@login_required(login_url='login')
+def preTest(req, nGruppo):
+
+    tests = Test.objects.filter(nrGruppo = nGruppo).values('idTest')
+    ids = []
+
+    for test in tests:
+        ids.append(test['idTest'])
+
+    counter = 0
+
+    forms = Test_Domande_Varianti.objects.filter(test = ids[counter]).prefetch_related('domanda','variante')
+    ctx = []
+
+    for form in forms:
+
+        ctx.append([form.domanda, form.variante])
+    
+    print(ctx)
+    print('dawd')
+
+  
+    return render(req, 'preTest/preTest.html', {'ctx' : ctx})

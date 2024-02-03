@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Domande, Test, Test_Utenti, Test_Domande_Varianti, Varianti, Statistiche
+from .models import Domande, Test, Test_Domande_Varianti, Varianti, Statistiche
 
 class TestAdmin(admin.ModelAdmin):
     list_display = ["idTest", "nrGruppo", "tipo", "inSequenza", "dataOraInizio"]
@@ -17,7 +17,6 @@ class Test_Domande_VariantiAdmin(admin.ModelAdmin):
 
 admin.site.register(Domande)
 admin.site.register(Test, TestAdmin)
-admin.site.register(Test_Utenti)
 admin.site.register(Test_Domande_Varianti, Test_Domande_VariantiAdmin)
 admin.site.register(Varianti, VariantiAdmin)
 admin.site.register(Statistiche, StatisticheAdmin)

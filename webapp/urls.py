@@ -9,5 +9,7 @@ urlpatterns = [
     path('creazione-test' , views.creazioneTest, name= 'test'),
     path('crea-test-manuale' , views.creaTestManuale, name= 'creaTestManuale'),
     path('crea-test-orario-esatto' , views.creaTestOrarioEsatto, name= 'creaTestOrarioEsatto'),
-    #path('preTest/<int:test_id>' , views.preTest, name= 'preTest')
+    path('cancella-test', views.delete_all_user_test, name='delete_all_user_test'),
+    path('cancella-un-test/<int:nGruppo>' , views.cancella_un_test, name = 'cancella_un_test'),
+    path('preTest/<int:nGruppo>' , views.preTest, name= 'preTest')
 ]

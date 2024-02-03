@@ -33,6 +33,7 @@ class Varianti(models.Model):
 
 class Test(models.Model):
     idTest = models.AutoField(primary_key=True)
+    utente = models.ForeignKey(User, on_delete=models.CASCADE, default = 1)
     nrGruppo = models.IntegerField(default=0)
     tipo = models.CharField(max_length=50, default="manuale")
     inSequenza = models.BooleanField(null=False, default=False)
@@ -48,14 +49,6 @@ class Test(models.Model):
     def get_next_gruppo(cls):
         max_gruppo = cls.objects.aggregate(Max('nrGruppo'))['nrGruppo__max']
         return max_gruppo + 1 if max_gruppo is not None else 1
-
-# Associa ad ogni singolo test uno o molteplici utenti
-class Test_Utenti(models.Model):
-    idTest_Utenti = models.AutoField(primary_key=True)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
-    utente = models.ForeignKey(User, on_delete=models.CASCADE)
-    dataOraInserimento = models.DateTimeField(auto_now_add=True)
-
 
 # Associa ad ogni singolo test molteplici domande, ognuna con la sua variante selezionata.
 class Test_Domande_Varianti(models.Model):

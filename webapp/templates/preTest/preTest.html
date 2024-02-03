@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<div class="d-flex flex-wrap align-items-center justify-content-center ">
+        <main>
+        {% for domanda, variante in ctx %}
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            <div class="card align-items-center" style="width: 18rem;">
+                
+                <div class="card-body">
+                  <h5 class="card-title">domanda</h5>
+                  <p class="card-text">{{domanda}}</p>
+                  <select class="form-select" aria-label="Default select example">
+                    <option value="1">One</option>
+                    <option value="2">Two</option>
+                    <option value="3"><strong>{{variante}}</strong>
+                    </option>
+                  </select>
+                </div>
+              </div>
+        </div>
+      
+        
+        
+
+    {% endfor %}
+</div>
+    </main>
+    {% endblock %}
+
+</body>
+</html>
