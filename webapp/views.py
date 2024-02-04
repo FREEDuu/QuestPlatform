@@ -108,7 +108,6 @@ def creaTestManuale(req):
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
 
-                print("Test creati con successo")
                 messages.success(req, 'Test creati con successo.')
 
             except Exception as e:
@@ -178,7 +177,7 @@ def creaTestOrarioEsatto(req):
     return redirect('/home')
 
 @login_required(login_url='login')
-def preTest(req, nGruppo):
+def preTest(req, nGruppo, counter = 0):
 
     tests = Test.objects.filter(nrGruppo = nGruppo).values('idTest')
     ids = []
@@ -186,17 +185,20 @@ def preTest(req, nGruppo):
     for test in tests:
         ids.append(test['idTest'])
 
-    counter = 0
 
-    forms = Test_Domande_Varianti.objects.filter(test = ids[counter]).prefetch_related('domanda','variante')
-    ctx = []
+    if counter <= len(ids)-1 : 
+        forms = Test_Domande_Varianti.objects.filter(test = ids[counter]).prefetch_related('domanda','variante')
+        ctx = []
 
-    for form in forms:
+        for form in forms:
 
-        ctx.append([form.domanda, form.variante])
+            ctx.append([form.domanda, form.variante])
+    else :
+        ctx = []
     
-    print(ctx)
-    print('dawd')
+    counter += 1
+    limit = len(ids) 
+    print(counter, limit)
 
   
-    return render(req, 'preTest/preTest.html', {'ctx' : ctx})
+    return render(req, 'preTest/preTest.html', {'ctx' : ctx, 'counter' : counter, 'nGruppo' : nGruppo, 'limit' : limit})

@@ -11,10 +11,18 @@
     <title>Document</title>
 </head>
 <body>
-<div class="d-flex flex-wrap align-items-center justify-content-center ">
+<div class="d-flex flex-wrap align-items-center justify-content-center m-3">
         <main>
+
+    {% if counter > limit %}
+          
+    <h1>GRUPPO FINITO !!</h1>
+    <a href= "{% url 'cancella_un_test' nGruppo %}" {{nGruppo}}><button type="button" class="btn btn-primary m-3 float-end">Home</button></a>
+
+    {% else %}
+      
         {% for domanda, variante in ctx %}
-        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start m-3">
             <div class="card align-items-center" style="width: 18rem;">
                 
                 <div class="card-body">
@@ -33,7 +41,11 @@
         
         
 
-    {% endfor %}
+        {% endfor %}
+        <a href= "{% url 'preTest' nGruppo counter %}"  {{nGruppo}} {{counter}}><button type="button" class="btn btn-primary m-3 float-end">Avanti</button></a>
+
+    {% endif %}
+    
 </div>
     </main>
     {% endblock %}
