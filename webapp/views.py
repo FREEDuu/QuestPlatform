@@ -42,31 +42,33 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
     
-    display_test = Test.objects.prefetch_related().filter(utente = req.user.id).values('nrGruppo', 'dataOraInserimento')
+    display_test = TestsGroup.objects.prefetch_related().filter(utente = req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest')
     gruppi = {}
     date = {}
 
     for test in display_test:
-        if(test['nrGruppo'] in gruppi.keys()):
-            gruppi[test['nrGruppo']] += 1
+        if(test['idGruppi'] not in gruppi.keys()):
+            gruppi[test['idGruppi']] = test['nrTest']
             
         else:
-            gruppi[test['nrGruppo']] = 1
-            date[test['nrGruppo']] = test['dataOraInserimento']
+            pass
 
-
-    return render(req, 'home/home.html', {'gruppi' : gruppi, 'date' : '#TODO'})
+    print(gruppi)
+    return render(req, 'home/home.html', {'gruppi' : gruppi, 'date' : '#TODO', 'zero' : 0})
 
 @login_required(login_url='login')
 def delete_all_user_test(req):
 
-    Test.objects.filter(utente = req.user.id).delete()
+    TestsGroup.objects.filter(utente = req.user.id).delete()
 
     return render(req, 'home/home.html') 
 
-def cancella_un_test(req, nGruppo):
+def cancella_un_test(req, idGruppi):
     
-    Test.objects.filter(nrGruppo = nGruppo).delete()
+    TestsGroup.objects.filter(idGruppi = idGruppi).delete()
+    print(idGruppi
+    
+    )
 
     return home(req)
 
@@ -93,10 +95,9 @@ def creaTestManuale(req):
 
             try:
                 with transaction.atomic():
-                    for _ in range(numeroTest):
-                        # Crea il test
-                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale')
+                    TestsGroup.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale', nrTest =numeroTest)
                         # Associa il test all'utente loggato
+                '''
                         for _ in range(10):
                             # Scegli una domanda random 
                             idDomandaCasuale = Domande.get_random_domanda().idDomanda
@@ -107,6 +108,7 @@ def creaTestManuale(req):
                             # Associa domanda e variante al nuovo test creato
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
+                        '''
 
                 messages.success(req, 'Test creati con successo.')
 
@@ -177,17 +179,29 @@ def creaTestOrarioEsatto(req):
     return redirect('/home')
 
 @login_required(login_url='login')
-def preTest(req, nGruppo, counter = 0):
+def preTest(req, idGruppi, counter):
 
-    tests = Test.objects.filter(nrGruppo = nGruppo).values('idTest')
-    ids = []
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'inSequenza', 'secondiRitardo', 'dataOraInizio')
+    nrTest = tests[0]['nrTest']
+    ctx = []
+    counter += 1
+    nuovo_test = Test.objects.create( utente = req.user, inSequenza= tests[0]['inSequenza'], secondiRitardo=tests[0]['secondiRitardo'], dataOraInizio=tests[0]['dataOraInizio'], tipo='orario')
 
-    for test in tests:
-        ids.append(test['idTest'])
+ # Associa domande casuali con la relativa variante casuale al nuovo test creato
+    for _ in range(10):
+                            # Scegli una domanda random 
+        idDomandaCasuale = Domande.get_random_domanda().idDomanda
+                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
+                            # Scegli una variante random 
+        idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
+                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
+                            # Associa domanda e variante al nuovo test creato
+        Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
+    forms = Test_Domande_Varianti.objects.filter(test = nuovo_test)
 
-    if counter <= len(ids)-1 : 
-        forms = Test_Domande_Varianti.objects.filter(test = ids[counter]).prefetch_related('domanda','variante')
+    if counter <= nrTest : 
+        
         ctx = []
 
         for form in forms:
@@ -196,9 +210,5 @@ def preTest(req, nGruppo, counter = 0):
     else :
         ctx = []
     
-    counter += 1
-    limit = len(ids) 
-    print(counter, limit)
 
-  
-    return render(req, 'preTest/preTest.html', {'ctx' : ctx, 'counter' : counter, 'nGruppo' : nGruppo, 'limit' : limit})
+    return render(req, 'preTest/preTest.html', {'ctx' : ctx, 'counter' : counter, 'idGruppi' : idGruppi, 'nrTest' : nrTest})
