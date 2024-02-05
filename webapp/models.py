@@ -10,7 +10,7 @@ class Domande(models.Model):
     def __str__(self):
         return self.corpo
     
-    # @classmethod: when this method is called, we pass the class as the first argument instead of the instance of that class
+    #@classmethod: when this method is called, we pass the class as the first argument instead of the instance of that class
     @classmethod
     def get_random_domanda(cls):
         random_domanda = cls.objects.order_by('?').first()

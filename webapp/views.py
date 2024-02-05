@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from .services import reformat_date
 from .models import *
+from random import randint
 from django.utils.datastructures import MultiValueDict
 
 
@@ -179,36 +180,42 @@ def creaTestOrarioEsatto(req):
     return redirect('/home')
 
 @login_required(login_url='login')
-def preTest(req, idGruppi, counter):
 
+def TestStart(req, idGruppi, counter):
+    ctx = []
+    nrTest = 0
+    
     tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'inSequenza', 'secondiRitardo', 'dataOraInizio')
     nrTest = tests[0]['nrTest']
     ctx = []
     counter += 1
-    nuovo_test = Test.objects.create( utente = req.user, inSequenza= tests[0]['inSequenza'], secondiRitardo=tests[0]['secondiRitardo'], dataOraInizio=tests[0]['dataOraInizio'], tipo='orario')
+    domande = Domande.objects.prefetch_related().values('corpo', 'idDomanda')
+    corpi = []
+
+
+    for domanda in domande:
+
+        corpi.append([domanda['corpo'], domanda['idDomanda']])
 
  # Associa domande casuali con la relativa variante casuale al nuovo test creato
     for _ in range(10):
-                            # Scegli una domanda random 
-        idDomandaCasuale = Domande.get_random_domanda().idDomanda
-                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
-                            # Scegli una variante random 
-        idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
-                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
-                            # Associa domanda e variante al nuovo test creato
-        Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+        rand = randint(0, len(corpi)-1)
+        casualDomanda = corpi[rand][1]   
 
-    forms = Test_Domande_Varianti.objects.filter(test = nuovo_test)
+        varianti = Varianti.objects.filter(domanda = casualDomanda).values('corpo')
 
-    if counter <= nrTest : 
+        variante = varianti[randint(0, len(varianti)-1)]['corpo']
+
+        ctx.append([corpi[rand][0], variante])
+
+        #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+
+    if counter > nrTest : 
         
         ctx = []
 
-        for form in forms:
+    return render(req, 'preTest/TestSelect.html', {'ctx' : ctx, 'counter' : counter, 'idGruppi' : idGruppi, 'nrTest' : nrTest})
 
-            ctx.append([form.domanda, form.variante])
-    else :
-        ctx = []
-    
+def preTest(req, idGruppi, counter):
 
-    return render(req, 'preTest/preTest.html', {'ctx' : ctx, 'counter' : counter, 'idGruppi' : idGruppi, 'nrTest' : nrTest})
+    return render(req, 'preTest/preTest.html', {'idGruppi' : idGruppi, 'counter' : counter})
