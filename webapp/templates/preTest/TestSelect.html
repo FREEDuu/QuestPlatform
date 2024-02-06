@@ -42,8 +42,8 @@
     {% else %}
       
         {% for domanda, variante in ctx %}
-        <p>{{domanda}} {{variante}}</p>
-        <div class="input-group mb-3">
+        <p>{{domanda}}{{variante}}</p>
+        <div class="input-group mb-4">
             <select class="form-select" id="inputGroupSelect01">
               <option selected>{{variante}}</option>
               <option value="1">One</option>
@@ -56,16 +56,30 @@
         
 
         {% endfor %}
-       
+          
         <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
   
-        <a href= "{% url 'preTest' idGruppi counter %}"  {{idGruppi}} {{counter}}><button class="btn btn-primary " type="button" style="background-color: #022d5e;">AVANTI</button></a>
+        <a href= "{% url 'FinishTest' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
 
     {% endif %}
 
   
 
 </div>
+<footer class="footer" id="sticky-footer">
+    <div class="it-footer-main" style="background: #022d5e; color: #fff;">
+        <div class="container">
+            <section>
+                <div class="row clearfix text-center">
+                    <div class="col-sm-12 align-items-center m-3">
+                        © 2024 INAIL - ISTITUTO NAZIONALE PER L'ASSICURAZIONE CONTRO GLI INFORTUNI SUL LAVORO - P. IVA 00968951004
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</footer>
 
 </body>
+
 </html>

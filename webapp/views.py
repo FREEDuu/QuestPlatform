@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+
+from datetime import datetime
+from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
 from django.template import loader
 from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti
@@ -12,6 +16,7 @@ from .services import reformat_date
 from .models import *
 from random import randint
 from django.utils.datastructures import MultiValueDict
+
 
 
 # LOGIN
@@ -43,19 +48,21 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
     
-    display_test = TestsGroup.objects.prefetch_related().filter(utente = req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest')
-    gruppi = {}
-    date = {}
+    '''
+    for _ in range(5):
+        TestsGroup.objects.create(utente = req.user, inSequenza=True, tipo='manuale', nrTest =100)
+        '''
+    #Test.objects.all().delete()
+    display_test = TestsGroup.objects.prefetch_related().filter(utente = req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    gruppi = []
 
     for test in display_test:
-        if(test['idGruppi'] not in gruppi.keys()):
-            gruppi[test['idGruppi']] = test['nrTest']
-            
-        else:
-            pass
+        
 
-    print(gruppi)
-    return render(req, 'home/home.html', {'gruppi' : gruppi, 'date' : '#TODO', 'zero' : 0})
+        gruppi.append([test['idGruppi'] ,test['nrTest']- test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])         
+
+
+    return render(req, 'home/home.html', {'gruppi' : gruppi[::-1], 'zero' : 0})
 
 @login_required(login_url='login')
 def delete_all_user_test(req):
@@ -67,9 +74,6 @@ def delete_all_user_test(req):
 def cancella_un_test(req, idGruppi):
     
     TestsGroup.objects.filter(idGruppi = idGruppi).delete()
-    print(idGruppi
-    
-    )
 
     return home(req)
 
@@ -92,11 +96,10 @@ def creaTestManuale(req):
             secondiRitardo = form.cleaned_data['secondiRitardo']
 
             # Ricava il numero univoco per raggruppare i nuovi test da creare
-            nrGruppo=Test.get_next_gruppo()
 
             try:
                 with transaction.atomic():
-                    TestsGroup.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale', nrTest =numeroTest)
+                    TestsGroup.objects.create(utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale', nrTest =numeroTest)
                         # Associa il test all'utente loggato
                 '''
                         for _ in range(10):
@@ -181,41 +184,63 @@ def creaTestOrarioEsatto(req):
 
 @login_required(login_url='login')
 
-def TestStart(req, idGruppi, counter):
+def TestStart(req, idGruppi, idTest):
+
     ctx = []
-    nrTest = 0
+    Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
+    print(datetime.now(),'ORA INIZIO TEST')
+    TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
+    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
     
-    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'inSequenza', 'secondiRitardo', 'dataOraInizio')
-    nrTest = tests[0]['nrTest']
-    ctx = []
-    counter += 1
-    domande = Domande.objects.prefetch_related().values('corpo', 'idDomanda')
-    corpi = []
-
-
-    for domanda in domande:
-
-        corpi.append([domanda['corpo'], domanda['idDomanda']])
-
- # Associa domande casuali con la relativa variante casuale al nuovo test creato
-    for _ in range(10):
-        rand = randint(0, len(corpi)-1)
-        casualDomanda = corpi[rand][1]   
-
-        varianti = Varianti.objects.filter(domanda = casualDomanda).values('corpo')
-
-        variante = varianti[randint(0, len(varianti)-1)]['corpo']
-
-        ctx.append([corpi[rand][0], variante])
-
+    for domanda in test_to_render:
+        
+        ctx.append([domanda.domanda, domanda.variante])
+    
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
-    if counter > nrTest : 
+
+
+    return render(req, 'preTest/TestSelect.html', {'ctx' : ctx,'idGruppi' : idGruppi,'idTest' : idTest})
+
+def preTest(req, idGruppi):
+
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'inSequenza', 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
+    nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
+
+    if(nrTest > 0):
+
+        singolo_test = Test.objects.create(utente = req.user)
+
         
-        ctx = []
+        domande = Domande.objects.prefetch_related()
 
-    return render(req, 'preTest/TestSelect.html', {'ctx' : ctx, 'counter' : counter, 'idGruppi' : idGruppi, 'nrTest' : nrTest})
+    # Associa domande casuali con la relativa variante casuale al nuovo test creato
+        for _ in range(3):
 
-def preTest(req, idGruppi, counter):
+            random_domanda = randint(0, len(domande)-1)
 
-    return render(req, 'preTest/preTest.html', {'idGruppi' : idGruppi, 'counter' : counter})
+            varianti = Varianti.objects.filter(domanda = domande[random_domanda])
+
+            random_variante = randint(0, len(varianti) -1)
+
+            Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
+
+        return render(req, 'preTest/preTest.html', {'idGruppi' : idGruppi,'idTest' : singolo_test.idTest, 'nrTest' : nrTest})
+
+    else :
+
+        return cancella_un_test(req, idGruppi)
+
+def FinishTest(req, idGruppi, idTest):
+
+    Test.objects.filter(idTest = idTest).update(dataOraInserimento = datetime.now())
+    tt = Test.objects.filter(idTest = idTest)
+    tempo_test_finale = tt[0].dataOraInserimento.second
+    tempo_test_iniziale = tt[0].dataOraInizio.second
+
+    if tempo_test_finale < tempo_test_iniziale:
+            tempo_finish = tempo_test_finale +60  - tempo_test_iniziale
+    else:
+        tempo_finish = tempo_test_finale - tempo_test_iniziale
+
+    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish})

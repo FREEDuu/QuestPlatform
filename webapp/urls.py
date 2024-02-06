@@ -11,7 +11,9 @@ urlpatterns = [
     path('crea-test-orario-esatto' , views.creaTestOrarioEsatto, name= 'creaTestOrarioEsatto'),
     path('cancella-test', views.delete_all_user_test, name='delete_all_user_test'),
     path('cancella-un-test/<int:idGruppi>' , views.cancella_un_test, name = 'cancella_un_test'),
-    path('preTest/<int:idGruppi>/<int:counter>/' , views.preTest, name= 'preTest'),
-    path('testStart/<int:idGruppi>/<int:counter>/' , views.TestStart, name= 'TestStart')
+    path('preTest/<int:idGruppi>/' , views.preTest, name= 'preTest'),
+    path('testStart/<int:idGruppi>/<int:idTest>' , views.TestStart, name= 'TestStart'),
+    path('FinishTest/<int:idGruppi>/<int:idTest>' , views.FinishTest, name= 'FinishTest')
+
 
 ]

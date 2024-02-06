@@ -32,17 +32,17 @@
                     <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
                       <h6 class="border-bottom pb-3 mb-0">TEST IN PROGRAMMA <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
                       <p></p>                                
-                                  {% for idGruppi, nrTest in gruppi.items %}
+                                  {% for idGruppi, nrTest, data in gruppi %}
                                           
                                         
                                        
                                         <div class="d-flex flex-wrap justify-content-lg-end shadow">
                                           
                                           <div
-                                              class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-decoration-none">
-                                              <span class="input-group-text shadow-lg" id="basic-addon1"> {{nrTest}}</span>
+                                              class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                                              <span class="input-group-text text-center shadow-lg m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
                                              
-                                              <strong class="m-4"> TEST CREATO IL {{date}}</strong>
+                                              <strong class="m-4"> TEST CREATO IL {{data}}</strong>
                                         </div>
 
                                           <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
@@ -56,7 +56,7 @@
                                           </div>
                                           </a>
 
-                                          <a class="p-1" href="{% url 'preTest' idGruppi zero %} " {{idGruppi}} {{zero}}>
+                                          <a class="p-1" href="{% url 'preTest' idGruppi %} " {{idGruppi}}>
                                             <button class="btn btn-primary float-end m-2">
                                          
                                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">

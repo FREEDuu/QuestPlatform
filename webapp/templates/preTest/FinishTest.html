@@ -36,33 +36,18 @@
 </header>
 <main class="container">
 
-
-    {% if nrTest < 0 %}
-          
-    <h1>GRUPPO FINITO !!</h1>
-    <p></p>
-    <a href= "{% url 'cancella_un_test' idGruppi %}" {{idGruppi}}><button class="btn btn-primary " type="button" style="background-color: #022d5e;">Home</button></a>
-
-
-    {% else %}
-      
-    <div class="p-3">
-        <div class="container-fluid ">
-          <h3 class="">Bando ISI 2024 - Convalida Domanda</h3>
-        
-        </div>
-      </div>
-          <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
-            <h6>L'invio della domanda potrà essere effettuato a partire dalle ore 11:15</h6>
-            <h6>premere il pulsante RICARICA per il refresh della pagina</h6>
-            <a href= "{% url 'TestStart' idGruppi  idTest%}"  {{idGruppi}} {{idTest}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">RICARICA</button></a>
+  <div class="p-3">
+    <div class="container-fluid ">
+      <h3 class="">Bando ISI 2024 - Convalida Domanda</h3>
     
-      </div>
-    
+    </div>
+  </div>
+      <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
+        <h6>L'invio della domanda è stato effettuato correttamente</h6>
+        <h6>TEMPO : {{tempo}}</h6>
+        <a href= "{% url 'preTest' idGruppi %}"  {{idGruppi}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Inizia</button></a>
 
-    {% endif %}
-
-
+  </div>
 
   
   
