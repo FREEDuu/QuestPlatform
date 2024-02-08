@@ -16,6 +16,8 @@ from .services import reformat_date
 from .models import *
 from random import randint
 from django.utils.datastructures import MultiValueDict
+from django.core.serializers import serialize
+import json
 
 
 
@@ -47,22 +49,17 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
+    display_test = TestsGroup.objects.prefetch_related().filter(utente=req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('dataOraInizio')
+    chart_tests_json = serialize('json', chart_tests)
     
-    '''
-    for _ in range(5):
-        TestsGroup.objects.create(utente = req.user, inSequenza=True, tipo='manuale', nrTest =100)
-        '''
-    #Test.objects.all().delete()
-    display_test = TestsGroup.objects.prefetch_related().filter(utente = req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     gruppi = []
-
+    
     for test in display_test:
-        
+        gruppi.append([test['idGruppi'], test['nrTest'] - test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])         
 
-        gruppi.append([test['idGruppi'] ,test['nrTest']- test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])         
+    return render(req, 'home/home.html', {'gruppi': gruppi[::-1], 'zero': 0, 'chart_tests': chart_tests_json})
 
-
-    return render(req, 'home/home.html', {'gruppi' : gruppi[::-1], 'zero' : 0})
 
 @login_required(login_url='login')
 def delete_all_user_test(req):
@@ -208,13 +205,10 @@ def preTest(req, idGruppi):
     nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
 
     if(nrTest > 0):
-
         singolo_test = Test.objects.create(utente = req.user)
-
-        
         domande = Domande.objects.prefetch_related()
 
-    # Associa domande casuali con la relativa variante casuale al nuovo test creato
+        # Associa domande casuali con la relativa variante casuale al nuovo test creato
         for _ in range(3):
 
             random_domanda = randint(0, len(domande)-1)
@@ -233,9 +227,9 @@ def preTest(req, idGruppi):
 
 def FinishTest(req, idGruppi, idTest):
 
-    Test.objects.filter(idTest = idTest).update(dataOraInserimento = datetime.now())
+    Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
     tt = Test.objects.filter(idTest = idTest)
-    tempo_test_finale = tt[0].dataOraInserimento.second
+    tempo_test_finale = tt[0].dataOraFine.second
     tempo_test_iniziale = tt[0].dataOraInizio.second
 
     if tempo_test_finale < tempo_test_iniziale:

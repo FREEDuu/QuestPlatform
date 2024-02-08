@@ -111,40 +111,96 @@
                       </tbody>
                       </table>
                 </div>
+
+
+                  <div class="my-3 bg-body rounded shadow-lg">
+                    <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
+                    <p></p>
+                    <div>
+                      <canvas id="myChart"></canvas>
+                    </div>
+                  </div>
               </div>
               
           </div>
           </h6>
-
-          
-
-<div class="container">
-  <div class="row">
-      <div class="col-md-6">
-          <div class="panel panel-default">
-              <div class="panel-heading">
-                  <h3>GRAFICI DEI RISULTATI</h3>
-              </div>
-              <div class="panel-body">
-                  <div id="chart1"></div>
-              </div>
-          </div>
-      </div>
-      
-  </div>   
-</div>
-
-<style>
-
-</style>
-
-
-
       </div>
       
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var chart_tests = {{ chart_tests|safe }}
+  var nrTestLabels = [];
+  var tempiLabels = [];
+  var sumSeconds = 0;
+  
+  for (var i = 0; i < chart_tests.length; i++) {
+      var dateTimeStart = chart_tests[i].fields.dataOraInizio;
+      var dateTimeEnd = chart_tests[i].fields.dataOraFine;
+      
+      // Convert date strings to Date objects
+      var startDate = new Date(dateTimeStart);
+      var endDate = new Date(dateTimeEnd);
+      
+      // Calculate the difference in milliseconds
+      var difference = endDate.getTime() - startDate.getTime();
+      
+      // Convert milliseconds to seconds
+      var seconds = difference / 1000;
+      
+      sumSeconds += seconds;
+  
+      tempiLabels.push(seconds);
+      nrTestLabels.push((i + 1).toString());
+  }
+  
+  var averageSeconds = sumSeconds / chart_tests.length;
+  
+  document.addEventListener('DOMContentLoaded', function() {
+      var ctx = document.getElementById('myChart').getContext('2d');
+      var myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: nrTestLabels,
+              datasets: [{
+                  label: 'Tempo di completamento',
+                  data: tempiLabels,
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+              }, {
+                  label: 'Media',
+                  data: Array(nrTestLabels.length).fill(averageSeconds),
+                  borderColor: 'rgba(255, 99, 132, 0.7)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  fill: false,
+                  pointRadius: 0  // Hide points on the average line
+              }]
+          },
+          options: {
+              scales: {
+                  x: {
+                      title: {
+                          display: true,
+                          text: 'Test'
+                      }
+                  },
+                  y: {
+                      title: {
+                          display: true,
+                          text: 'Secondi'
+                      }
+                  }
+              }
+          }
+      });
+
+      
+  });
+  
+</script>
+
 {% endblock %}
     
-    
-  </div>      
 </html>

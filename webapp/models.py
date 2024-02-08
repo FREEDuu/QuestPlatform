@@ -39,6 +39,7 @@ class Test(models.Model):
     inSequenza = models.BooleanField(null=False, default=False)
     secondiRitardo = models.IntegerField(default=1)
     dataOraInizio = models.DateTimeField(null=True)
+    dataOraFine = models.DateTimeField(null=True)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -77,13 +78,3 @@ class Test_Domande_Varianti(models.Model):
     
     def __str__(self):
         return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
-    
-# Segna il tempo speso dall'utente per completare ogni test (altro?)
-class Statistiche(models.Model):
-    idStatistica = models.AutoField(primary_key=True)
-    utente = models.ForeignKey(User, on_delete=models.CASCADE)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE)
-    tempo = models.FloatField(default=0)
-
-    def __str__(self):
-        return f'id: {self.idStatistica} | utente: {self.utente} | test: {self.test.idTest} | tempo: {self.tempo}'
