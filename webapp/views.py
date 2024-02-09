@@ -99,9 +99,8 @@ def creaTestManuale(req):
             numeroTest = form.cleaned_data['numeroTest']
             inSequenza = form.cleaned_data['inSequenza']
             secondiRitardo = form.cleaned_data['secondiRitardo']
-
-            # Ricava il numero univoco per raggruppare i nuovi test da creare
-
+            print(inSequenza)
+            
             try:
                 with transaction.atomic():
                     TestsGroup.objects.create(utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='manuale', nrTest =numeroTest)

@@ -89,73 +89,50 @@
                 
                 
                 <div class="col-md-6">
-                    <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
-                      <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (ORA ESATTA) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
-                      <p></p>                                
-                                  {% for idGruppi, nrTest, data in gruppi_orario %}
-                                          
-                                        
-                                       
-                                        <div class="d-flex flex-wrap justify-content-lg-end shadow">
-                                          
-                                          <div
-                                              class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                              <span class="input-group-text text-center shadow-lg m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
-                                             
-                                              <strong class="m-4"> TEST CREATO IL {{data}}</strong>
-                                        </div>
-
-                                          <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
-                                            <div class="p-1">
-                                              <button class="btn btn-danger float-end m-2">
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                              </svg>
-                                            </button>
-                                          </div>
-                                          </a>
-
-                                          <a class="p-1" href="{% url 'preTestOrario' idGruppi %} " {{idGruppi}}>
-                                            <button class="btn btn-primary float-end m-2">
-                                         
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                                <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                              </svg>
-                                            </button>
-                                          </a>
-
-                                        
-                                          
-                                         
-                                        </div>
-                                
-                                        
-                                                                   
-                                  {% endfor %}
-                        
-                  </div>
-
-
                   <div class="my-3 bg-body rounded shadow-lg">
-                    <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
-                    <p></p>
-                    <div>
-                      <canvas id="lineChart"></canvas>
-                    </div>
+                    <h6 class="border-bottom pb-2 mb-0 text-center p-3">Statistiche e risultati</h6>
+                      <table class="table table-striped text-center ">
+                        <thead>
+                          <tr>
+                            <th scope="col">N test</th>
+                            <th scope="col">MIN</th>
+                            <th scope="col">MAX</th>
+                            <th scope="col">AVRG</th>
+                            <th scope="col">UNDER 30</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr id="statsRow">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                        </tbody>
+                      </table>
                   </div>
-
-
-                  <div class="my-3 bg-body rounded shadow-lg">
-                    <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
-                    <p></p>
-                    <div>
-                      <canvas id="barChart"></canvas>
-                    </div>
-                  </div>
+                </div>
+                
             </div>
-            
-              
+
+
+            <div class="my-3 bg-body rounded shadow-lg">
+              <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
+              <p></p>
+              <div>
+                <canvas id="lineChart"></canvas>
+              </div>
+            </div>
+
+
+            <div class="my-3 bg-body rounded shadow-lg">
+              <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
+              <p></p>
+              <div>
+                <canvas id="barChart"></canvas>
+              </div>
+            </div>
           </div>
           </h6>
           
@@ -175,7 +152,7 @@
   var under30Count = 0;
   var lastTestsConsidered = 100;
 
-  //### LINE CHART & TOTAL STATISTICS ###//
+  //### LINE CHART & TOTAL STATISTICS CALCULATIONS ###//
   for (var i = 0; i < chart_tests.length; i++) {
       var dateTimeStart = chart_tests[i].fields.dataOraInizio;
       var dateTimeEnd = chart_tests[i].fields.dataOraFine;
@@ -225,8 +202,10 @@
     `;
   });
 
-  // Update chart div in the DOM with last 100 test statistics
+
+  // Update lineChart & barChart DOM content
   document.addEventListener('DOMContentLoaded', function() {
+    //### LINE CHART ###//
       var ctx = document.getElementById('lineChart').getContext('2d');
       var lineChart = new Chart(ctx, {
           type: 'line',
@@ -244,7 +223,7 @@
                   borderWidth: 2,
                   borderDash: [5, 5],
                   fill: false,
-                  pointRadius: 0  // Hide points on the average line
+                  pointRadius: 0
               }]
           },
           options: {
@@ -260,18 +239,96 @@
                           display: true,
                           text: 'Secondi'
                       }
-                  }
+                  },
+              },
+              plugins: {
+                legend: {
+                  display: false
+                }
               }
           }
       });
 
       
+    //### BAR CHART ###//
+    var testsByWeek = {};
+    chart_tests.forEach(function(test) {
+      var date = new Date(test.fields.dataOraInizio);
+      var week = getWeek(date);
+      testsByWeek[week] = testsByWeek[week] ? testsByWeek[week] + 1 : 1;
+    });
+  
+    var weekLabels = Object.keys(testsByWeek).map(function(week) {
+      var startDate = getStartDateOfWeek(week);
+      var endDate = getEndDateOfWeek(week);
+      var startDateFormat = startDate.toLocaleDateString('en-GB');
+      var endDateFormat = endDate.toLocaleDateString('en-GB');
+      return startDateFormat + ' \n' + endDateFormat;
+    });
+  
+    var testsData = Object.values(testsByWeek);
+    var barColors = generateRandomColors(weekLabels.length);
+
+    var ctx = document.getElementById('barChart').getContext('2d');
+    var barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: weekLabels,
+        datasets: [{
+          label: 'Test completati',
+          data: testsData,
+          backgroundColor: barColors,
+          borderColor: 'rgba(1, 1, 1, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Settimane'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Test'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
   });
 
 
-  //### BAR CHART ###//
-
-
+  function getWeek(date) {
+    var jan1 = new Date(date.getFullYear(), 0, 1);
+    return Math.ceil((((date - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  }
+  
+  function getStartDateOfWeek(week) {
+    var jan1 = new Date(new Date().getFullYear(), 0, 1);
+    var firstDayOfYear = jan1.getDay() || 7;
+    return new Date(jan1.setDate(jan1.getDate() + (week - 1) * 7 - firstDayOfYear + 1));
+  }
+  
+  function getEndDateOfWeek(week) {
+    var startDate = getStartDateOfWeek(week);
+    var endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    return endDate;
+  }
+  
+  function generateRandomColors(count) {
+    var colors = [];
+    for (var i = 0; i < count; i++) {
+      var color = 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.6)';
+      colors.push(color);
+    }
+    return colors;
+  }
   
 </script>
 
