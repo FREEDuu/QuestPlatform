@@ -50,7 +50,7 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
     display_test = TestsGroup.objects.prefetch_related().filter(utente=req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
-    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('dataOraInizio')
+    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('-dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
     gruppi = []

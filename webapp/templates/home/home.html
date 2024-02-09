@@ -101,12 +101,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>300</td>
-                          <td>14,54</td>
-                          <td>55,52</td>
-                          <td>31</td>
-                          <td>30%</td>
+                        <tr id="statsRow">
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
                         </tr>
                       </tbody>
                       </table>
@@ -117,10 +117,19 @@
                     <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
                     <p></p>
                     <div>
-                      <canvas id="myChart"></canvas>
+                      <canvas id="lineChart"></canvas>
                     </div>
                   </div>
-              </div>
+
+
+                  <div class="my-3 bg-body rounded shadow-lg">
+                    <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
+                    <p></p>
+                    <div>
+                      <canvas id="barChart"></canvas>
+                    </div>
+                  </div>
+            </div>
               
           </div>
           </h6>
@@ -130,36 +139,70 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  var chart_tests = {{ chart_tests|safe }}
+  var chart_tests = {{ chart_tests|safe }};
   var nrTestLabels = [];
   var tempiLabels = [];
-  var sumSeconds = 0;
-  
+  var totalSumSeconds = 0;
+  var partialSumSeconds = 0;
+  var minSeconds = Infinity;
+  var maxSeconds = -Infinity;
+  var under30Count = 0;
+  var lastTestsConsidered = 100;
+
+  //### LINE CHART & TOTAL STATISTICS ###//
   for (var i = 0; i < chart_tests.length; i++) {
       var dateTimeStart = chart_tests[i].fields.dataOraInizio;
       var dateTimeEnd = chart_tests[i].fields.dataOraFine;
-      
-      // Convert date strings to Date objects
+  
       var startDate = new Date(dateTimeStart);
       var endDate = new Date(dateTimeEnd);
-      
-      // Calculate the difference in milliseconds
+  
       var difference = endDate.getTime() - startDate.getTime();
-      
-      // Convert milliseconds to seconds
       var seconds = difference / 1000;
-      
-      sumSeconds += seconds;
   
-      tempiLabels.push(seconds);
-      nrTestLabels.push((i + 1).toString());
+      totalSumSeconds += seconds;
+  
+      if (seconds < minSeconds) {
+          minSeconds = seconds;
+      }
+      if (seconds > maxSeconds) {
+          maxSeconds = seconds;
+      }
+  
+      if (seconds < 30) under30Count++;
+  
+      // In the chart we only show last 100 test statistics
+      if(i < lastTestsConsidered) {
+        partialSumSeconds = totalSumSeconds
+        tempiLabels.push(seconds);
+        nrTestLabels.push((i + 1).toString());
+      }
   }
-  
-  var averageSeconds = sumSeconds / chart_tests.length;
-  
+  var totalAverageSeconds = totalSumSeconds / chart_tests.length;
+  let partialAverageSeconds;
+  if(chart_tests.length < lastTestsConsidered) {
+    partialAverageSeconds = partialSumSeconds / chart_tests.length;
+  } else {
+    partialAverageSeconds = partialSumSeconds / lastTestsConsidered;
+  }
+   
+
+  // Update table in the DOM with general statistics
+  document.addEventListener('DOMContentLoaded', function () {
+    var statsRow = document.getElementById('statsRow');
+    statsRow.innerHTML = `
+        <td>${chart_tests.length}</td>
+        <td>${minSeconds.toFixed(2)}</td>
+        <td>${maxSeconds.toFixed(2)}</td>
+        <td>${totalAverageSeconds.toFixed(2)}</td>
+        <td>${under30Count}</td>
+    `;
+  });
+
+  // Update chart div in the DOM with last 100 test statistics
   document.addEventListener('DOMContentLoaded', function() {
-      var ctx = document.getElementById('myChart').getContext('2d');
-      var myChart = new Chart(ctx, {
+      var ctx = document.getElementById('lineChart').getContext('2d');
+      var lineChart = new Chart(ctx, {
           type: 'line',
           data: {
               labels: nrTestLabels,
@@ -170,7 +213,7 @@
                   borderWidth: 1
               }, {
                   label: 'Media',
-                  data: Array(nrTestLabels.length).fill(averageSeconds),
+                  data: Array(nrTestLabels.length).fill(partialAverageSeconds),
                   borderColor: 'rgba(255, 99, 132, 0.7)',
                   borderWidth: 2,
                   borderDash: [5, 5],
@@ -198,6 +241,11 @@
 
       
   });
+
+
+  //### BAR CHART ###//
+
+
   
 </script>
 
