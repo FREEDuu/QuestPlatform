@@ -49,16 +49,23 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
-    display_test = TestsGroup.objects.prefetch_related().filter(utente=req.user.id).values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+
+    display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('-dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
-    gruppi = []
+    gruppi_manuale = []
+    gruppi_orario = []
     
-    for test in display_test:
-        gruppi.append([test['idGruppi'], test['nrTest'] - test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])         
+    for test in display_test_manuale:
+        gruppi_manuale.append([test['idGruppi'], test['nrTest'] - test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
 
-    return render(req, 'home/home.html', {'gruppi': gruppi[::-1], 'zero': 0, 'chart_tests': chart_tests_json})
+    for t in display_test_orario:
+        gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
+
+    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'zero': 0, 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1]})
 
 
 @login_required(login_url='login')
@@ -66,13 +73,14 @@ def delete_all_user_test(req):
 
     TestsGroup.objects.filter(utente = req.user.id).delete()
 
-    return render(req, 'home/home.html') 
+    return home(req) 
 
 def cancella_un_test(req, idGruppi):
     
     TestsGroup.objects.filter(idGruppi = idGruppi).delete()
 
     return home(req)
+
 
 
 # TEST
@@ -138,18 +146,20 @@ def creaTestOrarioEsatto(req):
         form = TestOrarioEsattoForm(mutable_data) 
 
         if form.is_valid():
+
             numeroTest = form.cleaned_data['numeroTest']
             inSequenza = form.cleaned_data['inSequenza']
             secondiRitardo = form.cleaned_data['secondiRitardo']
             dataOraInizio = form.cleaned_data['dataOraInizio']
-            nrGruppo=Test.get_next_gruppo()
+
 
             try:
                 with transaction.atomic():
                     # Crea i test
-                    for _ in range(numeroTest):
-                        nuovo_test = Test.objects.create(nrGruppo=nrGruppo, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
+                   
+                    TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
                         # Associa domande casuali con la relativa variante casuale al nuovo test creato
+                '''
                         for _ in range(10):
                             # Scegli una domanda random 
                             idDomandaCasuale = Domande.get_random_domanda().idDomanda
@@ -160,6 +170,7 @@ def creaTestOrarioEsatto(req):
                             #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
                             # Associa domanda e variante al nuovo test creato
                             Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+                        '''
 
                 print("Test creati con successo")
                 messages.success(req, 'Test creati con successo.')
@@ -238,3 +249,36 @@ def FinishTest(req, idGruppi, idTest):
         tempo_finish = tempo_test_finale - tempo_test_iniziale
 
     return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish})
+
+def preTestOrario(req, idGruppi):
+
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
+    #add some times devo farlo ma sono dovuto andare via
+    return preTestOrario_2(req, idGruppi)
+
+
+def preTestOrario_2(req, idGruppi):
+    
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
+    nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
+
+    if nrTest > 0 : 
+        if(datetime.now() < tests[0]['dataOraInizio']):
+            return render(req, 'preTestOrario/preTestOrario.html')
+        else:
+            singolo_test = Test.objects.create(utente = req.user)
+            domande = Domande.objects.prefetch_related()
+            for _ in range(3):
+
+                random_domanda = randint(0, len(domande)-1)
+
+                varianti = Varianti.objects.filter(domanda = domande[random_domanda])
+
+                random_variante = randint(0, len(varianti) -1)
+
+                Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
+            return HttpResponse('CESSOOOSSAARRETA')
+    else:
+        return cancella_un_test(req, idGruppi)
+
+    return render(req, 'preTestOrario/preTestOrario.html')

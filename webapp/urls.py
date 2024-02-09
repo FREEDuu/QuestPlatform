@@ -12,6 +12,7 @@ urlpatterns = [
     path('cancella-test', views.delete_all_user_test, name='delete_all_user_test'),
     path('cancella-un-test/<int:idGruppi>' , views.cancella_un_test, name = 'cancella_un_test'),
     path('preTest/<int:idGruppi>/' , views.preTest, name= 'preTest'),
+    path('preTestOrario/<int:idGruppi>/' , views.preTestOrario, name= 'preTestOrario'),
     path('testStart/<int:idGruppi>/<int:idTest>' , views.TestStart, name= 'TestStart'),
     path('FinishTest/<int:idGruppi>/<int:idTest>' , views.FinishTest, name= 'FinishTest')
 
