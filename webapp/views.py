@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
 from django.template import loader
@@ -65,7 +65,7 @@ def home(req):
     for t in display_test_orario:
         gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
 
-    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'zero': 0, 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1]})
+    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1]})
 
 
 @login_required(login_url='login')
@@ -156,7 +156,7 @@ def creaTestOrarioEsatto(req):
                 with transaction.atomic():
                     # Crea i test
                    
-                    TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, dataOraInizio=dataOraInizio, tipo='orario')
+                    TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, inSequenza=inSequenza, secondiRitardo=secondiRitardo, tipo='orario')
                         # Associa domande casuali con la relativa variante casuale al nuovo test creato
                 '''
                         for _ in range(10):
@@ -251,22 +251,34 @@ def FinishTest(req, idGruppi, idTest):
 
 def preTestOrario(req, idGruppi):
 
+    print('dwadwawdw')
     tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
-    #add some times devo farlo ma sono dovuto andare via
-    return preTestOrario_2(req, idGruppi)
+    test_creato = Test.objects.create(utente = req.user, dataOraInizio = datetime.now()+ timedelta(0,tests[0]['secondiRitardo']))
+    return preTestOrario_2(req, idGruppi, test_creato.idTest)
 
 
-def preTestOrario_2(req, idGruppi):
-    
+def preTestOrario(req, idGruppi):
+
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi)
+    print(tests[0].dataOraInizio)
+    if tests[0].dataOraInizio is None:
+        print('sono entrato')
+        tests[0].objects.update(dataOraInizio = datetime.now() + timedelta(0,5))
+        return preTestOrario(req, idGruppi)
+    return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : "TODO"})
     tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
     nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
+    singolo_test = Test.objects.filter(idTest = idTest)[0]
 
     if nrTest > 0 : 
-        if(datetime.now() < tests[0]['dataOraInizio']):
-            return render(req, 'preTestOrario/preTestOrario.html')
+        if(datetime.now() < singolo_test.dataOraInizio):
+            print(singolo_test.dataOraInizio)
+            return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : singolo_test.dataOraInizio})
         else:
-            singolo_test = Test.objects.create(utente = req.user)
+
+            
             domande = Domande.objects.prefetch_related()
+
             for _ in range(3):
 
                 random_domanda = randint(0, len(domande)-1)
@@ -276,8 +288,10 @@ def preTestOrario_2(req, idGruppi):
                 random_variante = randint(0, len(varianti) -1)
 
                 Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
-            return HttpResponse('CESSOOOSSAARRETA')
+            return TestStartOrario(req, idGruppi, id_test)
     else:
         return cancella_un_test(req, idGruppi)
 
-    return render(req, 'preTestOrario/preTestOrario.html')
+
+def TestStartOrario(req, idGruppi, id_test):
+    return Http404('dawdaw')
