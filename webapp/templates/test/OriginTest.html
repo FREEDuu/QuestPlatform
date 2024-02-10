@@ -23,19 +23,23 @@
           <div class="my-3 p-3 bg-body rounded shadow-lg">
             <h6 class="border-bottom pb-2 mb-0">Creazione con ritardo manuale</h6>
             <p></p>
-            <p></p>
             <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi creare?</h6>
-            <p></p>
             <div class="input-group mb-3">
               <span class="input-group-text " id="inputGroup-sizing-default">Test</span>
               {{ creaTestManualeForm.numeroTest }}
             </div>
-            <p></p>
-            <p></p>
-          
+
+            <div class="form-switch">
+              {{ creaTestManualeForm.inSequenza|as_crispy_field }}
+            </div>
             <p></p>
 
-        
+            <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+              {{ creaTestManualeForm.secondiRitardo }}
+            </div>
+
             <div class="d-grid gap-2">
               <button type="submit" class="btn btn-primary">Crea</button>
             </div>
@@ -48,17 +52,19 @@
           <div class="my-3 p-3 bg-body rounded shadow-lg">
             <h6 class="border-bottom pb-2 mb-0">Creazione con orario esatto</h6>
             <p></p>
-            <p></p>
             <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
               creare?</h6>
-              <p></p>
               <div class="input-group mb-3">
                 <span class="input-group-text " id="inputGroup-sizing-default">Test</span>
                 {{ creaTestOrarioEsattoForm.numeroTest }}
               </div>
-              
-              
   
+              <div class="form-switch">
+                {{ creaTestOrarioEsattoForm.inSequenza|as_crispy_field }}
+              </div>
+              <p></p>
+
+              <p></p>
 
             <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
             <div class="input-group mb-3">
@@ -67,6 +73,14 @@
             </div>
 
               <!--  DatePicker  -->
+              <h6 class="border-bottom pb-2 mb-0">Ora inizio Test</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">time</span>
+                {{ creaTestOrarioEsattoForm.dataOraInizio }}
+              
+                <!--DatePicker's Box-->
+                <div id="dtBox"></div>
+              </div>
 
             <div class="d-grid gap-2">
               <button href="{% url 'test' %}" class="btn btn-primary" type="button submit">Crea</button>

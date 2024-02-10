@@ -14,7 +14,10 @@ urlpatterns = [
     path('preTest/<int:idGruppi>/' , views.preTest, name= 'preTest'),
     path('preTestOrario/<int:idGruppi>' , views.preTestOrario, name= 'preTestOrario'),
     path('testStart/<int:idGruppi>/<int:idTest>' , views.TestStart, name= 'TestStart'),
-    path('FinishTest/<int:idGruppi>/<int:idTest>' , views.FinishTest, name= 'FinishTest')
+    path('preTestOrario/testStartOrario/<int:idGruppi>/<int:idTest>' , views.testStartOrario, name= 'testStartOrario'),
+    path('FinishTest/<int:idGruppi>/<int:idTest>' , views.FinishTest, name= 'FinishTest'),
+    path('FinishTestOrario/<int:idGruppi>/<int:idTest>' , views.FinishTestOrario, name= 'FinishTestOrario')
+
 
 
 ]

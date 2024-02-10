@@ -18,8 +18,8 @@ class LoginForm(forms.Form):
 
 class TestManualeForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
-    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    #inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
+    #secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
 
 class GruppiForm(forms.Form):
     nGruppo = forms.IntegerField()
@@ -27,8 +27,9 @@ class GruppiForm(forms.Form):
    
 class TestOrarioEsattoForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
+    #inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
     secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    '''
     dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={
             "class": "form-control",
@@ -45,4 +46,5 @@ class TestOrarioEsattoForm(forms.Form):
                 raise ValidationError("La data deve essere nel futuro.")
             return input_date
         return None
+        '''
         
