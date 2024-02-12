@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-
 from datetime import datetime, timedelta
 from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
@@ -18,7 +17,15 @@ from random import randint
 from django.utils.datastructures import MultiValueDict
 from django.core.serializers import serialize
 import json
+import random
+import string
 
+def Create_other_var(array):
+
+    for _ in range(randint(4,10)):
+        array.append(''.join(random.choices(string.ascii_lowercase, k=randint(6,13))))
+
+    return array
 
 
 # LOGIN
@@ -50,8 +57,16 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
 
+    #Test.objects.all().delete()
+    #TestsGroup.objects.all().delete()
+
     display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
+
+    gruppi_programmati = []
+    for te in display_test_programmati:
+        gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
 
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('-dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
@@ -67,7 +82,7 @@ def home(req):
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
 
-    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1]})
+    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1]})
 
 
 @login_required(login_url='login')
@@ -191,13 +206,17 @@ def TestStart(req, idGruppi, idTest):
 
     ctx = []
     Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
-    print(datetime.now(),'ORA INIZIO TEST')
     TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
     
     for domanda in test_to_render:
         
-        ctx.append([domanda.domanda, domanda.variante])
+        other_var = Varianti.objects.filter(domanda = domanda.domanda).values('corpo')
+        var_to_app = []
+        for oth in range(len(other_var)):
+            var_to_app.append(other_var[oth]['corpo'])
+        var_to_app = Create_other_var(var_to_app)
+        ctx.append([domanda.domanda, var_to_app, domanda.variante])
     
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
@@ -213,14 +232,13 @@ def preTest(req, idGruppi):
     if(nrTest > 0):
         singolo_test = Test.objects.create(utente = req.user)
         domande = Domande.objects.prefetch_related()
-
+        
         # Associa domande casuali con la relativa variante casuale al nuovo test creato
-        for _ in range(3):
+        for _ in range(5):
 
             random_domanda = randint(0, len(domande)-1)
 
             varianti = Varianti.objects.filter(domanda = domande[random_domanda])
-
             random_variante = randint(0, len(varianti) -1)
 
             Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
@@ -265,7 +283,7 @@ def preTestOrario(req, idGruppi):
             singolo_test = Test.objects.create(utente = req.user)
             domande = Domande.objects.prefetch_related()
 
-            for _ in range(3):
+            for _ in range(5):
 
                 random_domanda = randint(0, len(domande)-1)
 
@@ -311,3 +329,9 @@ def FinishTestOrario(req, idGruppi, idTest):
         tempo_finish = tempo_test_finale - tempo_test_iniziale
 
     return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish})
+
+def TestProgrammati(req, idTest):
+    return HttpResponse(idTest)
+
+def Sfida(req):
+    return HttpResponse('QUI LE SFIDE')

@@ -41,14 +41,14 @@
 
     {% else %}
       
-        {% for domanda, variante in ctx %}
-        <p>{{domanda}}{{variante}}</p>
+        {% for domanda, varianti, risposta in ctx %}
+        <p>{{domanda}}{{risposta}}</p>
         <div class="input-group mb-4">
             <select class="form-select" id="inputGroupSelect01">
-              <option selected>{{variante}}</option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
+              {% for variante in varianti %}
+              <option >{{variante}}</option>
+              {% endfor %}
+            
             </select>
           </div>
           
