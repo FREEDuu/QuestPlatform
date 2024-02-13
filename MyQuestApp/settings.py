@@ -92,9 +92,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "questApplication",
         "USER": "carl",
-        "PASSWORD": "pondsama",
-        "HOST": "2.56.212.172",
-        "PORT": "5432",
+        "PASSWORD": "AVNS_PJS7hQPAKb1CseH_-qr",
+        "HOST": "questplatform-do-user-15624693-0.c.db.ondigitalocean.com",
+        "PORT": "25060",
     }
 }
 
