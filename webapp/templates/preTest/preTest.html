@@ -55,7 +55,7 @@
           <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
             <h6>L'invio della domanda potrà essere effettuato a partire dalle ore 11:15</h6>
             <h6>premere il pulsante RICARICA per il refresh della pagina</h6>
-            <a href= "{% url 'TestStart' idGruppi  idTest%}"  {{idGruppi}} {{idTest}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">RICARICA</button></a>
+            <a href= "{% url 'TestStart' idGruppi  idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">RICARICA</button></a>
     
       </div>
     
