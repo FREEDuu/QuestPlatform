@@ -34,6 +34,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['questplatform.fly.dev', 'localhost', '127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = ['https://questplatform.fly.dev']
+
+CSRF_COOKIE_DOMAIN = 'questplatform.fly.dev'
 
 # Application definition
 
@@ -92,9 +95,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "questApplication",
         "USER": "carl",
-        "PASSWORD": "AVNS_PJS7hQPAKb1CseH_-qr",
-        "HOST": "questplatform-do-user-15624693-0.c.db.ondigitalocean.com",
-        "PORT": "25060",
+        "PASSWORD": "pondsama",
+        "HOST": "2.56.212.172",
+        "PORT": "5432",
     }
 }
 
@@ -142,7 +145,7 @@ STATICFILES_DIRS = [
      "webapp/static",
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
+STATIC_ROOT = os.path.join(BASE_DIR, 'webapp/assets')
 
 
 
@@ -174,3 +177,4 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
+
