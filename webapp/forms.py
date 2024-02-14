@@ -16,35 +16,24 @@ class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
-class TestManualeForm(forms.Form):
-    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    #inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
-    #secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
 
 class GruppiForm(forms.Form):
     nGruppo = forms.IntegerField()
+    
+class TestManualeForm(forms.Form):
+    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
 
-   
+class TestSfidaManualeForm(forms.Form):
+    CHOICES = (('Option 1', 'Option 1'),('Option 2', 'Option 2'),)
+    utenteSfidato = forms.ChoiceField(choices=CHOICES, widget=forms.ChoiceField(attrs={"class": "selectpicker","data-live-search": "true"}))
+    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    
 class TestOrarioEsattoForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    #inSequenza = forms.BooleanField(widget=forms.CheckboxInput(attrs={"class": "form-control"}), label = "In sequenza", required=False)
     secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    '''
-    dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={
-            "class": "form-control",
-            "data-field": "datetime",
-            "required": "required",
-            "name": "dataOraInizio", 
-            "type": "text",
-        }), label = False)
-    
-    def clean_dataOraInizio(self):
-        input_date = self.cleaned_data.get('dataOraInizio')
-        if input_date:
-            if input_date < timezone.now():
-                raise ValidationError("La data deve essere nel futuro.")
-            return input_date
-        return None
-        '''
+        
+class TestSfidaOrarioEsattoForm(forms.Form):
+    utenteSfidato = forms.CharField()
+    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
         

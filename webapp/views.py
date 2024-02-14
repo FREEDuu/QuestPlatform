@@ -7,11 +7,13 @@ from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti
 from django.http import Http404
 from django.contrib.auth import authenticate, login, logout 
 from django.core.exceptions import SuspiciousOperation
-from .forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, GruppiForm
+from .forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, GruppiForm
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from .services import reformat_date
+from django.db.models import Q
 from .models import *
 from random import randint
 from django.utils.datastructures import MultiValueDict
@@ -118,19 +120,6 @@ def creaTestManuale(req):
             try:
                 with transaction.atomic():
                     TestsGroup.objects.create(utente = req.user, tipo='manuale', nrTest =numeroTest)
-                        # Associa il test all'utente loggato
-                '''
-                        for _ in range(10):
-                            # Scegli una domanda random 
-                            idDomandaCasuale = Domande.get_random_domanda().idDomanda
-                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
-                            # Scegli una variante random 
-                            idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
-                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
-                            # Associa domanda e variante al nuovo test creato
-                            Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
-
-                        '''
 
                 messages.success(req, 'Test creati con successo.')
 
@@ -152,12 +141,7 @@ def creaTestManuale(req):
 @login_required(login_url='login')
 def creaTestOrarioEsatto(req):
     if req.method == 'POST':
-        # I dati nella post request sono immutabili, quindi per modificarli bisogna copiarli in un nuovo oggetto
         form = TestOrarioEsattoForm(req.POST)
-        #mutable_data = MultiValueDict(form.data.lists())
-        #mutable_data['dataOraInizio'] = reformat_date(mutable_data['dataOraInizio'])
-        #form = TestOrarioEsattoForm(mutable_data) 
-
         if form.is_valid():
 
             numeroTest = form.cleaned_data['numeroTest']
@@ -165,22 +149,7 @@ def creaTestOrarioEsatto(req):
 
             try:
                 with transaction.atomic():
-                    # Crea i test
-                   
                     TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, secondiRitardo=secondiRitardo, tipo='orario')
-                        # Associa domande casuali con la relativa variante casuale al nuovo test creato
-                '''
-                        for _ in range(10):
-                            # Scegli una domanda random 
-                            idDomandaCasuale = Domande.get_random_domanda().idDomanda
-                            #print(f"Selected idDomandaCasuale: {idDomandaCasuale}")
-                            print(secondiRitardo)
-                            # Scegli una variante random 
-                            idVarianteCasuale = Varianti.get_random_variante(idDomandaCasuale).idVariante
-                            #print(f"Selected idVarianteCasuale: {idVarianteCasuale}")
-                            # Associa domanda e variante al nuovo test creato
-                            Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
-                        '''
 
                 print("Test creati con successo")
                 messages.success(req, 'Test creati con successo.')
@@ -201,7 +170,6 @@ def creaTestOrarioEsatto(req):
     return redirect('/home')
 
 @login_required(login_url='login')
-
 def TestStart(req, idGruppi, idTest, counter):
 
     ctx = []
@@ -346,5 +314,77 @@ def FinishTestOrario(req, idGruppi, idTest):
 def TestProgrammati(req, idTest):
     return HttpResponse(idTest)
 
+# SFIDE
 def Sfida(req):
-    return render(req, 'sfide/sfide.html')
+    user_list = User.objects.exclude(Q(id=1))
+    user_fields_list = [{'id': user.id, 'username': user.username } for user in user_list]
+
+    testSfidaManualeForm = TestSfidaManualeForm()
+    testSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
+    context = {
+        'user_list': user_fields_list, 
+        "creaTestSfidaManualeForm": testSfidaManualeForm, 
+        "creaTestSfidaOrarioEsattoForm": testSfidaOrarioEsattoForm
+        }
+
+    return render(req, 'sfide/sfide.html', context)
+
+@login_required(login_url='login')
+def creaTestSfidaManuale(req):
+    if req.method == 'POST':
+        form = TestSfidaManualeForm(req.POST)
+        if form.is_valid():
+            numeroTest = form.cleaned_data['numeroTest']
+            
+            try:
+                with transaction.atomic():
+                    TestsGroup.objects.create(utente = req.user, tipo='manuale', nrTest =numeroTest)
+
+                messages.success(req, 'Test creati con successo.')
+
+            except Exception as e:
+                print(f"Errore durante la creazione del test: {e}")
+                messages.error(req, "Errore durante creazione test: ", e)
+        else: 
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.warning(req, f"Errore: {error}")
+            testSfidaManualeForm = TestSfidaManualeForm()
+            testSfidaOrarioEsattoForm = form
+            
+            context = {
+                "creaTestSfidaManualeForm": testSfidaManualeForm, 
+                "creaTestSfidaOrarioEsattoForm": testSfidaOrarioEsattoForm
+                }            
+    return redirect('/Sfida', context)
+
+@login_required(login_url='login')
+def creaTestSfidaOrarioEsatto(req):
+    if req.method == 'POST':
+        form = TestSfidaOrarioEsattoForm(req.POST)
+        if form.is_valid():
+
+            numeroTest = form.cleaned_data['numeroTest']
+            secondiRitardo = form.cleaned_data['secondiRitardo']
+
+            try:
+                with transaction.atomic():
+                    TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, secondiRitardo=secondiRitardo, tipo='orario')
+
+                print("Test creati con successo")
+                messages.success(req, 'Test creati con successo.')
+
+            except Exception as e:
+                print(f"Errore durante la creazione del test: {e}")
+                messages.error(req, "Errore durante creazione test: ", e)
+        
+        else: 
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.warning(req, f"Errore: {error}")
+            testManualeForm = TestManualeForm()
+            testOrarioEsattoForm = form
+            context = {"creaTestManualeForm": testManualeForm, "creaTestOrarioEsattoForm": testOrarioEsattoForm}
+            return redirect('/creazione-test', context)
+
+    return redirect('/home')
