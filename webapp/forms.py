@@ -7,7 +7,15 @@ from crispy_forms.layout import Layout, Field
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from .models import *
+from  random import randint, random
+import string
+def Create_other_var(array):
 
+    for _ in range(randint(4,10)):
+        array.append(''.join(random.choices(string.ascii_lowercase, k=randint(6,13))))
+
+    return array
 messages={
             'required': _("Non fare il furbo :D"),
         }
@@ -18,7 +26,18 @@ class LoginForm(forms.Form):
 
 
 class GruppiForm(forms.Form):
-    nGruppo = forms.IntegerField()
+
+    def __init__(self,req, nDomande, idTest):
+        super().__init__()
+
+        domande = Test_Domande_Varianti.objects.filter(
+            test = idTest
+        )
+
+        for i in range(len(domande)):
+            field_name = 'domanda_%s' % (i,)
+            self.fields[field_name] = forms.ChoiceField(required=True, choices = ())
+
     
 class TestManualeForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)

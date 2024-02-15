@@ -32,14 +32,9 @@
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
 
-    {% if counter > nrTest %}
-          
-    <h1>GRUPPO FINITO !!</h1>
-    <p></p>
-    <a href= "{% url 'cancella_un_test' idGruppi %}" {{idGruppi}}><button class="btn btn-primary " type="button" style="background-color: #022d5e;">Home</button></a>
+    
 
 
-    {% else %}
       
         {% for domanda, varianti, risposta in ctx %}
         <p>{{domanda}}{{risposta}}</p>
@@ -66,7 +61,6 @@
 
           {% endif%}
 
-    {% endif %}
 
   
 

@@ -92,7 +92,7 @@
                   <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
                     <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (ORA ESATTA) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
                     <p></p>                                
-                                {% for idGruppi, nrTest, data in gruppi_manuale %}
+                                {% for idGruppi, nrTest, data, idTest in gruppi_manuale %}
                                         
                                       
                                      
@@ -116,7 +116,7 @@
                                         </div>
                                         </a>
 
-                                        <a class="p-1" href="{% url 'preTest' idGruppi %} " {{idGruppi}}>
+                                        <a class="p-1" href="{% url 'preTest' idGruppi idTest%} " {{idGruppi}}>
                                           <button class="btn btn-primary float-end m-2">
                                        
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">

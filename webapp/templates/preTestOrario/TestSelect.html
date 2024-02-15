@@ -31,34 +31,56 @@
 
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
-      
-        {% for domanda, variante in ctx %}
-        <p>{{domanda}}{{variante}}</p>
-        <div class="input-group mb-4">
-            <select class="form-select" id="inputGroupSelect01">
-              <option selected>{{variante}}</option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
-            </select>
-          </div>
+
           
         
         
 
-        {% endfor %}
-          
-        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
   
         {% if ultimo %}
-        <a href= "{% url 'FinishTestOrario' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
+        <form action="{% url 'FinishTestOrario' idGruppi idTest counter %}" {{idGruppi}} {{idTest}} {{counter}} method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+            {% for domanda, variante in ctx %}
+            <p>{{domanda}}{{variante}}</p>
+            <div class="input-group mb-4">
+                <select class="form-select" id="inputGroupSelect01">
+                  <option selected>{{variante}}</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
+              {% endfor %}
+              <button class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+
+        </form>     
 
         {% else %}
-        <a href= "{% url 'testStartOrario' idGruppi idTest counter displayer %}"  {{idGruppi}} {{idTest}} {{counter}} {{displayer}}><button class="btn text-light" type="button" style="background-color: #069901;">PROSEGUI</button></a>
+        <form action="{% url 'testStartOrario' idGruppi idTest counter displayer %}"  {{idGruppi}} {{idTest}} {{counter}} {{displayer}} method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            
+            {% for domanda, variante in ctx %}
+            <p>{{domanda}}{{variante}}</p>
+            <div class="input-group mb-4">
+                <select class="form-select" id="inputGroupSelect01">
+                  <option selected>{{variante}}</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+              </div>
+              {% endfor %}
+              <button class="btn text-light" type="submit" style="background-color: #069901;">PROSEGUI</button>
+
+        </form>     
+
 
         {% endif%}
 
-  
+    <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
 
 </div>
 <footer class="footer" id="sticky-footer">
