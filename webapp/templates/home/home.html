@@ -30,66 +30,7 @@
                 <div class="row g-5">
                   <div class="col-md-6">
                     <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
-                      <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (MANUALE) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
-                      <p></p>                                
-                                  {% for idGruppi, nrTest, data in gruppi_manuale %}
-                                          
-                                        
-                                       
-                                        <div class="d-flex flex-wrap justify-content-lg-end shadow">
-                                          
-                                          <div
-                                              class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                              <span class="input-group-text text-center shadow-lg m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
-                                             
-                                              <strong class="m-4"> TEST CREATO IL {{data}}</strong>
-                                        </div>
-
-                                          <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
-                                            <div class="p-1">
-                                              <button class="btn btn-danger float-end m-2">
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                              </svg>
-                                            </button>
-                                          </div>
-                                          </a>
-
-                                          <a class="p-1" href="{% url 'preTest' idGruppi %} " {{idGruppi}}>
-                                            <button class="btn btn-primary float-end m-2">
-                                         
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                                <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                              </svg>
-                                            </button>
-                                          </a>
-
-                                        
-                                          
-                                         
-                                        </div>
-                                
-                                        
-                                                                   
-                                  {% endfor %}
-                        
-                  </div>
-                          <div class="my-3 p-3 bg-body rounded shadow-lg">
-                            <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
-                                    
-                                      
-                                      <p></p>
-                                      
-                                    
-                                
-                          </div>
-                </div>
-                
-                
-                <div class="col-md-6">
-                    <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
-                      <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (ORA ESATTA) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
+                      <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (RITARDO MANUALE) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
                       <p></p>                                
                                   {% for idGruppi, nrTest, data in gruppi_orario %}
                                           
@@ -115,7 +56,7 @@
                                           </div>
                                           </a>
 
-                                          <a class="p-1" href="{% url 'preTestOrario' idGruppi %} " {{idGruppi}}>
+                                          <a class="p-1" href="{% url 'CreazioneTestOrario' idGruppi zero %} " {{idGruppi}} {{zero}}>
                                             <button class="btn btn-primary float-end m-2">
                                          
                                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
@@ -134,6 +75,66 @@
                                   {% endfor %}
                         
                   </div>
+                    
+                          <div class="my-3 p-3 bg-body rounded shadow-lg">
+                            <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
+                                    
+                                      
+                                      <p></p>
+                                      
+                                    
+                                
+                          </div>
+                </div>
+                
+                
+                <div class="col-md-6">
+                  <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
+                    <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (ORA ESATTA) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">ELIMINA TUTTI I TEST</button> </a></h6>
+                    <p></p>                                
+                                {% for idGruppi, nrTest, data in gruppi_manuale %}
+                                        
+                                      
+                                     
+                                      <div class="d-flex flex-wrap justify-content-lg-end shadow">
+                                        
+                                        <div
+                                            class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                                            <span class="input-group-text text-center shadow-lg m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
+                                           
+                                            <strong class="m-4"> TEST CREATO IL {{data}}</strong>
+                                      </div>
+
+                                        <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
+                                          <div class="p-1">
+                                            <button class="btn btn-danger float-end m-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                              <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                            </svg>
+                                          </button>
+                                        </div>
+                                        </a>
+
+                                        <a class="p-1" href="{% url 'preTest' idGruppi %} " {{idGruppi}}>
+                                          <button class="btn btn-primary float-end m-2">
+                                       
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                              <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                            </svg>
+                                          </button>
+                                        </a>
+
+                                      
+                                        
+                                       
+                                      </div>
+                              
+                                      
+                                                                 
+                                {% endfor %}
+                      
+                </div>
 
                 
                 <div class="my-3 p-3 bg-body rounded shadow-lg">

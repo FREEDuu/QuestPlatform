@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 messages={
-            'required': _("Questo campo non può essere negativo"),
+            'required': _("Non fare il furbo :D"),
         }
 
 class LoginForm(forms.Form):
@@ -22,11 +22,29 @@ class GruppiForm(forms.Form):
     
 class TestManualeForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-
+    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(30)], error_messages=messages)
+    dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={
+            "class": "form-control",
+            "data-field": "datetime",
+            "required": "required",
+            "name": "dataOraInizio", 
+            "type": "text",
+        }), label = False)
+    
+    def clean_dataOraInizio(self):
+        input_date = self.cleaned_data.get('dataOraInizio')
+        if input_date:
+            if input_date < timezone.now():
+                raise ValidationError("La data deve essere nel futuro.")
+            return input_date
+        return None
+    
 class TestSfidaManualeForm(forms.Form):
+
     CHOICES = (('Option 1', 'Option 1'),('Option 2', 'Option 2'),)
-    utenteSfidato = forms.ChoiceField(choices=CHOICES, widget=forms.ChoiceField(attrs={"class": "selectpicker","data-live-search": "true"}))
-    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    utenteSfidato = forms.ChoiceField(choices=CHOICES, widget=forms.ChoiceField())
+    numeroTest = forms.IntegerField(widget=forms.NumberInput(), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
     
 class TestOrarioEsattoForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)

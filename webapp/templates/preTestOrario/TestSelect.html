@@ -31,15 +31,6 @@
 
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
-
-    {% if counter > nrTest %}
-          
-    <h1>GRUPPO FINITO !!</h1>
-    <p></p>
-    <a href= "{% url 'cancella_un_test' idGruppi %}" {{idGruppi}}><button class="btn btn-primary " type="button" style="background-color: #022d5e;">Home</button></a>
-
-
-    {% else %}
       
         {% for domanda, variante in ctx %}
         <p>{{domanda}}{{variante}}</p>
@@ -60,13 +51,12 @@
         <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
   
         {% if ultimo %}
-        <a href= "{% url 'FinishTestOrario' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
+        <a href= "{% url 'FinishTestOrario' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
 
         {% else %}
-        <a href= "{% url 'testStartOrario' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn text-light" type="button" style="background-color: #069901;">PROSEGUI</button></a>
+        <a href= "{% url 'testStartOrario' idGruppi idTest counter displayer %}"  {{idGruppi}} {{idTest}} {{counter}} {{displayer}}><button class="btn text-light" type="button" style="background-color: #069901;">PROSEGUI</button></a>
 
         {% endif%}
-    {% endif %}
 
   
 

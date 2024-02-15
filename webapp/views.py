@@ -62,7 +62,7 @@ def home(req):
     #Test.objects.all().delete()
     #TestsGroup.objects.all().delete()
 
-    display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
 
@@ -75,16 +75,23 @@ def home(req):
     
     gruppi_manuale = []
     gruppi_orario = []
-    
     for test in display_test_manuale:
-        if test['nrTest'] - test['nrGruppo'] > 0:
-            gruppi_manuale.append([test['idGruppi'], test['nrTest'] - test['nrGruppo'], test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
+        count = 0
+        primo_t = test['dataOraInizio'] + timedelta(0,  test['secondiRitardo'] )
+        now = datetime.now()
+        while now > primo_t:
+            count += 1
+            primo_t += timedelta(0,  test['secondiRitardo'] )
+            print(now, primo_t)
+
+        if test['nrTest'] - test['nrGruppo'] - count  > 0:
+            gruppi_manuale.append([test['idGruppi'], test['nrTest'] - test['nrGruppo'] - count, test['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
 
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
 
-    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1]})
+    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0})
 
 
 @login_required(login_url='login')
@@ -93,6 +100,7 @@ def delete_all_user_test(req):
     TestsGroup.objects.filter(utente = req.user.id).delete()
 
     return home(req) 
+
 
 def cancella_un_test(req, idGruppi):
     
@@ -114,12 +122,17 @@ def creazioneTest(req):
 def creaTestManuale(req):
     if req.method == 'POST':
         form = TestManualeForm(req.POST)
+        mutable_data = MultiValueDict(form.data.lists())
+        mutable_data['dataOraInizio'] = reformat_date(mutable_data['dataOraInizio'])
+        form = TestManualeForm(mutable_data) 
+
         if form.is_valid():
             numeroTest = form.cleaned_data['numeroTest']
-            
+            secondiRitardo = form.cleaned_data['secondiRitardo']
+            dataOraInizio = form.cleaned_data['dataOraInizio']
             try:
                 with transaction.atomic():
-                    TestsGroup.objects.create(utente = req.user, tipo='manuale', nrTest =numeroTest)
+                    TestsGroup.objects.create(utente = req.user, tipo='manuale', nrTest =numeroTest, secondiRitardo = secondiRitardo, dataOraInizio = dataOraInizio)
 
                 messages.success(req, 'Test creati con successo.')
 
@@ -238,46 +251,52 @@ def FinishTest(req, idGruppi, idTest):
 
     return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish})
 
-def preTestOrario(req, idGruppi):
+def CreazioneTestOrario(req, idGruppi, counter):
 
-    
+    TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
+    singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
+    domande = Domande.objects.prefetch_related()
+    varianti = Varianti.objects.prefetch_related()
+    app_list = list()
+    for _ in range(15):
+
+        random_domanda = randint(0, len(domande)-1)
+
+
+        random_variante = randint(0, len(varianti) -1)
+
+        app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante]))
+        
+    Test_Domande_Varianti.objects.bulk_create(app_list)
+    return redirect('preTestOrario' , idGruppi = idGruppi, idTest = singolo_test.idTest, counter = counter)
+
+
+def preTestOrario(req, idGruppi, idTest, counter):
+
     tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
-    if tests[0]['dataOraInizio'] is None:
-        print('sono entrato')
-        TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = datetime.now() + timedelta(0,tests[0]['secondiRitardo']))
-        return preTestOrario(req, idGruppi)
+    test = Test.objects.filter(idTest = idTest).values( 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
+    if test[0]['dataOraInizio'] is None:
+        Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now() + timedelta(0,tests[0]['secondiRitardo']))
+        return preTestOrario(req, idGruppi, idTest, counter)
     
     nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
     #singolo_test = Test.objects.filter(idTest = idTest)[0]
 
-    if nrTest > 0 : 
-        if(datetime.now() < tests[0]['dataOraInizio']):
-            print(datetime.now())
-            return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : tests[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
+    if nrTest >= 0 : 
+        if(datetime.now() < test[0]['dataOraInizio']):
+            return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : test[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
         else:
-            TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
-            singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
-            domande = Domande.objects.prefetch_related()
 
-            for _ in range(15):
-
-                random_domanda = randint(0, len(domande)-1)
-
-                varianti = Varianti.objects.filter(domanda = domande[random_domanda])
-
-                random_variante = randint(0, len(varianti) -1)
-
-                Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
-            return redirect('testStartOrario/{}/{}/{}'.format(idGruppi, singolo_test.idTest,0))
+            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0)
     else:
         return cancella_un_test(req, idGruppi)
 
 
-def testStartOrario(req, idGruppi, idTest, counter):
+def testStartOrario(req, idGruppi, idTest, counter, displayer):
     TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = None)
     ultimo = False
     test = Test.objects.filter(idTest = idTest).values('nrGruppo', 'dataOraInizio')[0]
-    if test['nrGruppo'] -1 <= counter:
+    if test['nrGruppo'] -1 <= displayer:
         ultimo = True
     ctx = []
     if test['dataOraInizio'] is None:
@@ -290,16 +309,17 @@ def testStartOrario(req, idGruppi, idTest, counter):
     
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
+    ctx = ctx[(displayer)*5:((displayer+1)*5)]
+    displayer += 1
+    return render(req, 'preTestOrario/TestSelect.html', {'ctx' : ctx,'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer})
+
+def FinishTestOrario(req, idGruppi, idTest, counter):
+
     counter += 1
-    ctx = ctx[(counter-1)*5:((counter)*5)]
-
-    return render(req, 'preTestOrario/TestSelect.html', {'ctx' : ctx,'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter})
-
-def FinishTestOrario(req, idGruppi, idTest):
     end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
-    TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = None)
+    
     tt = Test.objects.filter(idTest = idTest)
     tempo_test_finale = tt[0].dataOraFine.second
     tempo_test_iniziale = tt[0].dataOraInizio.second
@@ -309,7 +329,7 @@ def FinishTestOrario(req, idGruppi, idTest):
     else:
         tempo_finish = tempo_test_finale - tempo_test_iniziale
 
-    return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish})
+    return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'counter' : counter})
 
 def TestProgrammati(req, idTest):
     return HttpResponse(idTest)
