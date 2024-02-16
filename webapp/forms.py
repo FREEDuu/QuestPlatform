@@ -61,8 +61,7 @@ class TestManualeForm(forms.Form):
     
 class TestSfidaManualeForm(forms.Form):
 
-    CHOICES = (('Option 1', 'Option 1'),('Option 2', 'Option 2'),)
-    utenteSfidato = forms.ChoiceField(choices=CHOICES, widget=forms.ChoiceField())
+    utenteSfidato = forms.ChoiceField()
     numeroTest = forms.IntegerField(widget=forms.NumberInput(), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
     
 class TestOrarioEsattoForm(forms.Form):
