@@ -13,6 +13,8 @@ from . import test_common_views
 from ..services import test_manuale_service
 from ..utils import utils
 from django.utils.datastructures import MultiValueDict
+from datetime import datetime, timedelta
+from . import test_common_views
 
 @login_required(login_url='login')
 def creaTestManuale(req):
@@ -103,7 +105,7 @@ def preTest(req, idGruppi, idTest):
 
         else :
 
-            return cancella_un_test(req, idGruppi)
+            return test_common_views.cancella_un_test(req, idGruppi)
     else : 
         
         return render(req, 'preTest/preTest.html', {'time_display' : singolo_test.dataOraInizio.strftime("%Y-%m-%d %H:%M:%S")})
