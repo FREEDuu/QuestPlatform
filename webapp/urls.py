@@ -6,6 +6,7 @@ urlpatterns = [
     path('login/' , views.log_in, name= 'login'),
     path('' , views.home, name= 'home'),
     path('home' , views.home, name= 'home'),
+    path('testCollettivi' , views.testCollettivi, name= 'testCollettivi'),
     path('creazione-test' , views.creazioneTest, name= 'test'),
     path('crea-test-manuale' , views.creaTestManuale, name= 'creaTestManuale'),
     path('crea-test-sfida-manuale' , views.creaTestSfidaManuale, name= 'creaTestSfidaManuale'),

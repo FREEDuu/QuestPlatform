@@ -54,7 +54,9 @@ def log_in(req):
             
     return render(req, "login/login.html")
 
+def testCollettivi(req):
 
+    return render(req, 'test/testCollettivi.html')
 # HOME
 @login_required(login_url='login')
 def home(req):
@@ -196,7 +198,7 @@ def TestStart(req, idGruppi, idTest, counter):
     ctx = []
     
     ultimo = False
-    if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] <= counter:
+    if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
         ultimo = True
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
     
@@ -212,6 +214,7 @@ def TestStart(req, idGruppi, idTest, counter):
     return render(req, 'preTest/TestSelect.html', {'ctx' : ctx,'idGruppi' : idGruppi,'idTest' : idTest, 'ultimo': ultimo, 'counter' : counter})
 
 def preTest(req, idGruppi, idTest):
+
     singolo_test =  Test.objects.filter(idTest = idTest)[0]
 
     if datetime.now() > singolo_test.dataOraInizio:
@@ -220,19 +223,23 @@ def preTest(req, idGruppi, idTest):
         tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'inSequenza', 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
         nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
         
-        if(nrTest > 0):
+        if(nrTest >= 0):
             
             domande = Domande.objects.prefetch_related()
-            
+            varianti = Varianti.objects.prefetch_related()
+
+            app_list = list()
+
             # Associa domande casuali con la relativa variante casuale al nuovo test creato
             for _ in range(15):
 
                 random_domanda = randint(0, len(domande)-1)
 
-                varianti = Varianti.objects.filter(domanda = domande[random_domanda])
                 random_variante = randint(0, len(varianti) -1)
 
-                Test_Domande_Varianti.objects.create(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
+                app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante]))
+        
+            Test_Domande_Varianti.objects.bulk_create(app_list)
 
             return redirect('TestStart' , idGruppi = idGruppi, idTest = idTest, counter = 0)
 
@@ -246,9 +253,12 @@ def preTest(req, idGruppi, idTest):
 
 
 def FinishTest(req, idGruppi, idTest):
+        
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('dataOraInizio', 'secondiRitardo')[0]
 
     test_finito = Test.objects.filter(idTest = idTest).values('dataOraInizio', 'secondiRitardo')[0]
-    id_next_test = Test.objects.create(utente = req.user, dataOraInizio = test_finito['dataOraInizio'] + timedelta(0, test_finito['secondiRitardo']))
+    id_next_test = Test.objects.create(utente = req.user, dataOraInizio = test_finito['dataOraInizio'] + timedelta(0, tests['secondiRitardo']), nrGruppo = randint(2,3))
+    TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = id_next_test.dataOraInizio)
     end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
@@ -261,7 +271,7 @@ def FinishTest(req, idGruppi, idTest):
     else:
         tempo_finish = tempo_test_finale - tempo_test_iniziale
 
-    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'idTest' : id_next_test.idTest})
+    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'idTest' : id_next_test.idTest })
 
 def CreazioneTestOrario(req, idGruppi, counter):
 
