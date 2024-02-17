@@ -3,7 +3,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import F
 from webapp.models import Test 
 from django.contrib.auth import authenticate, login, logout 
-from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm
+from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormTestCollettivi, FormDomandaCollettiva
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,9 @@ from ..models import *
 from django.core.serializers import serialize
 from datetime import datetime, timedelta
 from random import randint
+from django.utils.datastructures import MultiValueDict
+from ..utils import utils
+
 
 
 # LOGIN
@@ -106,4 +109,42 @@ def Sfida(req):
 
 def testCollettivi(req):
 
-    return render(req, 'test/testCollettivi.html')
+    ctx = {'form' : FormTestCollettivi(), 'prima' : True}
+
+    return render(req, 'test/testCollettivi.html', ctx)
+
+def creaTestCollettivo(req):
+
+    if req.method == 'POST':
+
+        form = FormTestCollettivi(req.POST)
+        mutable_data = MultiValueDict(form.data.lists())
+        mutable_data['ora'] = utils.reformat_date(mutable_data['ora'])
+        form = FormTestCollettivi(mutable_data) 
+        if form.is_valid():
+
+            nPagine = form.cleaned_data['nPagine']
+            dataOraInizio = form.cleaned_data['ora']
+            #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
+            
+            return render(req, 'test/testCollettivi.html', {'domande' : range(1, nPagine+1)})
+        else: 
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.warning(req, f"Errore: {error}")
+            print(form.errors)
+            return testCollettivi(req)
+
+def creaTestCollettivoDisplay(req):
+    if req.method == 'POST':
+
+        form = FormDomandaCollettiva(req.POST)
+        if form.is_valid():
+
+            domanda = form.cleaned_data['Domanda']
+            risposta = form.cleaned_data['Risposta']
+            varianti = form.cleaned_data['Varianti']
+            print(domanda, risposta, varianti)
+            return HttpResponse(risposta+varianti+domanda)
+
+    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva()})

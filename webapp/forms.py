@@ -24,6 +24,31 @@ class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput)
 
+class FormTestCollettivi(forms.Form):
+    
+    nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages)
+    ora = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={
+            "class": "form-control",
+            "data-field": "datetime",
+            "required": "required",
+            "name": "dataOraInizio", 
+            "type": "text",
+        }), label = False)
+    def clean_dataOraInizio(self):
+        input_date = self.cleaned_data.get('dataOraInizio')
+        if input_date:
+            if input_date < timezone.now():
+                raise ValidationError("La data deve essere nel futuro.")
+            return input_date
+        return None
+
+class FormDomandaCollettiva(forms.Form):
+    
+    tipo = forms.CharField()
+    Domanda = forms.CharField()
+    Risposta = forms.CharField()
+    Varianti = forms.CharField()
 
 class GruppiForm(forms.Form):
 
