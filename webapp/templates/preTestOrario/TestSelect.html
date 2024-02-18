@@ -32,56 +32,43 @@
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
 
-          
-        
-        
-
   
         {% if ultimo %}
-        <form action="{% url 'FinishTestOrario' idGruppi idTest counter %}" {{idGruppi}} {{idTest}} {{counter}} method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-            {% for domanda, variante in ctx %}
-            <p>{{domanda}}{{variante}}</p>
-            <div class="input-group mb-4">
-                <select class="form-select" id="inputGroupSelect01">
-                  <option selected>{{variante}}</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-              </div>
-              {% endfor %}
-              <button class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+        {% for domanda, variante, varianti, form in ctx %}
+            {% csrf_token %}
 
-        </form>     
+            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest counter %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} >
+                <h5>{{domanda}}{{variante}}</h5>
+
+                {{form}}
+                <p></p>
+            {% endfor %}
+                <p></p>
+        <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+
 
         {% else %}
-        <form action="{% url 'testStartOrario' idGruppi idTest counter displayer %}"  {{idGruppi}} {{idTest}} {{counter}} {{displayer}} method="POST">
-            {% csrf_token %}
-            {{ form.as_p }}
-            
-            {% for domanda, variante in ctx %}
-            <p>{{domanda}}{{variante}}</p>
-            <div class="input-group mb-4">
-                <select class="form-select" id="inputGroupSelect01">
-                  <option selected>{{variante}}</option>
-                  <option value="1">One</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
-                </select>
-              </div>
-              {% endfor %}
-              <button class="btn text-light" type="submit" style="background-color: #069901;">PROSEGUI</button>
 
-        </form>     
+            {% for domanda, variante, varianti, form in ctx %}
+            {% csrf_token %}
+
+            <form method="post" action = "{% url 'testStartOrario' idGruppi idTest counter displayer %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} >
+                <h5>{{domanda}}{{variante}}</h5>
+
+                {{form}}
+                <p></p>
+                {% endfor %}
+                <p></p>
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+            
+
+            </form>     
 
 
         {% endif%}
 
     <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
-
-
 </div>
 <footer class="footer" id="sticky-footer">
     <div class="it-footer-main" style="background: #022d5e; color: #fff;">

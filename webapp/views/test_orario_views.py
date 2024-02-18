@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
 from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti
-from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, GruppiForm
+from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, GruppiForm, FormDomandaCollettiva, FormDomanda
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,6 +11,9 @@ from django.db import transaction
 from ..models import *
 from random import randint
 from . import test_common_views
+from django.forms import formset_factory
+
+
 
 @login_required(login_url='login')
 def creaTestOrarioEsatto(req):
@@ -52,6 +55,7 @@ def CreazioneTestOrario(req, idGruppi, counter):
     domande = Domande.objects.prefetch_related()
     varianti = Varianti.objects.prefetch_related()
     app_list = list()
+
     for _ in range(15):
 
         random_domanda = randint(0, len(domande)-1)
@@ -98,25 +102,26 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
     if test['dataOraInizio'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
+
+    init = []
+
+    forms = FormDomanda(15)
+    for n in range(len(test_to_render)):
+        ctx.append([test_to_render[n].domanda, test_to_render[n].variante, ['caio','ciao'], forms['domanda_{}'.format(n)]])
     
-    for domanda in test_to_render:
-        
-        ctx.append([domanda.domanda, domanda.variante])
-    
+
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+    
 
-    ctx = ctx[(displayer)*5:((displayer+1)*5)]
-    displayer += 1
+
     if req.method == 'POST':
-        form = GruppiForm(req.POST, 15, idTest)
-        if form.is_valid():
-            for i in range(len(form)):
-                risposta = form.cleaned_data['domanda_{}'.format(i)]
-                print(form)
-        else:
-            print('amamamama')
-    return render(req, 'preTestOrario/TestSelect.html', {'ctx' : ctx,'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer})
-
+        
+        for i in range((displayer-1)*5, ((displayer)*5)):
+            if req.POST['domanda_{}'.format(i)] != ctx[i][1]:
+                print((ctx[i][1]))
+            
+    displayer += 1
+    return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] })
 
 
 def FinishTestOrario(req, idGruppi, idTest, counter):

@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from .models import *
 from  random import randint, random
 import string
+
 def Create_other_var(array):
 
     for _ in range(randint(4,10)):
@@ -42,6 +43,24 @@ class FormTestCollettivi(forms.Form):
                 raise ValidationError("La data deve essere nel futuro.")
             return input_date
         return None
+    
+
+class FormDomanda(forms.Form):
+    
+    def __init__(self, nDomande, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.domande = nDomande
+        for i in range(nDomande):
+            field_name = 'domanda_%s' % (i,)
+            self.fields[field_name] = forms.CharField(required=True)
+        # create an extra blank field
+            
+    def get_interest_fields(self):
+        ret = []
+        for field_name in self.fields:
+            print(self[field_name])
+            yield self[field_name]
+    
 
 class FormDomandaCollettiva(forms.Form):
     
@@ -66,7 +85,7 @@ class GruppiForm(forms.Form):
     
 class TestManualeForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(30)], error_messages=messages)
+    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(30)], error_messages=messages, initial = 30)
     dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={
             "class": "form-control",
@@ -91,7 +110,7 @@ class TestSfidaManualeForm(forms.Form):
     
 class TestOrarioEsattoForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
+    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages, initial= 5)
         
 class TestSfidaOrarioEsattoForm(forms.Form):
     utenteSfidato = forms.CharField()
