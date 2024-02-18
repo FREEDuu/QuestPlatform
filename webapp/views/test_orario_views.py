@@ -54,6 +54,7 @@ def CreazioneTestOrario(req, idGruppi, counter):
     singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
     domande = Domande.objects.prefetch_related()
     varianti = Varianti.objects.prefetch_related()
+    print(varianti)
     app_list = list()
 
     for _ in range(15):
@@ -103,8 +104,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
         Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
 
-    init = []
-
     forms = FormDomanda(15)
     for n in range(len(test_to_render)):
         ctx.append([test_to_render[n].domanda, test_to_render[n].variante, ['caio','ciao'], forms['domanda_{}'.format(n)]])
@@ -118,7 +117,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
         
         for i in range((displayer-1)*5, ((displayer)*5)):
             if req.POST['domanda_{}'.format(i)] != ctx[i][1]:
-                print((ctx[i][1]))
+                print((ctx[i][1]), i)
             
     displayer += 1
     return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] })

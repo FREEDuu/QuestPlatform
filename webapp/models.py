@@ -3,10 +3,12 @@ from django.contrib.auth.models import User
 from django.db.models import Max
 
 class Domande(models.Model):
+
     idDomanda = models.AutoField(primary_key=True)
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
-    
+    tipo = models.CharField(max_length=100, default = 't')
+
     def __str__(self):
         return self.corpo
     
@@ -18,10 +20,13 @@ class Domande(models.Model):
 
 
 class Varianti(models.Model):
+
     idVariante = models.AutoField(primary_key=True)
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
+    rispostaEsatta = models.CharField(max_length=100 , default = '')  
+
 
     def __str__(self):
         return self.corpo

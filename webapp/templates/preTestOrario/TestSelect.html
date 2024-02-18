@@ -39,8 +39,7 @@
             {% csrf_token %}
 
             <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest counter %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} >
-                <h5>{{domanda}}{{variante}}</h5>
-
+                <h6 class="p-2">{{domanda}} {{variante}}   </h6>
                 {{form}}
                 <p></p>
             {% endfor %}
@@ -54,7 +53,7 @@
             {% csrf_token %}
 
             <form method="post" action = "{% url 'testStartOrario' idGruppi idTest counter displayer %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} >
-                <h5>{{domanda}}{{variante}}</h5>
+                <h6 class="p-2">{{domanda}}{{variante}}  </h6>
 
                 {{form}}
                 <p></p>
