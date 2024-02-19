@@ -31,24 +31,18 @@
 
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
-
-    
-
-
       
         {% for domanda, varianti, risposta in ctx %}
-        <p>{{domanda}}{{risposta}}</p>
-        <div class="input-group mb-4">
-            <select class="form-select" id="inputGroupSelect01">
-              {% for variante in varianti %}
-              <option >{{variante}}</option>
-              {% endfor %}
-            
-            </select>
-          </div>
-          
-        
-        
+
+            <p>{{domanda}}{{risposta}}</p>
+            <div class="input-group mb-4">
+                <select class="form-select" id="inputGroupSelect01">
+                {% for variante in varianti %}
+                <option >{{variante}}</option>
+                {% endfor %}
+                
+                </select>
+            </div>
 
         {% endfor %}
           

@@ -107,7 +107,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
     forms = FormDomanda(15)
     for n in range(len(test_to_render)):
         ctx.append([test_to_render[n].domanda, test_to_render[n].variante, ['caio','ciao'], forms['domanda_{}'.format(n)]])
-    
 
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
     
@@ -142,10 +141,14 @@ def FinishTestOrario(req, idGruppi, idTest, counter):
     return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'counter' : counter})
 
 
+
+
+
 ##### SFIDA #####
 
 @login_required(login_url='login')
 def creaTestSfidaOrarioEsatto(req):
+    
     if req.method == 'POST':
         form = TestSfidaOrarioEsattoForm(req.POST)
         if form.is_valid():

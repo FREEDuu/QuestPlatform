@@ -10,7 +10,6 @@ from django.db import transaction
 from ..models import *
 from random import randint
 from . import test_common_views
-from ..services import test_manuale_service
 from ..utils import utils
 from django.utils.datastructures import MultiValueDict
 from datetime import datetime, timedelta
