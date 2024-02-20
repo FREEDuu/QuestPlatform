@@ -10,9 +10,12 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from ..models import *
 from random import randint
+import random
 from . import test_common_views
-from django.forms import formset_factory
 
+def genRandomFromSeed(seed, rispostaGiusta):
+    random.seed(seed)
+    return [(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))), ('1', rispostaGiusta)], seed+1
 
 
 @login_required(login_url='login')
@@ -50,6 +53,7 @@ def creaTestOrarioEsatto(req):
 
 def CreazioneTestOrario(req, idGruppi, counter):
 
+
     TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
     singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
     domande = Domande.objects.prefetch_related()
@@ -61,8 +65,7 @@ def CreazioneTestOrario(req, idGruppi, counter):
 
         random_domanda = randint(0, len(domande)-1)
 
-
-        random_variante = randint(0, len(varianti) -1)
+        random_variante = randint(0, len(domande)-1)
 
         app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante]))
         
@@ -87,12 +90,12 @@ def preTestOrario(req, idGruppi, idTest, counter):
             return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : test[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
         else:
 
-            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0)
+            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0, seed = randint(0,1000))
     else:
         return test_common_views.cancella_un_test(req, idGruppi)
 
 
-def testStartOrario(req, idGruppi, idTest, counter, displayer):
+def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
 
     TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = None)
     ultimo = False
@@ -103,10 +106,10 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
     if test['dataOraInizio'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
-
     forms = FormDomanda(15)
     for n in range(len(test_to_render)):
-        ctx.append([test_to_render[n].domanda, test_to_render[n].variante, ['caio','ciao'], forms['domanda_{}'.format(n)]])
+        forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+        ctx.append([test_to_render[n].domanda, test_to_render[n].variante,forms['domanda_{}'.format(n)]])
 
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
     
@@ -116,10 +119,9 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer):
         
         for i in range((displayer-1)*5, ((displayer)*5)):
             if req.POST['domanda_{}'.format(i)] != ctx[i][1]:
-                print((ctx[i][1]), i)
-            
+                pass
     displayer += 1
-    return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] })
+    return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] , 'seed' : seed})
 
 
 def FinishTestOrario(req, idGruppi, idTest, counter):

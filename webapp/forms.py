@@ -52,7 +52,8 @@ class FormDomanda(forms.Form):
         self.domande = nDomande
         for i in range(nDomande):
             field_name = 'domanda_%s' % (i,)
-            self.fields[field_name] = forms.CharField(required=True)
+            self.fields[field_name] = forms.ChoiceField(widget = forms.Select(), 
+                 choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
         # create an extra blank field
             
     def get_interest_fields(self):
