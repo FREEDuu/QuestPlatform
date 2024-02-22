@@ -10,7 +10,7 @@ class Domande(models.Model):
     tipo = models.CharField(max_length=100, default = 't')
 
     def __str__(self):
-        return self.corpo + str(self.idDomanda)
+        return self.corpo 
     
     #@classmethod: when this method is called, we pass the class as the first argument instead of the instance of that class
     @classmethod

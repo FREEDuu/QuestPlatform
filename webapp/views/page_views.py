@@ -46,7 +46,7 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
     #Varianti.objects.all().delete()
-    #Domande.objects.all().delete()
+    #Domande.objects.filter(tipo = 's').delete()
     display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')

@@ -35,10 +35,10 @@
   
         {% if ultimo %}
         {% csrf_token %}
-        {% for domanda, variante, form in ctx %}
+        {% for domanda, variante, form, corretto in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest counter  %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}}  >
+            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest counter  %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}}  novalidate>
                 <h6 class="p-2">{{domanda}} {{variante}}   </h6>
                 {{form}}
                 <p></p>
@@ -49,12 +49,14 @@
 
         {% else %}
 
-            {% for domanda, variante, form in ctx %}
+            {% for domanda, variante, form, corretto in ctx %}
             {% csrf_token %}
 
             <form method="post" action = "{% url 'testStartOrario' idGruppi idTest counter displayer seed%}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
                 <h6 class="p-2">{{domanda}}{{variante}}  </h6>
-
+                {% if corretto %}
+                    <h5>sbagliata</h5>
+                {% endif%}
                 {{form}}
                 <p></p>
                 {% endfor %}

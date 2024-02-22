@@ -47,14 +47,19 @@ class FormTestCollettivi(forms.Form):
 
 class FormDomanda(forms.Form):
     
-    def __init__(self, nDomande, *args, **kwargs):
+    def __init__(self, domande, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.domande = nDomande
-        for i in range(nDomande):
+        self.domande = domande
+        for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
-            self.fields[field_name] = forms.ChoiceField(widget = forms.Select(), 
+            if domande[i] == 't':
+                self.fields[field_name] = forms.CharField()
+            elif domande[i] == 'c':
+                self.fields[field_name] = forms.CheckboxInput() 
+                ##da vedere !!
+            else:
+                self.fields[field_name] = forms.ChoiceField(widget = forms.Select(), 
                  choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
-        # create an extra blank field
             
     def get_interest_fields(self):
         ret = []
