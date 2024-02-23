@@ -38,7 +38,7 @@
         {% for domanda, variante, form, corretto in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest counter  %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}}  novalidate>
+            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest displayer counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
                 <h6 class="p-2">{{domanda}} {{variante}}   </h6>
                 {{form}}
                 <p></p>
@@ -46,7 +46,7 @@
                 <p></p>
         <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
 
-
+    </form>    
         {% else %}
 
             {% for domanda, variante, form, corretto in ctx %}

@@ -90,7 +90,7 @@ def preTestOrario(req, idGruppi, idTest, counter):
             return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : test[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
         else:
 
-            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 1, seed = randint(0,1000))
+            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0, seed = randint(0,1000))
     else:
         return test_common_views.cancella_un_test(req, idGruppi)
 
@@ -108,7 +108,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
     if req.method == 'POST':
         ctx = []
         formRisposta = FormDomanda(domande_to_render, req.POST)
-        for n in range((displayer-1)*5, ((displayer)*5)):
+        for n in range((displayer)*5, ((displayer+1)*5)):
 
             if req.POST['domanda_{}'.format(n)] != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True])
@@ -120,7 +120,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
                 check = True
         if check:
             print('QUII')
-            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] , 'seed' : seed})
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
         else : 
             ctx = []
             if test['dataOraInizio'] is None:
@@ -133,7 +133,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
 
                 #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
             displayer += 1
-            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] , 'seed' : seed})
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
 
     else:
 
@@ -153,11 +153,36 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
 
             #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
 
-        return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer-1)*5:(displayer)*5] , 'seed' : seed})
+        return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
 
 
-def FinishTestOrario(req, idGruppi, idTest, counter):
+def FinishTestOrario(req, idGruppi, idTest,displayer, counter, seed):
+    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
+    test_to_render1 = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda')
+    domande_to_render = []
+    ultimo = False
+    test = Test.objects.filter(idTest = idTest).values('nrGruppo', 'dataOraInizio')[0]
+    if test['nrGruppo'] <= displayer:
+        ultimo = True
+    for d in test_to_render1:
+        domande_to_render.append(Domande.objects.filter(idDomanda = d.domanda.idDomanda).values('tipo')[0]['tipo'])
+    if req.method == 'POST':
+        ctx = []
+        formRisposta = FormDomanda(domande_to_render, req.POST)
+        for n in range((displayer)*5, ((displayer+1)*5)):
 
+            if req.POST['domanda_{}'.format(n)] != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True])
+            else : 
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False])
+        check = False
+        for el in ctx:
+            if el[3] == True:
+                check = True
+        if check:
+            print('QUII')
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
+        
     counter += 1
     end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
     if end['dataOraFine'] is None:
