@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.db.models import F
 from django.shortcuts import render, HttpResponse, redirect
 from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti
-from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, GruppiForm, FormDomandaCollettiva, FormDomanda
+from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormDomandaCollettiva, FormDomanda
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,7 +16,9 @@ from django.db.models.query import QuerySet
 
 def genRandomFromSeed(seed, rispostaGiusta):
     random.seed(seed)
-    return [(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))),(str(randint(0,111)), str(randint(0,456))), ('1', rispostaGiusta)], seed+1
+    ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),('3', str(rispostaGiusta))]
+    random.shuffle(ret)
+    return ret , seed+1
 
 
 @login_required(login_url='login')
@@ -108,9 +110,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
     if req.method == 'POST':
         ctx = []
         formRisposta = FormDomanda(domande_to_render, req.POST)
+        
         for n in range((displayer)*5, ((displayer+1)*5)):
-
+      
             if req.POST['domanda_{}'.format(n)] != test_to_render[n].variante.rispostaEsatta:
+                print(req.POST['domanda_{}'.format(n)] , test_to_render[n].variante.rispostaEsatta)
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True])
             else : 
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False])
@@ -118,15 +122,18 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
         for el in ctx:
             if el[3] == True:
                 check = True
+
         if check:
-            print('QUII')
+            for n in range(len(test_to_render)):
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+          
             return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
         else : 
             ctx = []
             if test['dataOraInizio'] is None:
                 Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
 
-            forms = FormDomanda(domande_to_render)
+            
             for n in range(len(test_to_render)):
                 forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante,forms['domanda_{}'.format(n)], False])
@@ -147,12 +154,12 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
             Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now())
 
         forms = FormDomanda(domande_to_render)
+
         for n in range(len(test_to_render)):
             forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante,forms['domanda_{}'.format(n)], False])
 
             #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
-
         return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
 
 

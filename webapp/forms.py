@@ -49,7 +49,6 @@ class FormDomanda(forms.Form):
     
     def __init__(self, domande, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.domande = domande
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
@@ -59,7 +58,7 @@ class FormDomanda(forms.Form):
                 ##da vedere !!
             else:
                 self.fields[field_name] = forms.ChoiceField(widget = forms.Select(), 
-                 choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
+                choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
             
     def get_interest_fields(self):
         ret = []
@@ -74,19 +73,6 @@ class FormDomandaCollettiva(forms.Form):
     Domanda = forms.CharField()
     Risposta = forms.CharField()
     Varianti = forms.CharField()
-
-class GruppiForm(forms.Form):
-
-    def __init__(self,req, nDomande, idTest):
-        super().__init__()
-
-        domande = Test_Domande_Varianti.objects.filter(
-            test = idTest
-        )
-
-        for i in range(len(domande)):
-            field_name = 'domanda_%s' % (i,)
-            self.fields[field_name] = forms.ChoiceField(required=True, choices = ())
 
     
 class TestManualeForm(forms.Form):
