@@ -102,8 +102,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
 
     ultimo = False
     test = Test.objects.filter(idTest = idTest).values('nrGruppo', 'dataOraInizio')[0]
-    if test['nrGruppo'] -1 <= displayer:
-        ultimo = True
+    
 
     for d in test_to_render1:
         domande_to_render.append(Domande.objects.filter(idDomanda = d.domanda.idDomanda).values('tipo')[0]['tipo'])
@@ -112,33 +111,34 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
 
         formRisposta = FormDomanda(domande_to_render, req.POST)
         check = False
-        for n in range((displayer-1)*5, ((displayer)*5)):
+        for n in range((displayer)*5, ((displayer+1)*5)):
       
             if req.POST['domanda_{}'.format(n)] != test_to_render[n].variante.rispostaEsatta:
-                if n >= displayer *5 and n < (displayer+1) * 5 :
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True])
-                    check = True
+                
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+                check = True
+                print('enrtr')
             else :
-                if n >= displayer *5 and n < (displayer+1) * 5 : 
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False])
+                
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
 
         if check:
-            for n in range(len(test_to_render)):
-                if n >= displayer *5 and n < (displayer+1) * 5 :
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+            for n in range((displayer)*5, ((displayer+1)*5)):
+                
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
           
-            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : test['nrGruppo'], 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
         else : 
-            
-            for n in range(len(test_to_render)):
-                if n >= displayer *5 and n < (displayer+1) * 5 :
-
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False])
-
-                #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
+            ctx = []
             displayer += 1
-            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
+            for n in range((displayer)*5, ((displayer+1)*5)):
+                
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n) ])
+            print(ctx)
+                #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
+            
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : test['nrGruppo'], 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
 
     else:
 
@@ -147,10 +147,10 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer , seed):
         for n in range(len(test_to_render)):
             if n >= displayer *5 and n < (displayer+1) * 5 : 
                 forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,forms['domanda_{}'.format(n)], False])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,forms['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
 
             #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale)
-        return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer+1, 'ctx' : ctx , 'seed' : seed})
+        return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : test['nrGruppo'], 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
 
 
 def FinishTestOrario(req, idGruppi, idTest,displayer, counter, seed):
@@ -158,27 +158,28 @@ def FinishTestOrario(req, idGruppi, idTest,displayer, counter, seed):
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
     test_to_render1 = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda')
     domande_to_render = []
-    ultimo = False
-    test = Test.objects.filter(idTest = idTest).values('nrGruppo', 'dataOraInizio')[0]
-    if test['nrGruppo'] -1 == displayer:
-        ultimo = True
+   
     for d in test_to_render1:
         domande_to_render.append(Domande.objects.filter(idDomanda = d.domanda.idDomanda).values('tipo')[0]['tipo'])
     if req.method == 'POST':
         ctx = []
         formRisposta = FormDomanda(domande_to_render, req.POST)
         check = False
-        for n in range((displayer-1)*5, ((displayer)*5)):
+        for n in range((displayer)*5, ((displayer+1)*5)):
 
             if req.POST['domanda_{}'.format(n)] != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
                 check = True
             else : 
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante,formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
         
         if check:
-            print('QUII')
-            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : ultimo, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx[(displayer)*5:(displayer+1)*5] , 'seed' : seed})
+            
+            for n in range((displayer)*5, ((displayer+1)*5)):
+                
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+            print(ctx)
+            return render(req, 'preTestOrario/TestSelect.html', {'idGruppi' : idGruppi, 'ultimo' : True, 'idTest' : idTest, 'counter' : counter, 'displayer' : displayer, 'ctx' : ctx , 'seed' : seed})
         
     counter += 1
     end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
