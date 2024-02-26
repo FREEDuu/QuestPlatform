@@ -31,33 +31,49 @@
 
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
-      
-        {% for domanda, varianti, risposta in ctx %}
-
-            <p>{{domanda}}{{risposta}}</p>
-            <div class="input-group mb-4">
-                <select class="form-select" id="inputGroupSelect01">
-                {% for variante in varianti %}
-                <option >{{variante}}</option>
-                {% endfor %}
-                
-                </select>
-            </div>
-
-        {% endfor %}
-          
-        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
-          {% if ultimo %}
-          <a href= "{% url 'FinishTest' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
-
-          {% else %}
-          <a href= "{% url 'TestStart' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn text-light" type="button" style="background-color: #069901;">PROSEGUI</button></a>
-
-          {% endif%}
-
 
   
+        {% if ultimo <= displayer %}
+        {% csrf_token %}
+        {% for domanda, variante, form, corretto, dom in ctx %}
+            {% csrf_token %}
 
+            <form method="post" action = "{% url 'FinishTestOrario' idGruppi idTest displayer counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
+                <h6 class="p-2">{{domanda}} {{variante}} {{dom}}  </h6>
+                {% if corretto %}
+                    <h5>sbagliata</h5>
+                    {% endif%}
+
+                {{form}}
+                <p></p>
+            {% endfor %}
+                <p></p>
+        <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+
+    </form>    
+        {% else %}
+
+            {% for domanda, variante, form, corretto, dom in ctx %}
+            {% csrf_token %}
+
+            <form method="post" action = "{% url 'testStartOrario' idGruppi idTest counter displayer seed%}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
+                <h6 class="p-2">{{domanda}}{{variante}}{{dom}}  </h6>
+                {% if corretto %}
+                    <h5>sbagliata</h5>
+                {% endif%}
+                {{form}}
+                <p></p>
+                {% endfor %}
+                <p></p>
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+            
+
+            </form>     
+
+
+        {% endif%}
+
+    <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 </div>
 <footer class="footer" id="sticky-footer">
     <div class="it-footer-main" style="background: #022d5e; color: #fff;">

@@ -36,7 +36,13 @@
 </header>
 <main class="container">
 
+    {% if nrTest < 0 %}
+          
+    <h1>GRUPPO FINITO !!</h1>
+    <p></p>
+    <a href= "{% url 'cancella_un_test' idGruppi %}" {{idGruppi}}><button class="btn btn-primary " type="button" style="background-color: #022d5e;">Home</button></a>
 
+    {% else %}
       
     <div class="p-3">
         <div class="container-fluid ">
@@ -45,14 +51,14 @@
         </div>
       </div>
           <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
-            <h6>L'invio della domanda potrà essere effettuato a partire dalle ore {{time_display}}</h6>
+            <h6>L'invio della domanda potrà essere effettuato a partire dalle {{time_display}}</h6>
             <h6>premere il pulsante RICARICA per il refresh della pagina</h6>
-            <button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+            <a><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e; " onclick="location.reload()">RICARICA</button></a>
     
       </div>
     
+    {% endif %}
 
-  
 </main>
 
 <footer class="footer" id="sticky-footer">
