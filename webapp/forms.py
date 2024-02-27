@@ -105,7 +105,7 @@ class TestOrarioEsattoForm(forms.Form):
         
 class TestSfidaOrarioEsattoForm(forms.Form):
 
-    utente = forms.ChoiceField(widget = forms.Select(), required = True,)
+    utente = forms.ChoiceField(widget = forms.Select(attrs={"class": "form-control"}), required = True,)
     
     dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={
