@@ -31,32 +31,56 @@
 
 <div class=" container-xl mb-5 p-5" style="background: #dfdfdf;">
     <h4>INSERIMENTO DATI</h4>
-      
-        {% for domanda, varianti, risposta in ctx %}
-
-            <p>{{domanda}}{{risposta}}</p>
-            <div class="input-group mb-4">
-                <select class="form-select" id="inputGroupSelect01">
-                {% for variante in varianti %}
-                <option >{{variante}}</option>
-                {% endfor %}
-                
-                </select>
-            </div>
-
-        {% endfor %}
-          
-        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
-          {% if ultimo %}
-          <a href= "{% url 'FinishTest' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn text-light" type="button" style="background-color: #069901;">AVANTI</button></a>
-
-          {% else %}
-          <a href= "{% url 'TestStart' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn text-light" type="button" style="background-color: #069901;">PROSEGUI</button></a>
-
-          {% endif%}
-
 
   
+        {% if ultimo %}
+        {% csrf_token %}
+        {% for domanda, variante, form, corretto, dom in ctx %}
+            {% csrf_token %}
+
+            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
+                <div class="{% if corretto %} border border-danger
+                {% endif%}">
+
+              
+                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                
+                {{form}}
+            </div>
+                <p></p>
+            {% endfor %}
+                <p></p>
+        <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
+
+    </form>    
+        {% else %}
+
+            {% for domanda, variante, form, corretto, dom in ctx %}
+            {% csrf_token %}
+
+            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed%}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
+                <div class="{% if corretto %}border border-danger
+                {% endif%}">
+
+              
+                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                
+
+                {{form}}
+            </div>
+                <p></p>
+                {% endfor %}
+
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+            
+              <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
+            </form>     
+
+
+        {% endif%}
 
 </div>
 <footer class="footer" id="sticky-footer">

@@ -14,12 +14,12 @@ import random
 from . import test_common_views
 from django.db.models.query import QuerySet
 
+
 def genRandomFromSeed(seed, rispostaGiusta):
     random.seed(seed)
     ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
     random.shuffle(ret)
     return ret , seed+1
-
 
 @login_required(login_url='login')
 def creaTestOrarioEsatto(req):

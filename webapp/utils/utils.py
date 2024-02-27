@@ -16,9 +16,8 @@ def reformat_date(input_date):
         raise ValueError("Tipo di input non supportato per formattazione data")
 
 
-def Create_other_var(array):
-
-    for _ in range(randint(4,10)):
-        array.append(''.join(random.choices(string.ascii_lowercase, k=randint(6,13))))
-
-    return array
+def genRandomFromSeed(seed, rispostaGiusta):
+    random.seed(seed)
+    ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
+    random.shuffle(ret)
+    return ret , seed+1
