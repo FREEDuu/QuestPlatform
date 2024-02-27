@@ -52,12 +52,11 @@ class FormDomanda(forms.Form):
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
-                self.fields[field_name] = forms.CharField()
+                self.fields[field_name] = forms.CharField(widget = forms.TextInput(attrs={"class": "form-control"}))
             elif domande[i] == 'c':
-                self.fields[field_name] = forms.CheckboxInput() 
-                ##da vedere !!
+                self.fields[field_name] = forms.ChoiceField(widget = forms.RadioSelect(attrs={"class": "forms-control"})) 
             else:
-                self.fields[field_name] = forms.ChoiceField(widget = forms.Select(), 
+                self.fields[field_name] = forms.ChoiceField(widget = forms.Select(attrs={"class": "form-control"}), 
                 choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
             
     def get_interest_fields(self):

@@ -39,23 +39,20 @@
             {% csrf_token %}
 
             <form method="post" action = "{% url 'testStartOrario' idGruppi idTest displayer counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
-                <div class="{% if corretto %} border border-danger
-                {% endif%}">
+                <div class="{% if corretto %} border border-danger {% endif%}">
 
-              
                 <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
-                
 
                 {{form}}
             </div>
-                <p></p>
-            {% endfor %}
-                <p></p>
+            <p></p>
+        {% endfor %}
+        <p></p>
         <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
         <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
+    </form>
 
-    </form>    
         {% else %}
 
             {% for domanda, variante, form, corretto, dom in ctx %}
@@ -66,7 +63,7 @@
                 {% endif%}">
 
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2">{{domanda}} {{variante}} {{dom}}  </h6>
                 
 
                 {{form}}
