@@ -48,7 +48,7 @@ class Test(models.Model):
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza} |  dataOraInserimento: {self.dataOraInserimento}'
+        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza} |  dataOraInserimento: {self.dataOraFine}'
 
     @classmethod
     def get_next_gruppo(cls):

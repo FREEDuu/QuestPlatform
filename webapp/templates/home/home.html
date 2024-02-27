@@ -43,9 +43,9 @@
                                              
                                               <strong class="m-1"> Test creato il {{data}}</strong>
 
-                                              
+                                            </div> 
                                               <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
-                                                <div class="">
+                                                <div class="float-end">
                                                   <button class="btn btn-danger float-end m-2">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                                       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
@@ -55,14 +55,14 @@
                                                 </div>
                                               </a>
 
-                                              <a class="" href="{% url 'CreazioneTestOrario' idGruppi zero %} " {{idGruppi}} {{zero}}>
+                                              <a class="float-end" href="{% url 'CreazioneTestOrario' idGruppi zero %} " {{idGruppi}} {{zero}}>
                                                 <button class="btn btn-primary float-end m-2">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
                                                     <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
                                                   </svg>
                                                 </button>
                                               </a>
-                                          </div>
+                                         
                                          
                                         </div>
                                                                    
@@ -73,6 +73,34 @@
                           <div class="my-3 p-3 bg-body rounded shadow-lg">
                             <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
                             <p></p>
+
+                            {% for data, idTest in display_sfida %}
+                                        
+                            <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                              
+                              <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                                  <span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>
+                                 
+                                  <strong class="m-1"> La Sifda inizia nel {{data}}</strong>
+                                </div>
+                              
+                                  <a class="" href="" {{idTest}}>
+                                    <button class="btn btn-primary float-end m-2">
+                                 
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                                        <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                      </svg>
+                                    </button>
+                                  </a>
+                             
+                            </div>
+                    
+                            
+                                                       
+                      {% endfor %}
+
+
+
                           </div>
                 </div>
                 
@@ -89,7 +117,7 @@
                                             <span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
                                            
                                             <strong class="m-1"> Test creato il {{data}}</strong>
-
+                                          </div>
                                             <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
                                               <div class="">
                                                 <button class="btn btn-danger float-end m-2">
@@ -104,12 +132,12 @@
                                             <a class="" href="{% url 'preTest' idGruppi idTest%} " {{idGruppi}}>
                                               <button class="btn btn-primary float-end m-2">
                                            
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
                                                   <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
                                                 </svg>
                                               </button>
                                             </a>
-                                        </div>
+                                       
                                       </div>
                               
                                       

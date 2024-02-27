@@ -168,32 +168,20 @@ def FinishTestOrario(req, idGruppi, idTest, counter):
 def creaTestSfidaOrarioEsatto(req):
     
     if req.method == 'POST':
-        form = TestSfidaOrarioEsattoForm(req.POST)
-        if form.is_valid():
 
-            numeroTest = form.cleaned_data['numeroTest']
-            secondiRitardo = form.cleaned_data['secondiRitardo']
+        dataorainizio = req.POST['dataOraInizio']
+        dataorainizio  = datetime.strptime(dataorainizio, '%d-%m-%Y %H:%M')
+        utente = User.objects.filter(username = req.POST['utente'])[0]
 
-            try:
-                with transaction.atomic():
-                    TestsGroup.objects.create(nrTest = numeroTest, utente = req.user, secondiRitardo=secondiRitardo, tipo='orario')
 
-                print("Test creati con successo")
-                messages.success(req, 'Test creati con successo.')
+        if dataorainizio > datetime.now():
+            
+            Test.objects.create(utente = req.user, dataOraInizio = dataorainizio, tipo = 'sfida')
+            Test.objects.create(utente = utente, dataOraInizio = dataorainizio, tipo = 'sfida')
 
-            except Exception as e:
-                print(f"Errore durante la creazione del test: {e}")
-                messages.error(req, "Errore durante creazione test: ", e)
         
-        else: 
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.warning(req, f"Errore: {error}")
-            testManualeForm = TestManualeForm()
-            testOrarioEsattoForm = form
-            context = {"creaTestManualeForm": testManualeForm, "creaTestOrarioEsattoForm": testOrarioEsattoForm}
-            return redirect('/creazione-test', context)
-
+        else : 
+           return redirect('Sfida')
     return redirect('/home')
 
 
