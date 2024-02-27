@@ -45,7 +45,7 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
-    #Varianti.objects.all().delete()
+    #Test.objects.all().delete()
     #Domande.objects.filter(tipo = 's').delete()
     display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
@@ -148,3 +148,14 @@ def creaTestCollettivoDisplay(req):
             return HttpResponse(risposta+varianti+domanda)
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva()})
+
+def statistiche(req):
+
+    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
+    chart_tests_json = serialize('json', chart_tests)
+
+    errori_t = Statistiche.objects.filter(utente = req.user, tipoDomanda = 't').values('nrErrori')[0]['nrErrori']
+    errori_s = Statistiche.objects.filter(utente = req.user, tipoDomanda = 's').values('nrErrori')[0]['nrErrori']
+
+
+    return render(req ,'statistiche/statistiche.html', { 'chart_tests': chart_tests_json, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s})

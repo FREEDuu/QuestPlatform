@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+{% extends 'base.html' %}
+{% block content %}
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sfide</title>
+    <!-- bootstrap-select NON CAMBIARE VERSIONE -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
+</head>
+<body>
+
+<p></p>
+
+
+<div class="container-xl mb-4">
+    <div class="bg-body rounded shadow-lg">
+      <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
+      <p></p>
+      <div>
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+<div class="container-xl"> 
+  
+  <h3>NUMERO TOTALE DI TEST NON COMPLETATI {{test_incompleti}}</h3>
+  <h3>NUMERO TOTALE DI ERRORI TEXT {{errori_t}}</h3>
+  <h3>NUMERO TOTALE DI ERRORI SELECT {{errori_s}}</h3>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var chart_tests = {{ chart_tests|safe }};
+  var nrTestLabels = [];
+  var tempiLabels = [];
+  var totalSumSeconds = 0;
+  var partialSumSeconds = 0;
+  var minSeconds = Infinity;
+  var maxSeconds = -Infinity;
+  var under30Count = 0;
+  var lastTestsConsidered = 100;
+
+  //### LINE CHART & TOTAL STATISTICS CALCULATIONS ###//
+  for (var i = 0; i < chart_tests.length; i++) {
+      var dateTimeStart = chart_tests[i].fields.dataOraInizio;
+      var dateTimeEnd = chart_tests[i].fields.dataOraFine;
+  
+      var startDate = new Date(dateTimeStart);
+      var endDate = new Date(dateTimeEnd);
+  
+      var difference = endDate.getTime() - startDate.getTime();
+      var seconds = difference / 1000;
+  
+      totalSumSeconds += seconds;
+  
+      if (seconds < minSeconds) {
+          minSeconds = seconds;
+      }
+      if (seconds > maxSeconds) {
+          maxSeconds = seconds;
+      }
+  
+      if (seconds < 30) under30Count++;
+  
+      // In the chart we only show last 100 test statistics
+      if(i < lastTestsConsidered) {
+        partialSumSeconds = totalSumSeconds
+        tempiLabels.push(seconds);
+        nrTestLabels.push((i + 1).toString());
+      }
+  }
+  var totalAverageSeconds = totalSumSeconds / chart_tests.length;
+  let partialAverageSeconds;
+  if(chart_tests.length < lastTestsConsidered) {
+    partialAverageSeconds = partialSumSeconds / chart_tests.length;
+  } else {
+    partialAverageSeconds = partialSumSeconds / lastTestsConsidered;
+  }
+   
+
+  // Update table in the DOM with general statistics
+  document.addEventListener('DOMContentLoaded', function () {
+    var statsRow = document.getElementById('statsRow');
+    statsRow.innerHTML = `
+        <td>${chart_tests.length}</td>
+        <td>${minSeconds.toFixed(2)}</td>
+        <td>${maxSeconds.toFixed(2)}</td>
+        <td>${totalAverageSeconds.toFixed(2)}</td>
+        <td>${under30Count}</td>
+    `;
+  });
+
+
+  // Update lineChart & barChart DOM content
+  document.addEventListener('DOMContentLoaded', function() {
+    //### LINE CHART ###//
+      var ctx = document.getElementById('lineChart').getContext('2d');
+      var lineChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+              labels: nrTestLabels,
+              datasets: [{
+                  label: 'Tempo di completamento',
+                  data: tempiLabels,
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+              }, {
+                  label: 'Media',
+                  data: Array(nrTestLabels.length).fill(partialAverageSeconds),
+                  borderColor: 'rgba(255, 99, 132, 0.7)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  fill: false,
+                  pointRadius: 0
+              }]
+          },
+          options: {
+              scales: {
+                  x: {
+                      title: {
+                          display: true,
+                          text: 'Test'
+                      }
+                  },
+                  y: {
+                      title: {
+                          display: true,
+                          text: 'Secondi'
+                      }
+                  },
+              },
+              plugins: {
+                legend: {
+                  display: false
+                }
+              }
+          }
+      });
+
+      
+    //### BAR CHART ###//
+    var testsByWeek = {};
+    chart_tests.forEach(function(test) {
+      var date = new Date(test.fields.dataOraInizio);
+      var week = getWeek(date);
+      testsByWeek[week] = testsByWeek[week] ? testsByWeek[week] + 1 : 1;
+    });
+  
+    var weekLabels = Object.keys(testsByWeek).map(function(week) {
+      var startDate = getStartDateOfWeek(week);
+      var endDate = getEndDateOfWeek(week);
+      var startDateFormat = startDate.toLocaleDateString('en-GB');
+      var endDateFormat = endDate.toLocaleDateString('en-GB');
+      return startDateFormat + ' \n' + endDateFormat;
+    });
+  
+    var testsData = Object.values(testsByWeek);
+    var barColors = generateRandomColors(weekLabels.length);
+
+    var ctx = document.getElementById('barChart').getContext('2d');
+    var barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: weekLabels,
+        datasets: [{
+          label: 'Test completati',
+          data: testsData,
+          backgroundColor: barColors,
+          borderColor: 'rgba(1, 1, 1, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Settimane'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Test'
+            },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  });
+
+
+  function getWeek(date) {
+    var jan1 = new Date(date.getFullYear(), 0, 1);
+    return Math.ceil((((date - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  }
+  
+  function getStartDateOfWeek(week) {
+    var jan1 = new Date(new Date().getFullYear(), 0, 1);
+    var firstDayOfYear = jan1.getDay() || 7;
+    return new Date(jan1.setDate(jan1.getDate() + (week - 1) * 7 - firstDayOfYear + 1));
+  }
+  
+  function getEndDateOfWeek(week) {
+    var startDate = getStartDateOfWeek(week);
+    var endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    return endDate;
+  }
+  
+  function generateRandomColors(count) {
+    var colors = [];
+    for (var i = 0; i < count; i++) {
+      var color = 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',0.6)';
+      colors.push(color);
+    }
+    return colors;
+  }
+  
+</script>
+
+
+    
+</body>
+{% endblock %}
+
+</html>

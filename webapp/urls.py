@@ -4,6 +4,7 @@ from . import views
 from .views import test_common_views, test_manuale_views, test_orario_views, page_views
 
 urlpatterns = [
+    
     path('login/' , page_views.log_in, name= 'login'),
     path('' , page_views.home, name= 'home'),
     path('home' , page_views.home, name= 'home'),
@@ -24,6 +25,7 @@ urlpatterns = [
     path('FinishTest/<int:idGruppi>/<int:idTest>' , test_manuale_views.FinishTest, name= 'FinishTest'),
     path('FinishTestOrario/<int:idGruppi>/<int:idTest>/<int:counter>/' , test_orario_views.FinishTestOrario, name= 'FinishTestOrario'),
     path('testProgrammati/<int:idTest>', test_common_views.TestProgrammati, name = 'TestProgrammati'),
+    path('statistiche', page_views.statistiche, name = 'statistiche'),
     path('Sfida', page_views.Sfida, name = 'Sfida'),
     path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario')
 

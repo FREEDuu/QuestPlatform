@@ -83,3 +83,13 @@ class Test_Domande_Varianti(models.Model):
     
     def __str__(self):
         return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
+    
+
+class Statistiche(models.Model):
+
+    utente = models.ForeignKey(User, on_delete=models.CASCADE, default = 1)
+    tipoDomanda = models.CharField(max_length=50, default="t")
+    nrErrori = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'id: {self.utente}  |  nrGruppo: {self.tipoDomanda}  |  tipo: {self.nrErrori}'

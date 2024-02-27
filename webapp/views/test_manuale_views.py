@@ -77,10 +77,11 @@ def TestStart(req, idGruppi, idTest, counter, seed):
 
         formRisposta = FormDomanda(domande_to_render, req.POST)
         check = False
-
         for n in range(counter * 5, (counter + 1) * 5):
             if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 check = True
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
