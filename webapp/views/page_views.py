@@ -51,12 +51,21 @@ def home(req):
     display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
-    display_sfide = Test.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idTest')
+    display_sfide = TestsGroup.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
     display_sfida = []
 
     for sfida in display_sfide:
-        display_sfida.append([sfida['dataOraInizio'] , sfida['idTest']])
+        
+        if sfida['dataOraInizio'] != None:
 
+            if sfida['dataOraInizio'] < datetime.now() : 
+
+                Test.objects.filter(idTest = sfida['idGruppi']).delete()
+            else : 
+
+                display_sfida.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['nrTest']])
+
+    print(display_sfida)
     gruppi_programmati = []
     for te in display_test_programmati:
         gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
@@ -163,7 +172,7 @@ def statistiche(req):
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
     print(chart_tests)
 
-    tipiDomande = ['testo','selezione']
+    tipiDomande = ['testo','selezione','checkbox']
     nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
 
     print(nrErrori)    
@@ -171,6 +180,8 @@ def statistiche(req):
 
     errori_t = Statistiche.objects.filter(utente = req.user, tipoDomanda = 't').values('nrErrori')[0]['nrErrori']
     errori_s = Statistiche.objects.filter(utente = req.user, tipoDomanda = 's').values('nrErrori')[0]['nrErrori']
+    errori_c = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'r').values('nrErrori')[0]['nrErrori']
 
 
-    return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s})
+
+    return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})

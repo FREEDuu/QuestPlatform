@@ -27,7 +27,8 @@ urlpatterns = [
     path('testProgrammati/<int:idTest>', test_common_views.TestProgrammati, name = 'TestProgrammati'),
     path('statistiche', page_views.statistiche, name = 'statistiche'),
     path('Sfida', page_views.Sfida, name = 'Sfida'),
+    path('preTestSfida/<int:idGruppi>/<int:id>', test_orario_views.preTestSfida, name = 'preTestSfida'),
+    path('testStartOrarioSfida/<int:idTest>/<int:displayer>', test_orario_views.testStartOrarioSfida, name = 'testStartOrarioSfida'),
+    path('FinishTestOrarioSfida/<int:idTest>', test_orario_views.FinishTestOrarioSfida, name = 'FinishTestOrarioSfida'),
     path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario')
-
-
 ]
