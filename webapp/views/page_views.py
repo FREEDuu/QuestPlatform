@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from random import randint
 from django.utils.datastructures import MultiValueDict
 from ..utils import utils
+import plotly_express as px
 
 
 
@@ -45,11 +46,17 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
-    #Test.objects.all().delete()
+    #Test.objects.filter(tipo = 'sfida').delete()
     #Domande.objects.filter(tipo = 's').delete()
     display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
+    display_sfide = Test.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idTest')
+    display_sfida = []
+
+    for sfida in display_sfide:
+        display_sfida.append([sfida['dataOraInizio'] , sfida['idTest']])
+
     gruppi_programmati = []
     for te in display_test_programmati:
         gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
@@ -58,26 +65,30 @@ def home(req):
     
     gruppi_manuale = []
     gruppi_orario = []
-    for test in display_test_manuale:
-        count = 0
-        primo_t = test['dataOraInizio']
-        now = datetime.now()
-        if(now > primo_t):
-            while now > primo_t:
-                count += 1
-                primo_t += timedelta(0,  test['secondiRitardo'])
-                print(now, primo_t)
-            TestsGroup.objects.filter(idGruppi = test['idGruppi']).update(dataOraInizio = primo_t)
-        
-        TestsGroup.objects.filter(idGruppi = test['idGruppi']).update(nrGruppo=F('nrGruppo') + count)
-        test_manuale_esatto = Test.objects.create(utente = req.user, dataOraInizio = primo_t, secondiRitardo = test['secondiRitardo'], nrGruppo = randint(2,3))
-        nrgruppo = TestsGroup.objects.filter(idGruppi = test['idGruppi']).values('nrGruppo','dataOraInizio')[0]
-        if test['nrTest'] -  nrgruppo['nrGruppo'] > 0:
-            gruppi_manuale.append([test['idGruppi'], test['nrTest'] - nrgruppo['nrGruppo' ], nrgruppo['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S"),test_manuale_esatto.idTest ])
+    print(display_test_manuale)
+    if len(display_test_manuale) != 0:
+        for test in display_test_manuale:
+            count = 0
+            primo_t = test['dataOraInizio']
+            now = datetime.now()
+            if(now > primo_t):
+                while now > primo_t:
+                    count += 1
+                    primo_t += timedelta(0,  test['secondiRitardo'])
+                    print(now, primo_t)
+                TestsGroup.objects.filter(idGruppi = test['idGruppi']).update(dataOraInizio = primo_t)
+            print('dd')
+            TestsGroup.objects.filter(idGruppi = test['idGruppi']).update(nrGruppo=F('nrGruppo') + count)
+            test_manuale_esatto = Test.objects.create(utente = req.user, dataOraInizio = primo_t, secondiRitardo = test['secondiRitardo'], nrGruppo = randint(2,3))
+            nrgruppo = TestsGroup.objects.filter(idGruppi = test['idGruppi']).values('nrGruppo','dataOraInizio')[0]
+            if test['nrTest'] -  nrgruppo['nrGruppo'] > 0:
+                gruppi_manuale.append([test['idGruppi'], test['nrTest'] - nrgruppo['nrGruppo' ], nrgruppo['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S"),test_manuale_esatto.idTest ])
+            else : 
+                TestsGroup.objects.filter(idGruppi = test['idGruppi']).delete()
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0})
+    return render(req, 'home/home.html', {'display_sfida': display_sfida, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0})
 
 
 
@@ -93,18 +104,16 @@ def creazioneTest(req):
 
 @login_required(login_url='login')
 def Sfida(req):
-    user_list = User.objects.exclude(Q(id=1))
-    user_fields_list = [{'id': user.id, 'username': user.username } for user in user_list]
+    user_list = User.objects.exclude(Q(id = req.user.id))
+    user_lists = list()
+    user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
 
-    testSfidaManualeForm = TestSfidaManualeForm()
-    testSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
-    context = {
-        'user_list': user_fields_list, 
-        "creaTestSfidaManualeForm": testSfidaManualeForm, 
-        "creaTestSfidaOrarioEsattoForm": testSfidaOrarioEsattoForm
-        }
+    creaTestSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
 
-    return render(req, 'sfide/sfide.html', context)
+    creaTestSfidaOrarioEsattoForm.fields['utente'].choices = user_lists
+
+    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm}
+)
 
 
 def testCollettivi(req):
@@ -152,10 +161,16 @@ def creaTestCollettivoDisplay(req):
 def statistiche(req):
 
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
-    chart_tests_json = serialize('json', chart_tests)
+    print(chart_tests)
+
+    tipiDomande = ['testo','selezione']
+    nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
+
+    print(nrErrori)    
+    chart = px.pie( names = tipiDomande, values = nrErrori)
 
     errori_t = Statistiche.objects.filter(utente = req.user, tipoDomanda = 't').values('nrErrori')[0]['nrErrori']
     errori_s = Statistiche.objects.filter(utente = req.user, tipoDomanda = 's').values('nrErrori')[0]['nrErrori']
 
 
-    return render(req ,'statistiche/statistiche.html', { 'chart_tests': chart_tests_json, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s})
+    return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s})

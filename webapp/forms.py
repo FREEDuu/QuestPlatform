@@ -105,7 +105,14 @@ class TestOrarioEsattoForm(forms.Form):
     secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages, initial= 5)
         
 class TestSfidaOrarioEsattoForm(forms.Form):
-    utenteSfidato = forms.CharField()
-    numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-    secondiRitardo = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)
-        
+
+    utente = forms.ChoiceField(widget = forms.Select(), required = True,)
+    
+    dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={
+            "class": "form-control",
+            "data-field": "datetime",
+            "required": "required",
+            "name": "dataOraInizio", 
+            "type": "text",
+        }), label = False)
