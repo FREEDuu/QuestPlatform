@@ -13,6 +13,7 @@ from random import randint
 import random
 from . import test_common_views
 from django.db.models.query import QuerySet
+from django import forms 
 
 
 def genRandomFromSeed(seed, rispostaGiusta):
@@ -100,22 +101,27 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
-
+    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
+    
     ctx = []
     if req.method == 'POST':
         print(displayer, test['nrGruppo'] )
-        formRisposta = FormDomanda(domande_to_render, req.POST)
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
         check = False
 
         for n in range(displayer * 5, (displayer + 1) * 5):
             if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
-                print(formRisposta['domanda_{}'.format(n)].field.widget.input_type[0])
-                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                if isinstance(formRisposta['domanda_{}'.format(n)].field.widget, forms.MultiWidget):
+                    tipo_domanda = test_to_render[n].domanda.tipo
+                    Statistiche.objects.filter(utente=req.user, tipoDomanda=tipo_domanda).update(nrErrori=F('nrErrori') + 1)
+                else:
+                    tipo_domanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]
+                    Statistiche.objects.filter(utente=req.user, tipoDomanda=tipo_domanda).update(nrErrori=F('nrErrori') + 1)
 
             else:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         if check:
             for n in range(displayer * 5, (displayer + 1) * 5):
@@ -128,18 +134,18 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
             ctx = []
             for n in range(displayer * 5, (displayer + 1) * 5):
                 formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             
             return render(req, 'preTestOrario/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': test['nrGruppo'], 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx , 'seed': seed})
 
     else:
-        forms = FormDomanda(domande_to_render)
-        
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte)
+
         for n in range(len(test_to_render)):
             if n >= displayer * 5 and n < (displayer + 1) * 5:
-                forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         return render(req,'preTestOrario/TestSelect.html', {'idGruppi': idGruppi,'ultimo': test['nrGruppo'] -1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed})
 
@@ -220,10 +226,11 @@ def testStartOrarioSfida(req, idTest, displayer):
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
+    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
 
     ctx = []
     if req.method == 'POST':
-        formRisposta = FormDomanda(domande_to_render, req.POST)
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
         check = False
 
         for n in range(displayer * 5, (displayer + 1) * 5):
@@ -253,7 +260,7 @@ def testStartOrarioSfida(req, idTest, displayer):
             return render(req, 'preTestOrario/TestSelectSfida.html', {'ultimo': test['nrGruppo'], 'idTest': idTest, 'displayer': displayer, 'ctx': ctx })
 
     else:
-        forms = FormDomanda(domande_to_render)
+        forms = FormDomanda(domande_to_render, risposte_esatte)
         
         for n in range(len(test_to_render)):
             if n >= displayer * 5 and n < (displayer + 1) * 5:

@@ -47,14 +47,27 @@ class FormTestCollettivi(forms.Form):
 
 class FormDomanda(forms.Form):
     
-    def __init__(self, domande, *args, **kwargs):
+    def __init__(self, domande, risposte_esatte, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
-                self.fields[field_name] = forms.CharField(widget = forms.TextInput(attrs={"class": "form-control"}))
+                self.fields[field_name] = forms.CharField(widget = forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
             elif domande[i] == 'c':
                 self.fields[field_name] = forms.ChoiceField(widget = forms.RadioSelect(attrs={"class": "forms-control"})) 
+            elif domande[i] == 'm':
+                common_attrs = { "class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;", }
+                numero_input = len(risposte_esatte[i])
+                
+                text_inputs = [forms.TextInput(attrs=common_attrs) for _ in range(numero_input)]
+
+                self.fields[field_name] = forms.MultiValueField(
+                    widget=forms.MultiWidget(widgets=text_inputs),
+                    fields=[
+                        forms.CharField(error_messages={'required': 'This field is required'})
+                        for _ in range(numero_input)
+                    ],
+                )
             else:
                 self.fields[field_name] = forms.ChoiceField(widget = forms.Select(attrs={"class": "form-control"}), 
                 choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
