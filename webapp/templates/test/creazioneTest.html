@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+
+<body>
+  {% extends 'base.html' %}
+  {% block title %}Creazione test{% endblock %}
+  {% load crispy_forms_tags %}
+
+  {% block content %}
+  <link rel="stylesheet" type="text/css"
+    href="//cdn.jsdelivr.net/npm/datetimepicker@latest/dist/DateTimePicker.min.css" />
+  <script type="text/javascript" src="//cdn.jsdelivr.net/npm/datetimepicker@latest/dist/DateTimePicker.min.js"></script>
+
+  <main>
+    <div class="col-lg-8 mx-auto py-md-3">
+      <div class="mb-5"></div>
+
+      <div class="row">        
+
+        <!-- FORM RITARDO MANUALE -->
+        <form class="col-md-6" action="{% url 'creaTestOrarioEsatto' %}" method="POST">
+          {% csrf_token %}
+          <div class="my-3 p-3 bg-body rounded shadow-lg">
+            <h6 class="border-bottom pb-2 mb-0">Creazione con RITARDO MANUALE</h6>
+            <p></p>
+            <p></p>
+            <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
+              creare?</h6>
+              <p></p>
+              <div class="input-group mb-3">
+                <span class="input-group-text " id="inputGroup-sizing-default">Test</span>
+                {{ creaTestOrarioEsattoForm.numeroTest }}
+              </div>
+  
+
+            <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+              {{ creaTestOrarioEsattoForm.secondiRitardo }}
+            </div>
+
+             
+
+            <div class="d-grid gap-2">
+              <button href="{% url 'test' %}" class="btn btn-primary" type="button submit">Crea</button>
+            </div>
+          </div>
+        </form>
+        <form class="col-md-6" action="{% url 'creaTestManuale' %}" method="POST">
+          {% csrf_token %}
+          <div class="my-3 p-3 bg-body rounded shadow-lg">
+            <h6 class="border-bottom pb-2 mb-0">Creazione con ORARIO ESATTO</h6>
+            <p></p>
+            <p></p>
+            <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
+              creare?</h6>
+              <p></p>
+              <div class="input-group mb-3">
+                <span class="input-group-text " id="inputGroup-sizing-default">Test</span>
+                {{ creaTestManualeForm.numeroTest }}
+              </div>
+              
+              
+  
+
+            <h6 class="border-bottom pb-2 mb-0">Quanti secondi di ritardo desideri?</h6>
+            <div class="input-group mb-3">
+              <span class="input-group-text" id="inputGroup-sizing-default">sec</span>
+              {{ creaTestManualeForm.secondiRitardo }}
+            </div>
+            <h6 class="border-bottom pb-2 mb-0">Ora inizio Test</h6>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-default">time</span>
+                {{ creaTestManualeForm.dataOraInizio }}
+              
+                <!--DatePicker's Box-->
+                <div id="dtBox"></div>
+              </div>
+             
+
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" type="button submit">Crea</button>
+            </div>
+          </div>
+        </form>
+
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    $(document).ready(function () {
+      $("#dtBox").DateTimePicker();
+    });
+  </script>
+
+  {% endblock %}
+
+  </div>
+</body>
+
+</html>
