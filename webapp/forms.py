@@ -27,24 +27,8 @@ class LoginForm(forms.Form):
 
 class FormTestCollettivi(forms.Form):
     
-    nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages)
-    ora = forms.DateTimeField(widget=forms.DateTimeInput(
-        attrs={
-            "class": "form-control",
-            "data-field": "datetime",
-            "required": "required",
-            "name": "dataOraInizio", 
-            "type": "text",
-        }), label = False)
-    def clean_dataOraInizio(self):
-        input_date = self.cleaned_data.get('dataOraInizio')
-        if input_date:
-            if input_date < timezone.now():
-                raise ValidationError("La data deve essere nel futuro.")
-            return input_date
-        return None
+    nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages , validators=[validators.MinValueValidator(1)])
     
-
 class FormDomanda(forms.Form):
     
     def __init__(self, domande, risposte_esatte, *args, **kwargs):
@@ -81,10 +65,10 @@ class FormDomanda(forms.Form):
 
 class FormDomandaCollettiva(forms.Form):
     
-    tipo = forms.CharField()
-    Domanda = forms.CharField()
-    Risposta = forms.CharField()
-    Varianti = forms.CharField()
+    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
+    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
+    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
+    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
 
     
 class TestManualeForm(forms.Form):

@@ -180,14 +180,13 @@ def creaTestSfidaOrarioEsatto(req):
         dataorainizio  = datetime.strptime(dataorainizio, '%d-%m-%Y %H:%M')
         utente = User.objects.filter(username = req.POST['utente'])[0]
 
-        id_sfida = randint(0,100000)
 
         if dataorainizio > datetime.now():
-            
-            TestsGroup.objects.create(utente = req.user, dataOraInizio = dataorainizio, tipo = 'sfida', nrGruppo = 3, nrTest = id_sfida)
-            TestsGroup.objects.create(utente = utente, dataOraInizio = dataorainizio, tipo = 'sfida', nrGruppo = 3, nrTest = id_sfida)
 
-        
+            sfida = Sfide.objects.create(utente = req.user, utenteSfidato = utente)
+            TestsGroup.objects.create(utente = req.user, dataOraInizio = dataorainizio, tipo = 'sfida', nrGruppo = 3, nrTest = sfida.idSfida)
+            TestsGroup.objects.create(utente = utente, dataOraInizio = dataorainizio, tipo = 'sfida', nrGruppo = 3, nrTest = sfida.idSfida)
+
         else : 
            return redirect('Sfida')
     return redirect('/home')
@@ -195,7 +194,7 @@ def creaTestSfidaOrarioEsatto(req):
 
 def preTestSfida(req, idGruppi, id):
 
-    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('dataOraInizio')
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('dataOraInizio', 'nrTest')
     
     if(datetime.now() < tests[0]['dataOraInizio']):
         return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : tests[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
@@ -208,15 +207,17 @@ def preTestSfida(req, idGruppi, id):
 
                 # Associa domande casuali con la relativa variante casuale al nuovo test creato
         for _ in range(15):
-
+            
             random_domanda = randint(0, len(domande)-1)
+            while domande[random_domanda].tipo == 'm':
+                random_domanda = randint(0, len(domande)-1)
             print(random_domanda)
             varianti = Varianti.objects.filter(domanda = domande[random_domanda])
 
             app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
             
         Test_Domande_Varianti.objects.bulk_create(app_list)
-
+        Test.objects.filter(idTest = singolo_test.idTest).update(nrTest = tests[0]['nrTest'])
         return redirect('testStartOrarioSfida', idTest = singolo_test.idTest , displayer = 0)
     
 
@@ -271,13 +272,19 @@ def testStartOrarioSfida(req, idTest, displayer):
     
 def FinishTestOrarioSfida(req, idTest):
         
-    end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
+    end =  Test.objects.filter(idTest = idTest).values('dataOraInizio','dataOraFine', 'nrTest')[0]
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
     
     tt = Test.objects.filter(idTest = idTest)
     tempo_test_finale = tt[0].dataOraFine
     tempo_test_iniziale = tt[0].dataOraInizio
+
+    sfida = Sfide.objects.filter(idSfida = end['nrTest']).values('dataOraInizio')[0]
+    print(sfida)
+    if sfida['dataOraInizio'] == None : 
+        
+        Sfide.objects.filter(idSfida = end['nrTest']).update(dataOraInizio = end['dataOraFine'], vincitore = req.user.username)
 
 
     return render(req, 'preTestOrario/FinishTestSfida.html', {'tempo' : (tempo_test_finale-tempo_test_iniziale).total_seconds()})

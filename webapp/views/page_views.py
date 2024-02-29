@@ -117,21 +117,51 @@ def Sfida(req):
     user_lists = list()
     user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
 
+    storico_sfide_fatte = Sfide.objects.filter(utente = req.user)
+    storico_sfide_ricevute = Sfide.objects.filter(utenteSfidato = req.user)
+
+    sf_fatte = []
+    sf_ric = []
+
+    for el in storico_sfide_fatte:
+        if el.vincitore != 'pareggio':
+            sf_fatte.append([el.utente, el.utenteSfidato, el.dataOraInserimento, el.vincitore])
+
+    for el1 in storico_sfide_ricevute:
+        if el1.vincitore != 'pareggio':
+            sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInserimento, el1.vincitore])
+
     creaTestSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
 
     creaTestSfidaOrarioEsattoForm.fields['utente'].choices = user_lists
 
-    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm}
+    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm, 'sfide_ricevute' : sf_ric, 'sfide_fatte' : sf_fatte}
 )
 
 
 def testCollettivi(req):
+    if req.method == 'POST':
 
-    ctx = {'form' : FormTestCollettivi(), 'prima' : True}
+        form = FormTestCollettivi(req.POST)
+
+        if form.is_valid():
+
+            nPagine = form.cleaned_data['nPagine']
+            #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
+            
+            return redirect('creaTestCollettivo' , pagine = nPagine)
+        else: 
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.warning(req, f"Errore: {error}")
+            print(form.errors)
+           
+
+    ctx = {'form' : FormTestCollettivi()}
 
     return render(req, 'test/testCollettivi.html', ctx)
 
-def creaTestCollettivo(req):
+def creaTestCollettivo(req, pagine):
 
     if req.method == 'POST':
 
@@ -142,16 +172,17 @@ def creaTestCollettivo(req):
         if form.is_valid():
 
             nPagine = form.cleaned_data['nPagine']
-            dataOraInizio = form.cleaned_data['ora']
             #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
             
-            return render(req, 'test/testCollettivi.html', {'domande' : range(1, nPagine+1)})
+            return redirect('creaTestCollettivo' , pagine = nPagine)
         else: 
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.warning(req, f"Errore: {error}")
             print(form.errors)
             return testCollettivi(req)
+        
+    return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine})
 
 def creaTestCollettivoDisplay(req):
     if req.method == 'POST':
@@ -163,7 +194,7 @@ def creaTestCollettivoDisplay(req):
             risposta = form.cleaned_data['Risposta']
             varianti = form.cleaned_data['Varianti']
             print(domanda, risposta, varianti)
-            return HttpResponse(risposta+varianti+domanda)
+            return HttpResponse(domanda+' '+risposta+'  '+varianti)
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva()})
 
@@ -172,7 +203,7 @@ def statistiche(req):
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
     print(chart_tests)
 
-    tipiDomande = ['testo','selezione','checkbox']
+    tipiDomande = ['testo','selezione','checkbox', 'stelle']
     nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
 
     print(nrErrori)    

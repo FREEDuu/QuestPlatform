@@ -50,14 +50,90 @@
     </form>
 
 
+
     <div class="col-md-6">
 
       <h1>QUI VANNO LE SFIDE PASSATE</h1>
-  
+
+      <div class="row">
+        <div class="col">
+          Utente sfidante
+ 
+        </div>
+        <div class="col">
+          Utente Sfidato
+        </div>
+        <div class="col-5">
+          Ora Sfida
+
+        </div>
+        <div class="col">
+          Vincitore
+       
+        </div>
+      </div>
+      <p></p>
+
+      {% for ut ,uts ,ora ,vinc in sfide_fatte%}
+      <div class="row">
+        <div class="col">
+
+          {{ut}}
+        </div>
+        <div class="col">
+          {{uts}}
+        </div>
+        <div class="col-5">
+          {{ora}}
+
+        </div>
+        <div class="col">
+          {{vinc}}
+       
+        </div>
+      </div>
+      <p></p>
+      {% endfor %}
+      {% for ut, uts, ora, vinc in sfide_ricevute%}
+      <div class="row">
+        <div class="col">
+
+          {{ut}}
+        </div>
+        <div class="col">
+          {{uts}}
+        </div>
+        <div class="col-5">
+          {{ora}}
+
+        </div>
+        <div class="col">
+          {{vinc}}
+       
+        </div>
+      </div>
+      <p></p>
+      {% endfor %}
+      
+      
+    </div>
+    
+    
   
     </div>
   </div>
 
+  <style>
+#sfidone {
+  background: lightgrey;
+  border-top: 2px solid grey;
+  box-shadow: 0 2px grey, inset 2px 0 gray, inset -2px 0 grey;
+  overflow: hidden;
+}
+
+
+
+  </style>
   
 
 </div>

@@ -15,14 +15,10 @@
             {{form.tipo}}
         </div>
         <div class="col align-self-center">
-            <button class="btn btn-danger float-end " onclick="delete_row(this)" >delete</button>
+            <button class="btn btn-danger float-end "
+            hx-on = "click: this.closest('form').remove()"  >delete</button>
         </div>
     </div>
 </form>
 <p></p>
 
-<script>
-    function delete_row(e) {
-    e.parentElement.parentElement.remove();
-}
-</script>
