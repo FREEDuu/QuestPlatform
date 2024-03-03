@@ -108,17 +108,22 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         print(displayer, test['nrGruppo'] )
         formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
         check = False
-
+        
         for n in range(displayer * 5, (displayer + 1) * 5):
-            if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+
+            if domande_to_render[n] == 'm': 
+                concat_string = ''
+                for i in range(len(risposte_esatte[n])):
+                    concat_string = ''.join([concat_string, req.POST.get('domanda_{}_{}'.format(n, i))])
+                if concat_string != test_to_render[n].variante.rispostaEsatta:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
-                if isinstance(formRisposta['domanda_{}'.format(n)].field.widget, forms.MultiWidget):
-                    tipo_domanda = test_to_render[n].domanda.tipo
-                    Statistiche.objects.filter(utente=req.user, tipoDomanda=tipo_domanda).update(nrErrori=F('nrErrori') + 1)
-                else:
-                    tipo_domanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]
-                    Statistiche.objects.filter(utente=req.user, tipoDomanda=tipo_domanda).update(nrErrori=F('nrErrori') + 1)
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])

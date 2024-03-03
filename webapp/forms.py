@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from .models import *
 from  random import randint, random
 import string
+from itertools import islice
 
 def Create_other_var(array):
 
@@ -29,33 +30,53 @@ class FormTestCollettivi(forms.Form):
     
     nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages , validators=[validators.MinValueValidator(1)])
     
+
+class CustomMultiWidget(forms.MultiWidget):
+    def __init__(self, common_attrs, widgetCount, attrs=None):
+        widgets = [forms.TextInput(attrs=common_attrs) for _ in range(widgetCount)]
+        super().__init__(widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            return value
+        return [None for _ in range(len(self.widgets))]
+
+
+class CustomMultiValueField(forms.MultiValueField):
+    def __init__(self, char_fields, common_attrs, *args, **kwargs):
+        fields = (char_fields)
+        super().__init__(fields, widget=CustomMultiWidget(common_attrs, len(char_fields)), *args, **kwargs)
+
+    def compress(self, data_list):
+        return data_list
+
+
 class FormDomanda(forms.Form):
+    def __init__(self, domande, risposte_esatte, *args, **kwargs):
+        self.domande = domande
+        self.risposte_esatte = risposte_esatte 
+    
     
     def __init__(self, domande, risposte_esatte, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
-                self.fields[field_name] = forms.CharField(widget = forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
+                self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
             elif domande[i] == 'c':
-                self.fields[field_name] = forms.ChoiceField(widget = forms.RadioSelect(attrs={"class": "forms-control"})) 
+                self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"})) 
             elif domande[i] == 'm':
-                common_attrs = { "class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;", }
+                common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;"}
                 numero_input = len(risposte_esatte[i])
                 
-                text_inputs = [forms.TextInput(attrs=common_attrs) for _ in range(numero_input)]
+                char_fields = [forms.CharField(error_messages={'required': 'This field is required'}) for _ in range(numero_input)]
 
-                self.fields[field_name] = forms.MultiValueField(
-                    widget=forms.MultiWidget(widgets=text_inputs),
-                    fields=[
-                        forms.CharField(error_messages={'required': 'This field is required'})
-                        for _ in range(numero_input)
-                    ],
-                )
+                self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget = forms.Select(attrs={"class": "form-control"}), 
-                choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
-            
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), 
+                                                            choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
+
+    
     def get_interest_fields(self):
         ret = []
         for field_name in self.fields:
