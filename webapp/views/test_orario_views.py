@@ -112,9 +112,15 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         for n in range(displayer * 5, (displayer + 1) * 5):
 
             if domande_to_render[n] == 'm': 
+                error_indexes = []
                 concat_string = ''
                 for i in range(len(risposte_esatte[n])):
-                    concat_string = ''.join([concat_string, req.POST.get('domanda_{}_{}'.format(n, i))])
+                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
+                    concat_string = ''.join([concat_string, user_input])
+                    
+                    if user_input != risposte_esatte[n][i]:
+                        error_indexes.append(i+1)
+                
                 if concat_string != test_to_render[n].variante.rispostaEsatta:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True

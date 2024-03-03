@@ -66,7 +66,7 @@ class FormDomanda(forms.Form):
             elif domande[i] == 'c':
                 self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"})) 
             elif domande[i] == 'm':
-                common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;"}
+                common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px; border: 1px solid red;"}
                 numero_input = len(risposte_esatte[i])
                 
                 char_fields = [forms.CharField(error_messages={'required': 'This field is required'}) for _ in range(numero_input)]
@@ -76,7 +76,6 @@ class FormDomanda(forms.Form):
                 self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), 
                                                             choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
 
-    
     def get_interest_fields(self):
         ret = []
         for field_name in self.fields:
