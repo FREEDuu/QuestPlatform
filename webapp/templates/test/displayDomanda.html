@@ -1,4 +1,4 @@
-<form hx-trigger = " click from:#crea " hx-post = "{% url 'creaTestCollettivoDisplay' %}">
+<form hx-trigger = " click from:#crea " hx-post = "{% url 'creaTestCollettivoDisplay' idTest %}"> 
     {% csrf_token %}
 
     <div class="row">
@@ -16,7 +16,7 @@
         </div>
         <div class="col align-self-center">
             <button class="btn btn-danger float-end "
-            hx-on = "click: this.closest('form').remove()"  >delete</button>
+            hx-on = "click: this.closest('form').remove()"  > delete</button>
         </div>
     </div>
 </form>

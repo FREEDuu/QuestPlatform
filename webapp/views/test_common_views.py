@@ -3,6 +3,8 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.contrib.auth.decorators import login_required
 from ..models import *
 from . import page_views
+from datetime import datetime
+from ..forms import *
 
 @login_required(login_url='login')
 def delete_all_user_test(req):
@@ -17,5 +19,89 @@ def cancella_un_test(req, idGruppi):
 
 
 def TestProgrammati(req, idTest):
-    return HttpResponse(idTest)
+    
+    singolo_test =  Test.objects.filter(idTest = idTest)[0]
 
+    if datetime.now() > singolo_test.dataOraInizio:
+        
+
+        return redirect('TestProgrammatiStart' ,idTest = idTest)
+    else : 
+        
+        return render(req, 'preTest/preTest.html', {'time_display' : singolo_test.dataOraInizio.strftime("%Y-%m-%d %H:%M:%S")})
+
+def TestProgrammatiStart(req, idTest):
+
+    ctx = []
+    
+    ultimo = False
+    if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
+        ultimo = True
+    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante')
+    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
+    
+        #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
+
+    domande_to_render = [d.domanda.tipo for d in test_to_render]
+
+    if req.method == 'POST':
+
+        formRisposta = FormDomanda(domande_to_render, req.POST)
+        check = False
+        for n in range(counter * 5, (counter + 1) * 5):
+            if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                check = True
+            else:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
+
+        if check:
+            for n in range(counter * 5, (counter + 1) * 5):
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+        else:
+            if test['nrGruppo'] -1 == counter:
+                return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
+            counter += 1
+            ctx = []
+            for n in range(counter * 5, (counter + 1) * 5):
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+
+            
+            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+
+    else:
+        forms = FormDomanda(domande_to_render)
+        
+        for n in range(counter * 5, (counter + 1) * 5):
+            
+            forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+
+        return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+
+def TestProgrammatiFinish(req, idGruppi, idTest):
+        
+    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('dataOraInizio', 'secondiRitardo')[0]
+
+    test_finito = Test.objects.filter(idTest = idTest).values('dataOraInizio', 'secondiRitardo')[0]
+    id_next_test = Test.objects.create(utente = req.user, dataOraInizio = test_finito['dataOraInizio'] + timedelta(0, tests['secondiRitardo']), nrGruppo = randint(2,3))
+    TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = id_next_test.dataOraInizio)
+    end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
+    if end['dataOraFine'] is None:
+        Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
+    tt = Test.objects.filter(idTest = idTest)
+    tempo_test_finale = tt[0].dataOraFine.second
+    tempo_test_iniziale = tt[0].dataOraInizio.second
+
+    if tempo_test_finale < tempo_test_iniziale:
+            tempo_finish = tempo_test_finale +60  - tempo_test_iniziale
+    else:
+        tempo_finish = tempo_test_finale - tempo_test_iniziale
+
+    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'idTest' : id_next_test.idTest })
+
+    

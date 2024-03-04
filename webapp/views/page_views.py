@@ -46,11 +46,11 @@ def log_in(req):
 # HOME
 @login_required(login_url='login')
 def home(req):
-    #Test.objects.filter(tipo = 'sfida').delete()
+    #Test.objects.filter(tipo = 'collettivo').delete()
     #Domande.objects.filter(tipo = 's').delete()
-    display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
-    display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
-    display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
+    display_test_manuale = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
+    display_test_orario = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    display_test_programmati = Test.objects.filter(tipo = 'collettivo').values('idTest', 'dataOraInizio')
     display_sfide = TestsGroup.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
     display_sfida = []
 
@@ -143,13 +143,18 @@ def testCollettivi(req):
     if req.method == 'POST':
 
         form = FormTestCollettivi(req.POST)
+        mutable_data = MultiValueDict(form.data.lists())
+        mutable_data['dataOraInizio'] = utils.reformat_date(mutable_data['dataOraInizio'])
+        form = FormTestCollettivi(mutable_data) 
 
         if form.is_valid():
 
             nPagine = form.cleaned_data['nPagine']
-            #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
+            dataOraInizio = form.cleaned_data['dataOraInizio']
+
+            test_collettivo = Test.objects.create(utente = req.user , nrGruppo = nPagine, tipo = 'collettivo', dataOraInizio = dataOraInizio)
             
-            return redirect('creaTestCollettivo' , pagine = nPagine)
+            return redirect('creaTestCollettivo' , pagine = nPagine, idTest = test_collettivo.idTest)
         else: 
             for field, errors in form.errors.items():
                 for error in errors:
@@ -161,42 +166,35 @@ def testCollettivi(req):
 
     return render(req, 'test/testCollettivi.html', ctx)
 
-def creaTestCollettivo(req, pagine):
+def creaTestCollettivo(req, pagine, idTest):
 
     if req.method == 'POST':
+                
+        return redirect('home')
 
-        form = FormTestCollettivi(req.POST)
-        mutable_data = MultiValueDict(form.data.lists())
-        mutable_data['ora'] = utils.reformat_date(mutable_data['ora'])
-        form = FormTestCollettivi(mutable_data) 
-        if form.is_valid():
+    return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
 
-            nPagine = form.cleaned_data['nPagine']
-            #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
-            
-            return redirect('creaTestCollettivo' , pagine = nPagine)
-        else: 
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.warning(req, f"Errore: {error}")
-            print(form.errors)
-            return testCollettivi(req)
+def creaTestCollettivoDisplay(req, idTest):
+    if req.method == 'POST':
         
-    return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine})
-
-def creaTestCollettivoDisplay(req):
-    if req.method == 'POST':
-
         form = FormDomandaCollettiva(req.POST)
         if form.is_valid():
 
             domanda = form.cleaned_data['Domanda']
             risposta = form.cleaned_data['Risposta']
             varianti = form.cleaned_data['Varianti']
-            print(domanda, risposta, varianti)
+            tipo = form.cleaned_data['tipo']
+
+
+            domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo)
+            variante = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
+            test = Test.objects.filter(idTest = idTest)[0]
+            print(test)
+            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = variante)    
+
             return HttpResponse(domanda+' '+risposta+'  '+varianti)
 
-    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva()})
+    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest})
 
 def statistiche(req):
 

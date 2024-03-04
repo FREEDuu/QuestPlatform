@@ -29,7 +29,14 @@ class LoginForm(forms.Form):
 class FormTestCollettivi(forms.Form):
     
     nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages , validators=[validators.MinValueValidator(1)])
-    
+    dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
+        attrs={
+            "class": "form-control",
+            "data-field": "datetime",
+            "required": "required",
+            "name": "dataOraInizio", 
+            "type": "text",
+        }), label = False)
 
 class CustomMultiWidget(forms.MultiWidget):
     def __init__(self, common_attrs, widgetCount, attrs=None):

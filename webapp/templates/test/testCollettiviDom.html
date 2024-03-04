@@ -31,7 +31,7 @@
       <div class="px-0" id="target">
         <h1 class="fst-italic">CREAZIONE TEST COLLETTIVI</h1>
 
-<form action="{% url 'creaTestCollettivo' pagine %}" {{pagine}} method="POST">
+<form action="{% url 'creaTestCollettivo' pagine idTest %}" {{pagine}} {{idTest}} method="POST">
 
         {% csrf_token %}
 
@@ -43,12 +43,15 @@
                   
               </div>
               <button class=" btn btn-success" type="submit"
-                hx-get = "{% url 'creaTestCollettivoDisplay' %}"
+                hx-get = "{% url 'creaTestCollettivoDisplay' idTest %}" 
                 hx-target = '#div{{n}}'
                 hx-swap = 'beforeend'>AGGIUNGI DOMANDA</button>
           <p></p>
 
         {% endfor %}
+     
+          <p></p>
+
         <button type="submit" class="btn btn-primary float-end" id="crea">Crea Test</button>
 
       </div>
