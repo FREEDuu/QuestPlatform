@@ -1,4 +1,4 @@
-<form hx-trigger = " click from:#crea " hx-post = "{% url 'creaTestCollettivoDisplay' idTest %}"> 
+<form hx-trigger = " click from:#crea " hx-post = "{% url 'creaTestCollettivoDisplay' idTest n %}"> 
     {% csrf_token %}
 
     <div class="row">

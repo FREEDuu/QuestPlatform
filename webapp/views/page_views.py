@@ -47,7 +47,18 @@ def log_in(req):
 @login_required(login_url='login')
 def home(req):
     #Test.objects.filter(tipo = 'collettivo').delete()
-    #Domande.objects.filter(tipo = 's').delete()
+    #Domande.objects.filter().delete()
+    '''
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 's')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 't')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'c')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'm')
+    domandone = Domande.objects.all()
+
+    for domandona in domandone :
+        Varianti.objects.create(domanda = domandona, corpo = 'BIANCO', rispostaEsatta = 'bianco')
+    '''
+
     display_test_manuale = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'collettivo').values('idTest', 'dataOraInizio')
@@ -68,7 +79,10 @@ def home(req):
     print(display_sfida)
     gruppi_programmati = []
     for te in display_test_programmati:
-        gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
+        if te['dataOraInizio'] > datetime.now():
+            gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
+        else:
+            Test.objects.filter(idTest = te['idTest']).delete()
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('-dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
@@ -174,7 +188,7 @@ def creaTestCollettivo(req, pagine, idTest):
 
     return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
 
-def creaTestCollettivoDisplay(req, idTest):
+def creaTestCollettivoDisplay(req, idTest, n):
     if req.method == 'POST':
         
         form = FormDomandaCollettiva(req.POST)
@@ -186,7 +200,7 @@ def creaTestCollettivoDisplay(req, idTest):
             tipo = form.cleaned_data['tipo']
 
 
-            domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo)
+            domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = n)
             variante = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
             test = Test.objects.filter(idTest = idTest)[0]
             print(test)
@@ -194,7 +208,7 @@ def creaTestCollettivoDisplay(req, idTest):
 
             return HttpResponse(domanda+' '+risposta+'  '+varianti)
 
-    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest})
+    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
 def statistiche(req):
 
