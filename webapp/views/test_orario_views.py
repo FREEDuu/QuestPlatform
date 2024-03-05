@@ -112,24 +112,25 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         for n in range(displayer * 5, (displayer + 1) * 5):
 
             if domande_to_render[n] == 'm': 
-                error_indexes = []
                 concat_string = ''
                 for i in range(len(risposte_esatte[n])):
                     user_input = req.POST.get('domanda_{}_{}'.format(n, i))
                     concat_string = ''.join([concat_string, user_input])
                     
-                    if user_input != risposte_esatte[n][i]:
-                        error_indexes.append(i+1)
+                    if user_input != risposte_esatte[n][i]: 
+                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
                 
                 if concat_string != test_to_render[n].variante.rispostaEsatta:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -249,7 +250,6 @@ def testStartOrarioSfida(req, idTest, displayer):
             if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
                 check = True
-                print(formRisposta['domanda_{}'.format(n)].field.widget.input_type[0])
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
 
             else:

@@ -39,15 +39,15 @@
             {% csrf_token %}
 
             <form method="post" action = "{% url 'testStartOrario' idGruppi idTest displayer counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
-                <div class="{% if corretto %} border border-danger {% endif%}">
+                <div>
                     {% csrf_token %}
-                    <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                    <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}} </h6>
 
                     {% if tipo == 'm' %}
-                        <div class="{% if corretto %}border border-danger rounded {% endif%} d-flex form-inline multiple">
+                        <div class=" d-flex form-inline multiple">
                             {{ form }}
                         </div>
-                    
+                        <p></p>
                     {% else %}
                         <div class="{% if corretto %}border border-danger rounded {% endif%}">
                             {{form}}
@@ -74,7 +74,7 @@
                     <h6 class="p-2">{{domanda}} {{variante}} {{dom}} </h6>
                     
                     {% if tipo == 'm' %}
-                        <div class="{% if corretto %}border border-danger rounded {% endif%} d-flex form-inline multiple">
+                        <div class="d-flex form-inline multiple">
                             {{ form }}
                         </div>
                       
