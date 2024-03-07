@@ -36,14 +36,15 @@
         {% if ultimo %}
         {% csrf_token %}
         {% for domanda, variante, form, corretto, dom in ctx %}
-            {% csrf_token %}
 
-            <form method="post" action = "{% url 'TestProgrammatiStart'  idTest counter   %}" {{idTest}} {{counter}} novalidate>
+            <form method="post" action = "{% url 'TestProgrammatiStart'  idTest counter   %}" {{idTest}} {{counter}}>
+                {% csrf_token %}
+
                 <div class="{% if corretto %} border border-danger
                 {% endif%}">
 
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2  ">{{domanda}} {{dom}}  </h6>
                 
                 {{form}}
             </div>
@@ -58,14 +59,15 @@
         {% else %}
 
             {% for domanda, variante, form, corretto, dom in ctx %}
-            {% csrf_token %}
 
             <form method="post" action = "{% url 'TestProgrammatiStart' idTest counter %}" {{idTest}} {{counter}} >
+                {% csrf_token %}
+
                 <div class="{% if corretto %}border border-danger
                 {% endif%}">
 
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2  ">{{domanda}} {{dom}}  </h6>
                 
 
                 {{form}}
@@ -73,7 +75,7 @@
                 <p></p>
                 {% endfor %}
 
-              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #022d5e;">PROSEGUI</button>
             
               <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
