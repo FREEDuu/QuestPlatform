@@ -228,3 +228,12 @@ def statistiche(req):
 
 
     return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
+
+def controllo(req):
+
+    utenti_meno = User.objects.all()
+    utenti_inf = []
+    for el in utenti_meno:
+        utenti_inf.append([el, randint(0,99)])
+
+    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf})
