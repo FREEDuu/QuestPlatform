@@ -14,7 +14,7 @@ import random
 from . import test_common_views
 from django.db.models.query import QuerySet
 from django import forms 
-from ..utils.utils import genRandomStaticAnswersimport 
+from ..utils.utils import genRandomStaticAnswers
 import string
 
 def randomGen():
