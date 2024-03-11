@@ -14,13 +14,20 @@ import random
 from . import test_common_views
 from django.db.models.query import QuerySet
 from django import forms 
-from ..utils.utils import genRandomStaticAnswers
+from ..utils.utils import genRandomStaticAnswersimport 
+import string
 
+def randomGen():
+    print(''.join(random.choices(string.ascii_lowercase, k=5)))
 def genRandomFromSeed(seed, rispostaGiusta):
-    random.seed(seed)
-    ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
+    if str(rispostaGiusta).isdigit() :
+        ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
+
+    else:
+        ret = [('1',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),('2',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),(str(rispostaGiusta), str(rispostaGiusta))]
+
     random.shuffle(ret)
-    return ret , seed+1
+    return ret , seed
 
 @login_required(login_url='login')
 def creaTestOrarioEsatto(req):
@@ -121,7 +128,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
-    
+    random.seed(seed)
     ctx = []
     if req.method == 'POST':
         print(displayer, test['nrGruppo'] )
@@ -335,7 +342,7 @@ def FinishTestOrarioSfida(req, idTest):
     if sfida['dataOraInizio'] == None : 
         
         Sfide.objects.filter(idSfida = end['nrTest']).update(dataOraInizio = end['dataOraFine'], vincitore = req.user.username)
-
+        Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') + 1)
 
     return render(req, 'preTestOrario/FinishTestSfida.html', {'tempo' : (tempo_test_finale-tempo_test_iniziale).total_seconds()})
     
