@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from .models import *
 from  random import randint, random
 import string
-from itertools import islice
+from django.forms.widgets import RadioSelect
 
 def Create_other_var(array):
 
@@ -59,10 +59,6 @@ class CustomMultiValueField(forms.MultiValueField):
 
 
 class FormDomanda(forms.Form):
-    def __init__(self, domande, risposte_esatte, *args, **kwargs):
-        self.domande = domande
-        self.risposte_esatte = risposte_esatte 
-    
     
     def __init__(self, domande, risposte_esatte, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -72,6 +68,8 @@ class FormDomanda(forms.Form):
                 self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
             elif domande[i] == 'c':
                 self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"})) 
+            elif domande[i] == 'cr':
+                self.fields[field_name] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple())
             elif domande[i] == 'm':
                 common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;"}
                 numero_input = len(risposte_esatte[i])
@@ -80,8 +78,7 @@ class FormDomanda(forms.Form):
 
                 self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), 
-                                                            choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
 
     def get_interest_fields(self):
         ret = []

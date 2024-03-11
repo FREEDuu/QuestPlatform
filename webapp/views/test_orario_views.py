@@ -14,6 +14,7 @@ import random
 from . import test_common_views
 from django.db.models.query import QuerySet
 from django import forms 
+from ..utils.utils import genRandomStaticAnswersimport 
 import string
 
 def randomGen():
@@ -65,19 +66,36 @@ def CreazioneTestOrario(req, idGruppi, counter):
 
     TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
     singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
-    domande = Domande.objects.prefetch_related()
+    domande = Domande.objects.filter().exclude(tipo='cr')
 
     app_list = list()
 
-    for _ in range(15):
+    for _ in range(14):
 
         random_domanda = randint(0, len(domande)-1)
         varianti = Varianti.objects.filter(domanda = domande[random_domanda])
-
-        app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
+        random_variante = randint(0, len(varianti)-1)
+        domanda_test = Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
+        
+        app_list.append(domanda_test)
+        
+        
+    domande_cr = Domande.objects.filter(tipo='cr')
+    random_domanda_cr = randint(0, len(domande_cr)-1)
+    varianti_cr = Varianti.objects.filter(domanda = domande_cr[random_domanda_cr])
+    random_variante_cr = randint(0, len(varianti_cr)-1)
+    
+    domanda_test_cr = Test_Domande_Varianti(test = singolo_test, domanda = domande_cr[random_domanda_cr], variante = varianti_cr[random_variante_cr])
+    
+    if randint(0, 1) == 0:
+        app_list.insert(0,domanda_test_cr)
+    else:
+        app_list.append(domanda_test_cr)
         
     Test_Domande_Varianti.objects.bulk_create(app_list)
-    return redirect('preTestOrario' , idGruppi = idGruppi, idTest = singolo_test.idTest, counter = counter)
+    return redirect('preTestOrario', idGruppi=idGruppi, idTest=singolo_test.idTest, counter=counter)
+
+
 
 def preTestOrario(req, idGruppi, idTest, counter):
 
@@ -99,6 +117,8 @@ def preTestOrario(req, idGruppi, idTest, counter):
             return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0, seed = randint(0,1000))
     else:
         return test_common_views.cancella_un_test(req, idGruppi)
+
+
 
 
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
@@ -133,6 +153,14 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
+            elif domande_to_render[n] == 'cr':
+                if req.POST.get('domanda_{}'.format(n)) != '1':
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
             elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
@@ -143,7 +171,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
         if check:
             for n in range(displayer * 5, (displayer + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                    
             return render(req, 'preTestOrario/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': test['nrGruppo'], 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx, 'seed': seed})
         else:
             if test['nrGruppo'] -1 == displayer:
@@ -151,7 +183,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
             displayer += 1
             ctx = []
             for n in range(displayer * 5, (displayer + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                    
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             
@@ -162,7 +198,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
         for n in range(len(test_to_render)):
             if n >= displayer * 5 and n < (displayer + 1) * 5:
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
+                
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         return render(req,'preTestOrario/TestSelect.html', {'idGruppi': idGruppi,'ultimo': test['nrGruppo'] -1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed})
