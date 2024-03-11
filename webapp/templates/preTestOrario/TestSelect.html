@@ -14,7 +14,6 @@
 </head>
 <header class="m-0">
 
-        
     {% load static %}
     <img src="{% static 'webapp/logo.svg' %}" class = "center-block m-2"alt="INAIL" style="height: 100px; width: 100%;">
 
@@ -48,6 +47,24 @@
                             {{ form }}
                         </div>
                         <p></p>
+
+                    {% elif tipo == 'c' %}
+                        <div class="d-flex flex-column">
+                            {% for radio in form %}
+                                <label for="{{ radio.id_for_label }}" >
+                                    <span>{{ radio.tag }}</span>
+                                    <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <p></p>
+
+                    {% elif tipo == 'cr' %}
+                        <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                            {{ form }}
+                        </div>
+                        <p></p>
+
                     {% else %}
                         <div class="{% if corretto %}border border-danger rounded {% endif%}">
                             {{form}}
@@ -71,13 +88,31 @@
                 {% csrf_token %}
                 {% for domanda, variante, form, corretto, dom, tipo in ctx %}
                     {% csrf_token %}
-                    <h6 class="p-2">{{domanda}} {{variante}} {{dom}} </h6>
+                    <h6 class="p-2">{% if tipo != 'r' %} {{domanda}} {{variante}} {{dom}} {% endif %}</h6>
                     
                     {% if tipo == 'm' %}
                         <div class="d-flex form-inline multiple">
                             {{ form }}
                         </div>
-                      
+                        <p></p>
+
+                    {% elif tipo == 'c' %}
+                        <div class="d-flex flex-column">
+                            {% for radio in form %}
+                                <label for="{{ radio.id_for_label }}" >
+                                    <span>{{ radio.tag }}</span>
+                                    <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                            </div>
+                            <p></p>
+
+                    {% elif tipo == 'cr' %}
+                        <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                            {{ form }}
+                        </div>
+                        <p></p>
+                        
                     {% else %}
                         <div class="{% if corretto %}border border-danger rounded {% endif%}">
                             {{form}}
@@ -111,6 +146,18 @@
     </div>
 </footer>
 
+<script>
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', function() {
+            checkboxes.forEach((cb) => {
+                if (cb !== this) {
+                    cb.checked = false;
+                }
+            });
+        });
+    });
+</script>
 </body>
 
 </html>
