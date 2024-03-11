@@ -33,63 +33,51 @@
     <h4>INSERIMENTO DATI</h4>
 
   
-        {% if ultimo == displayer %}
+        {% if ultimo %}
         {% csrf_token %}
-        {% for domanda, variante, form, corretto, dom, tipo in ctx %}
-            {% csrf_token %}
+        {% for domanda, variante, form, corretto, dom in ctx %}
 
-            <form method="post" action = "{% url 'testStartOrario' idGruppi idTest displayer counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
-                <div>
-                    {% csrf_token %}
-                    <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}} </h6>
+            <form method="post" action = "{% url 'TestProgrammatiStart'  idTest counter   %}" {{idTest}} {{counter}}>
+                {% csrf_token %}
 
-                    {% if tipo == 'm' %}
-                        <div class=" d-flex form-inline multiple">
-                            {{ form }}
-                        </div>
-                        <p></p>
-                    {% else %}
-                        <div class="{% if corretto %}border border-danger rounded {% endif%}">
-                            {{form}}
-                        </div>
-                        <p></p>
-                    {% endif %}
-                </div>
-            <p></p>
-        {% endfor %}
-        <p></p>
+                <div class="{% if corretto %} border border-danger
+                {% endif%}">
+
+              
+                <h6 class="p-2  ">{{domanda}} {{dom}}  </h6>
+                
+                {{form}}
+            </div>
+                <p></p>
+            {% endfor %}
+                <p></p>
         <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
         <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
-    </form>
 
+    </form>    
         {% else %}
 
-            {% csrf_token %}
+            {% for domanda, variante, form, corretto, dom in ctx %}
 
-            <form method="post" action = "{% url 'testStartOrario' idGruppi idTest counter displayer seed%}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
+            <form method="post" action = "{% url 'TestProgrammatiStart' idTest counter %}" {{idTest}} {{counter}} >
                 {% csrf_token %}
-                {% for domanda, variante, form, corretto, dom, tipo in ctx %}
-                    {% csrf_token %}
-                    <h6 class="p-2">{{domanda}} {{variante}} {{dom}} </h6>
-                    
-                    {% if tipo == 'm' %}
-                        <div class="d-flex form-inline multiple">
-                            {{ form }}
-                        </div>
-                      
-                    {% else %}
-                        <div class="{% if corretto %}border border-danger rounded {% endif%}">
-                            {{form}}
-                        </div>
-                        <p></p>
-                    {% endif %}
 
+                <div class="{% if corretto %}border border-danger
+                {% endif%}">
+
+              
+                <h6 class="p-2  ">{{domanda}} {{dom}}  </h6>
+                
+
+                {{form}}
+            </div>
+                <p></p>
                 {% endfor %}
 
-              <button type="submit" id="prosegui" class="btn text-light mt-4" style="background-color: #069901;">PROSEGUI</button>
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #022d5e;">PROSEGUI</button>
             
-              <button class="btn btn-primary float-end mt-4" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+              <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
             </form>     
 

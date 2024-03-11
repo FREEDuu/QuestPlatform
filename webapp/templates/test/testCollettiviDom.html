@@ -12,7 +12,6 @@
       href="//cdn.jsdelivr.net/npm/datetimepicker@latest/dist/DateTimePicker.min.css" />
       <script type="text/javascript" src="//cdn.jsdelivr.net/npm/datetimepicker@latest/dist/DateTimePicker.min.js"></script>
 
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
       crossorigin="anonymous"></script>
@@ -29,28 +28,33 @@
     <div class="p-4 p-md-5 mb-4 text-white rounded bg-secondary m-4">
       <div class="px-0" id="target">
         <h1 class="fst-italic">CREAZIONE TEST COLLETTIVI</h1>
-        <form action="{% url 'testCollettivi' %}" method="POST">
-          {% csrf_token %}
-          <h6 class="border-bottom pb-2 mb-0">Quante pagine ?</h6>
-          <p></p>
-              
-                {{form.nPagine}}
-<p></p>
-<h6 class="border-bottom pb-2 mb-0"> a che ora ? </h6>
-<p></p>
-                {{form.dataOraInizio}}
-                <!--DatePicker's Box-->
-                <div id="dtBox"></div>
-               </div>
-          <p></p>
-                  
-                  <p></p>
-          <button class="btn btn-primary float-end" type = "submit">Crea Test</button>
 
-      </form>
+<form action="{% url 'creaTestCollettivo' pagine idTest %}" {{pagine}} {{idTest}} method="POST">
+
+        {% csrf_token %}
+
+        {% for n in domande %}
+          
+        <h6 class="border-bottom pb-2 mb-0">Pagina {{n}}</h6>
+          <p></p>
+                <div id="div{{n}}" class="m-2">
+                  
+              </div>
+              <button class=" btn btn-success" type="submit"
+                hx-get = "{% url 'creaTestCollettivoDisplay' idTest n %}" 
+                hx-target = '#div{{n}}'
+                hx-swap = 'beforeend'>AGGIUNGI DOMANDA</button>
+          <p></p>
+
+        {% endfor %}
+     
+          <p></p>
+
+        <button type="submit" class="btn btn-primary float-end" id="crea">Crea Test</button>
 
       </div>
     </div>
+</form>
 
   
 

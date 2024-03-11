@@ -8,6 +8,8 @@ class Domande(models.Model):
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     tipo = models.CharField(max_length=100, default = 't')
+    numeroPagine = models.IntegerField(default = -1)
+
 
     def __str__(self):
         return self.corpo 
@@ -44,6 +46,7 @@ class Test(models.Model):
     inSequenza = models.BooleanField(null=False, default=False)
     secondiRitardo = models.IntegerField(default=1)
     dataOraInizio = models.DateTimeField(null=True)
+    nrTest = models.IntegerField(default=0)
     dataOraFine = models.DateTimeField(null=True)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
 
@@ -93,3 +96,20 @@ class Statistiche(models.Model):
 
     def __str__(self):
         return f'id: {self.utente}  |  nrGruppo: {self.tipoDomanda}  |  tipo: {self.nrErrori}'
+    
+class Sfide(models.Model):
+    idSfida = models.AutoField(primary_key=True)
+    utente = models.ForeignKey(User, on_delete=models.CASCADE, default = 1, related_name='utente')
+    utenteSfidato = models.ForeignKey(User, on_delete=models.CASCADE, default = 1, related_name='utenteSfidato')
+    nrGruppo = models.IntegerField(default=0)
+    tipo = models.CharField(max_length=50, default="sfida")
+    secondiRitardo = models.IntegerField(default=1)
+    dataOraInizio = models.DateTimeField(null=True)
+    dataOraInserimento = models.DateTimeField(auto_now_add=True)
+    vincitore =  models.CharField(max_length=50, default="pareggio")
+
+    def __str__(self):
+        #return str(self.idTest)
+        return f'id: {self.idSfida}  |  nrGruppo: {self.utente}  |  tipo: {self.utenteSfidato}  |'
+
+
