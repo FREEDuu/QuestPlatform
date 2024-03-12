@@ -78,7 +78,7 @@ class FormDomanda(forms.Form):
 
                 self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('', 'Selezionare opzione'), ('1', '1'), ('2', '2'), ('3', '3')], initial='', required=True)
 
     def get_interest_fields(self):
         ret = []
