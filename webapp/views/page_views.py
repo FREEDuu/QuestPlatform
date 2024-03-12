@@ -58,6 +58,11 @@ def home(req):
     for domandona in domandone :
         Varianti.objects.create(domanda = domandona, corpo = 'BIANCO', rispostaEsatta = 'bianco')
     '''
+    if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 's', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'r', nrErrori = 0)
 
     stelle = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')[0].nrErrori
 

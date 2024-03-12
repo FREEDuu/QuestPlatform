@@ -17,21 +17,49 @@ from django import forms
 from ..utils.utils import genRandomStaticAnswers
 import string
 
-def randomGen():
-    print(''.join(random.choices(string.ascii_lowercase, k=5)))
+def genRandomint(num):
+    if randint(0,1) == 0:
+        return randint(0, num-1)
+    else: 
+        return randint(num+1, 9)
+def randomGen(lungh, to_repl):
+    ret = random.choices(string.ascii_lowercase, k=lungh)
+    while ret == to_repl:
+       ret = random.choices(string.ascii_lowercase, k=lungh)
+    
+    return ret[0]
 def genRandomFromSeed(tipo, seed, rispostaGiusta):
-    if str(rispostaGiusta).isdigit() :
+    if True :
         if tipo == 's':
-            ret = [('', '- selezionare opzione -'), ('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
+            app_list = list()
+            app_list.append(('', '- selezionare opzione -'))
+            
+            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+                for _ in range(0, randint(6,14)):
+                
+                    num = int(rispostaGiusta)
+                    var = genRandomint(num)
+                    app_list.append((str(_), str(var)))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            else:
+                for _ in range(0, randint(6,14)):
+                    var = str(rispostaGiusta)
+                    to_repl = var[randint(0,len(var)-1)]
+                    var  = var.replace(to_repl, randomGen(1, to_repl))
+                    app_list.append((str(_), var))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            
         else:
-            ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
-
-    else:
-        if tipo == 's':
-            ret = [('', '- selezionare opzione -'), ('1',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),('2',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),(str(rispostaGiusta), str(rispostaGiusta))]
-        else:
-            ret = [('1',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),('2',''.join(random.choices(string.ascii_lowercase, k=len(rispostaGiusta)))),(str(rispostaGiusta), str(rispostaGiusta))]
-
+            app_list = list()
+            for _ in range(0, randint(6,14)):
+                var = str(rispostaGiusta)
+                to_repl = var[randint(0,len(var)-1)]
+                var  = var.replace(to_repl, randomGen(1, to_repl))
+                app_list.append((str(_), var))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
     # Per le select mescolare tutto tranne il primo valore di default
     if tipo == 's':
         shuffled_options = ret[1:]
@@ -39,7 +67,6 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
         ret[1:] = shuffled_options
     else:
         random.shuffle(ret)
-    
     return ret , seed
 
 @login_required(login_url='login')
