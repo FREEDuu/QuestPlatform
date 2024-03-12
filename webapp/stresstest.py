@@ -3,10 +3,10 @@ import random
 import time
 
 # Database connection parameters
-DB_NAME = "questapplication"
+DB_NAME = "questApplication"
 DB_USER = "carl"
-DB_PASSWORD = "mZT4Uo9u2aB7Y2ApZB3ZP45VwN5zmRlG"
-DB_HOST = "dpg-cnnihula73kc739tq2lg-a.frankfurt-postgres.render.com"
+DB_PASSWORD = "pondsama"
+DB_HOST = "2.56.212.172"
 DB_PORT = "5432"
 
 # Number of objects to create

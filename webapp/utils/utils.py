@@ -49,8 +49,8 @@ def genRandomStaticAnswers(tipo, rispostaGiusta):
     if tipo == 'cr':
         ret.append(('1', rispostaGiusta))  
         
-        if rispostaGiusta == '* Accetto i termini e sulla privacy e sul trattamento dei dati':
-            ret.append(('2', '* Non accetto i termini e sulla privacy e sul trattamento dei dati'))  
+        if rispostaGiusta == '* Accetto i termini e condizioni sulla privacy e sul trattamento dei dati personali':
+            ret.append(('2', '* Non accetto i termini e condizioni sulla privacy e sul trattamento dei dati personali'))  
         elif rispostaGiusta == 'Accetto i termini del bando':
             ret.append(('2', 'Non accetto i termini del bando'))  
 

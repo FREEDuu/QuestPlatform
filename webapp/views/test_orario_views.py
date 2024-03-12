@@ -136,7 +136,7 @@ def preTestOrario(req, idGruppi, idTest, counter):
 
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
-    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante')
+    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
