@@ -55,23 +55,51 @@
 
         {% else %}
 
-            {% for domanda, variante, form, corretto, dom in ctx %}
+            {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
             <form method="post" action = "{% url 'testStartOrarioSfida' idTest displayer %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
-                <div class="{% if corretto %}border border-danger
-                {% endif%}">
+                <div>
 
               
-                <h6 class="p-2">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
                 
 
-                {{form}}
+                {% if tipo == 'm' %}
+                <div class="d-flex form-inline multiple">
+                    {{ form }}
+                </div>
+                <p></p>
+
+            {% elif tipo == 'c' %}
+                <div class="d-flex flex-column">
+                    {% for radio in form %}
+                        <label for="{{ radio.id_for_label }}" >
+                            <span>{{ radio.tag }}</span>
+                            <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                    </div>
+                    <p></p>
+
+            {% elif tipo == 'cr' %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{ form }}
+                </div>
+                <p></p>
+                
+            {% else %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{form}}
+                </div>
+                <p></p>
+            {% endif %}
+
             </div>
                 <p></p>
                 {% endfor %}
 
-              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #022d5e;">PROSEGUI</button>
             
               <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 

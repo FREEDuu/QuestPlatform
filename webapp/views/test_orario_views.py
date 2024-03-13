@@ -106,13 +106,14 @@ def CreazioneTestOrario(req, idGruppi, counter):
 
     TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
     singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
-    domande = Domande.objects.filter().exclude(tipo='cr')
-
+    domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
+   
+    choice = random.sample(range(0, len(domande)), 16)
     app_list = list()
 
     for _ in range(14):
 
-        random_domanda = randint(0, len(domande)-1)
+        random_domanda = choice[_]
         varianti = Varianti.objects.filter(domanda = domande[random_domanda])
         random_variante = randint(0, len(varianti)-1)
         domanda_test = Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante])
@@ -298,18 +299,19 @@ def preTestSfida(req, idGruppi, id):
         return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : tests[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
     else:
         singolo_test = Test.objects.create(utente = req.user, tipo = 'sfida', dataOraInizio = datetime.now(), nrGruppo = 3)
-        domande = Domande.objects.select_related()
+        domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
     
         random.seed(id)
         app_list = list()
+        choice = random.sample(range(0, len(domande)), 16)
+
 
                 # Associa domande casuali con la relativa variante casuale al nuovo test creato
         for _ in range(15):
             
-            random_domanda = randint(0, len(domande)-1)
-            while domande[random_domanda].tipo == 'm':
-                random_domanda = randint(0, len(domande)-1)
-            print(random_domanda)
+            random_domanda = choice[_]
+            
+            
             varianti = Varianti.objects.filter(domanda = domande[random_domanda])
 
             app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
@@ -334,12 +336,12 @@ def testStartOrarioSfida(req, idTest, displayer):
 
         for n in range(displayer * 5, (displayer + 1) * 5):
             if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
 
             else:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         if check:
             for n in range(displayer * 5, (displayer + 1) * 5):
@@ -352,7 +354,7 @@ def testStartOrarioSfida(req, idTest, displayer):
             ctx = []
             for n in range(displayer * 5, (displayer + 1) * 5):
                 formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], idTest, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             
             return render(req, 'preTestOrario/TestSelectSfida.html', {'ultimo': test['nrGruppo'], 'idTest': idTest, 'displayer': displayer, 'ctx': ctx })
@@ -363,7 +365,7 @@ def testStartOrarioSfida(req, idTest, displayer):
         for n in range(len(test_to_render)):
             if n >= displayer * 5 and n < (displayer + 1) * 5:
                 forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], idTest, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         return render(req,'preTestOrario/TestSelectSfida.html', {'ultimo': test['nrGruppo'] -1,'idTest': idTest,'displayer': displayer,'ctx': ctx})
     

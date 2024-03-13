@@ -238,9 +238,15 @@ def statistiche(req):
 
 def controllo(req):
 
-    utenti_meno = User.objects.all()
+    if req.user.username != 'fred' or req.user.username != 'carl':
+        return redirect('home')
     utenti_inf = []
-    for el in utenti_meno:
-        utenti_inf.append([el, randint(0,99)])
+    print(req.user.username)
+    utenti = User.objects.all()
+    for utente in utenti:
+        check =Test.objects.filter(utente= utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
+        if len(check) <= 100:
+            utenti_inf.append([utente, len(check)])
+
 
     return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf})

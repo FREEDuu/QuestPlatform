@@ -88,7 +88,7 @@
                 {% csrf_token %}
                 {% for domanda, variante, form, corretto, dom, tipo in ctx %}
                     {% csrf_token %}
-                    <h6 class="p-2">{% if tipo != 'r' %} {{domanda}} {{variante}} {{dom}} {% endif %}</h6>
+                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
                     
                     {% if tipo == 'm' %}
                         <div class="d-flex form-inline multiple">
@@ -122,7 +122,7 @@
 
                 {% endfor %}
 
-              <button type="submit" id="prosegui" class="btn text-light mt-4" style="background-color: #069901;">PROSEGUI</button>
+              <button type="submit" id="prosegui" class="btn text-light mt-4" style="background-color: #022d5e;">PROSEGUI</button>
             
               <button class="btn btn-primary float-end mt-4" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
