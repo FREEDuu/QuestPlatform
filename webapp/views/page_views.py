@@ -206,17 +206,17 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
             domanda = form.cleaned_data['Domanda']
             risposta = form.cleaned_data['Risposta']
-            varianti = form.cleaned_data['Varianti']
+            variante = form.cleaned_data['Varianti']
             tipo = form.cleaned_data['tipo']
 
 
             domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = n)
-            variante = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
+            variante = Varianti.objects.create(domanda = domanda_test, corpo = variante, rispostaEsatta = risposta)
             test = Test.objects.filter(idTest = idTest)[0]
             print(test)
             Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = variante)    
 
-            return HttpResponse(domanda+' '+risposta+'  '+varianti)
+            return HttpResponse(domanda+' '+risposta+'  '+ variante)
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
