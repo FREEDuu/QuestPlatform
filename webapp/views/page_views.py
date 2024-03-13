@@ -160,6 +160,7 @@ def Sfida(req):
 )
 
 
+@login_required(login_url='login')
 def testCollettivi(req):
     if req.method == 'POST':
 
@@ -187,6 +188,7 @@ def testCollettivi(req):
 
     return render(req, 'test/testCollettivi.html', ctx)
 
+@login_required(login_url='login')
 def creaTestCollettivo(req, pagine, idTest):
 
     if req.method == 'POST':
@@ -195,6 +197,7 @@ def creaTestCollettivo(req, pagine, idTest):
 
     return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
 
+@login_required(login_url='login')
 def creaTestCollettivoDisplay(req, idTest, n):
     if req.method == 'POST':
         
@@ -217,6 +220,7 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
+@login_required(login_url='login')
 def statistiche(req):
 
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
@@ -236,10 +240,12 @@ def statistiche(req):
 
     return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
 
+@login_required(login_url='login')
 def controllo(req):
+    
+    if req.user.is_staff == False:
+        redirect('home')
 
-    if req.user.username != 'fred' or req.user.username != 'carl':
-        return redirect('home')
     utenti_inf = []
     print(req.user.username)
     utenti = User.objects.all()
