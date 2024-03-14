@@ -6,6 +6,8 @@ from .views import test_common_views, test_manuale_views, test_orario_views, pag
 urlpatterns = [
     
     path('login/' , page_views.log_in, name= 'login'),
+    path('accettaSfida/<int:idGruppi>/<int:id>' , page_views.accettaSfida, name= 'accettaSfida'), 
+    path('rifiutaSfida/<int:idGruppi>/<int:id>' , page_views.rifiutaSfida, name= 'rifiutaSfida'),     
     path('' , page_views.home, name= 'home'),
     path('home' , page_views.home, name= 'home'),
     path('controllo' , page_views.controllo, name= 'controllo'),
