@@ -88,6 +88,7 @@ def home(req):
     print(display_sfide_attesa_2)
     
     for sfida in display_sfide_attesa_1:
+        sfida['utente_sfidato'] = TestsGroup.objects.filter(tipo='sfida_attesa_2', nrTest=sfida['nrTest']).select_related('utente').values('utente__username')
         
         if sfida['dataOraInizio'] != None:
 
@@ -96,8 +97,10 @@ def home(req):
                 TestsGroup.objects.filter(nrTest = sfida['idGruppi']).delete()
 
             else : 
-                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['nrTest']])
+                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['utente_sfidato'].first()['utente__username'], sfida['nrTest']])
+                
     for sfida2 in display_sfide_attesa_2:
+        sfida2['utente_sfidante'] = TestsGroup.objects.filter(tipo='sfida_attesa_1', nrTest=sfida2['nrTest']).select_related('utente').values('utente__username')
         
         if sfida2['dataOraInizio'] != None:
 
@@ -105,8 +108,10 @@ def home(req):
 
                 TestsGroup.objects.filter(nrTest = sfida2['idGruppi']).delete()
             else : 
-                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], sfida2['nrTest']])
+                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], sfida2['utente_sfidante'].first()['utente__username'], sfida2['nrTest']])
+                
     for sfida3 in display_sfide_accettate:
+        sfida3['utente_avversario'] = TestsGroup.objects.filter(tipo='sfida_accettata', nrTest=sfida3['nrTest']).exclude(utente=req.user.id).select_related('utente').values('utente__username')
         
         if sfida3['dataOraInizio'] != None:
 
@@ -114,7 +119,7 @@ def home(req):
 
                 TestsGroup.objects.filter(nrTest = sfida3['idGruppi']).delete()
             else : 
-                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], sfida3['nrTest']])
+                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], sfida3['utente_avversario'].first()['utente__username'], sfida3['nrTest']])
 
     gruppi_programmati = []
     for te in display_test_programmati:
@@ -183,6 +188,10 @@ def Sfida(req):
     for el1 in storico_sfide_ricevute:
         if el1.vincitore != 'pareggio':
             sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInserimento, el1.vincitore])
+
+    # Ordina per data discendente
+    sf_fatte.sort(key=lambda x: x[2], reverse=True)
+    sf_ric.sort(key=lambda x: x[2], reverse=True)
 
     creaTestSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
 

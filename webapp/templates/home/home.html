@@ -83,17 +83,17 @@
                             <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
                             <p></p>
 
-                            {% for data, idGruppi, id in display_sfida_attesa_1 %}
+                            {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
                                         
                             <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                               
                               <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
                                   <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                                  
-                                  <strong class="m-1"> La sfida inizia {{data}}</strong>
+                                  <strong class="m-1">{{data}}  </strong>|  {{utente_sfidato}}
                                 </div>
                               
-                                  attesa dello sfidante
+                                  In attesa di conferma
                              
                             </div>
                     
@@ -102,17 +102,17 @@
                       {% endfor %}
                       <p></p>
 
-                            {% for data, idGruppi, id in display_sfida_attesa_2 %}
+                            {% for data, idGruppi, utente_sfidante, id in display_sfida_attesa_2 %}
                                         
                             <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                               
                               <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
                                   <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                                  
-                                  <strong class="m-1"> La sfida inizia {{data}}</strong>
+                                  <strong class="m-1">{{data}}  </strong>|  {{utente_sfidante}} 
                                 </div>
                               
-                                  <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{id}}>
+                                  <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
                                     <button class="btn btn-success float-end m-2">
                                  
                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
@@ -121,7 +121,7 @@
                                         </svg>
                                     </button>
                                   </a>
-                                  <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{id}}>
+                                  <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
                                     <button class="btn btn-danger float-end m-2">
                                  
                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
@@ -136,14 +136,14 @@
                       {% endfor %}
                       <p></p>
 
-                      {% for data, idGruppi, id in display_sfida_accettate %}
+                      {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
                                   
                       <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                         
                         <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
                             <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                            
-                            <strong class="m-1"> La sfida inizia {{data}}</strong>
+                            <strong class="m-1"> {{data}}  </strong>|  {{utente_avversario}} 
                           </div>
                         
                             <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
@@ -454,6 +454,13 @@
     return colors;
   }
   
+
+  // ATTIVA I TOOLTIP 
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
 </script>
 
 {% endblock %}
