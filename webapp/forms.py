@@ -36,6 +36,7 @@ class FormTestCollettivi(forms.Form):
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)
 
 class CustomMultiWidget(forms.MultiWidget):
@@ -78,7 +79,7 @@ class FormDomanda(forms.Form):
 
                 self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('1', '1'), ('2', '2'), ('3', '3')], required=True)
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('', 'Selezionare opzione'), ('1', '1'), ('2', '2'), ('3', '3')], initial='', required=True)
 
     def get_interest_fields(self):
         ret = []
@@ -92,7 +93,7 @@ class FormDomandaCollettiva(forms.Form):
     tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
     Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
     Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
-    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
+    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'variante'}))
 
     
 class TestManualeForm(forms.Form):
@@ -105,6 +106,7 @@ class TestManualeForm(forms.Form):
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)
     
     def clean_dataOraInizio(self):
@@ -135,4 +137,5 @@ class TestSfidaOrarioEsattoForm(forms.Form):
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)

@@ -41,7 +41,16 @@ def log_in(req):
                 messages.error(req, 'username o password non corretti')    
             
     return render(req, "login/login.html")
+def rifiutaSfida(req, idGruppi, id):
+    Sfide.objects.filter(idSfida = id).delete()
+    TestsGroup.objects.filter(nrTest = id).delete()
+    return redirect('home')
 
+def accettaSfida(req,idGruppi,id):
+
+    TestsGroup.objects.filter(nrTest = id).update(tipo = 'sfida_accettata')
+
+    return redirect('home')
 
 # HOME
 @login_required(login_url='login')
@@ -58,27 +67,60 @@ def home(req):
     for domandona in domandone :
         Varianti.objects.create(domanda = domandona, corpo = 'BIANCO', rispostaEsatta = 'bianco')
     '''
+    if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 's', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'r', nrErrori = 0)
 
     stelle = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')[0].nrErrori
 
     display_test_manuale = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
     display_test_orario = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
     display_test_programmati = Test.objects.filter(tipo = 'collettivo').values('idTest', 'dataOraInizio')
-    display_sfide = TestsGroup.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
-    display_sfida = []
-
-    for sfida in display_sfide:
+    display_sfide_attesa_1 = TestsGroup.objects.filter(tipo = 'sfida_attesa_1', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest','tipo')
+    display_sfide_attesa_2 = TestsGroup.objects.filter(tipo = 'sfida_attesa_2', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest', 'tipo')
+    display_sfide_accettate = TestsGroup.objects.filter(tipo = 'sfida_accettata', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
+    print(display_sfide_attesa_1)
+    display_sfida_attesa_1 = []
+    display_sfida_attesa_2 = []
+    display_sfida_accettate = []
+    print(display_sfide_attesa_2)
+    
+    for sfida in display_sfide_attesa_1:
+        sfida['utente_sfidato'] = TestsGroup.objects.filter(tipo='sfida_attesa_2', nrTest=sfida['nrTest']).select_related('utente').values('utente__username')
         
         if sfida['dataOraInizio'] != None:
 
             if sfida['dataOraInizio'] < datetime.now() : 
 
-                Test.objects.filter(idTest = sfida['idGruppi']).delete()
+                TestsGroup.objects.filter(nrTest = sfida['idGruppi']).delete()
+
             else : 
+                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['utente_sfidato'].first()['utente__username'], sfida['nrTest']])
+                
+    for sfida2 in display_sfide_attesa_2:
+        sfida2['utente_sfidante'] = TestsGroup.objects.filter(tipo='sfida_attesa_1', nrTest=sfida2['nrTest']).select_related('utente').values('utente__username')
+        
+        if sfida2['dataOraInizio'] != None:
 
-                display_sfida.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['nrTest']])
+            if sfida2['dataOraInizio'] < datetime.now() : 
 
-    print(display_sfida)
+                TestsGroup.objects.filter(nrTest = sfida2['idGruppi']).delete()
+            else : 
+                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], sfida2['utente_sfidante'].first()['utente__username'], sfida2['nrTest']])
+                
+    for sfida3 in display_sfide_accettate:
+        sfida3['utente_avversario'] = TestsGroup.objects.filter(tipo='sfida_accettata', nrTest=sfida3['nrTest']).exclude(utente=req.user.id).select_related('utente').values('utente__username')
+        
+        if sfida3['dataOraInizio'] != None:
+
+            if sfida3['dataOraInizio'] < datetime.now() : 
+
+                TestsGroup.objects.filter(nrTest = sfida3['idGruppi']).delete()
+            else : 
+                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], sfida3['utente_avversario'].first()['utente__username'], sfida3['nrTest']])
+
     gruppi_programmati = []
     for te in display_test_programmati:
         if te['dataOraInizio'] > datetime.now():
@@ -90,7 +132,6 @@ def home(req):
     
     gruppi_manuale = []
     gruppi_orario = []
-    print(display_test_manuale)
     if len(display_test_manuale) != 0:
         for test in display_test_manuale:
             count = 0
@@ -113,7 +154,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'display_sfida': display_sfida, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
+    return render(req, 'home/home.html', {'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
 
 
 
@@ -129,6 +170,7 @@ def creazioneTest(req):
 
 @login_required(login_url='login')
 def Sfida(req):
+
     user_list = User.objects.exclude(Q(id = req.user.id))
     user_lists = list()
     user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
@@ -147,6 +189,10 @@ def Sfida(req):
         if el1.vincitore != 'pareggio':
             sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInserimento, el1.vincitore])
 
+    # Ordina per data discendente
+    sf_fatte.sort(key=lambda x: x[2], reverse=True)
+    sf_ric.sort(key=lambda x: x[2], reverse=True)
+
     creaTestSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
 
     creaTestSfidaOrarioEsattoForm.fields['utente'].choices = user_lists
@@ -155,6 +201,7 @@ def Sfida(req):
 )
 
 
+@login_required(login_url='login')
 def testCollettivi(req):
     if req.method == 'POST':
 
@@ -182,6 +229,7 @@ def testCollettivi(req):
 
     return render(req, 'test/testCollettivi.html', ctx)
 
+@login_required(login_url='login')
 def creaTestCollettivo(req, pagine, idTest):
 
     if req.method == 'POST':
@@ -190,6 +238,7 @@ def creaTestCollettivo(req, pagine, idTest):
 
     return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
 
+@login_required(login_url='login')
 def creaTestCollettivoDisplay(req, idTest, n):
     if req.method == 'POST':
         
@@ -198,20 +247,21 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
             domanda = form.cleaned_data['Domanda']
             risposta = form.cleaned_data['Risposta']
-            varianti = form.cleaned_data['Varianti']
+            variante = form.cleaned_data['Varianti']
             tipo = form.cleaned_data['tipo']
 
 
             domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = n)
-            variante = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
+            variante = Varianti.objects.create(domanda = domanda_test, corpo = variante, rispostaEsatta = risposta)
             test = Test.objects.filter(idTest = idTest)[0]
             print(test)
             Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = variante)    
 
-            return HttpResponse(domanda+' '+risposta+'  '+varianti)
+            return HttpResponse(domanda+' '+risposta+'  '+ variante)
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
+@login_required(login_url='login')
 def statistiche(req):
 
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
@@ -231,11 +281,19 @@ def statistiche(req):
 
     return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
 
+@login_required(login_url='login')
 def controllo(req):
+    
+    if req.user.is_staff == False:
+        redirect('home')
 
-    utenti_meno = User.objects.all()
     utenti_inf = []
-    for el in utenti_meno:
-        utenti_inf.append([el, randint(0,99)])
+    print(req.user.username)
+    utenti = User.objects.all()
+    for utente in utenti:
+        check =Test.objects.filter(utente= utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
+        if len(check) <= 100:
+            utenti_inf.append([utente, len(check)])
+
 
     return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf})

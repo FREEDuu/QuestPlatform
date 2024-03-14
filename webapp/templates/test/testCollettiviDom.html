@@ -25,9 +25,9 @@
 
   
   <main class="container">
-    <div class="p-4 p-md-5 mb-4 text-white rounded bg-secondary m-4">
+    <div class="p-4 p-md-5 mb-4 my-3 rounded bg-body rounded shadow-lg">
       <div class="px-0" id="target">
-        <h1 class="fst-italic">CREAZIONE TEST COLLETTIVI</h1>
+        <h1>Creazione Test collettivi</h1>
 
 <form action="{% url 'creaTestCollettivo' pagine idTest %}" {{pagine}} {{idTest}} method="POST">
 
@@ -43,7 +43,7 @@
               <button class=" btn btn-success" type="submit"
                 hx-get = "{% url 'creaTestCollettivoDisplay' idTest n %}" 
                 hx-target = '#div{{n}}'
-                hx-swap = 'beforeend'>AGGIUNGI DOMANDA</button>
+                hx-swap = 'beforeend'>Aggiungi domanda</button>
           <p></p>
 
         {% endfor %}

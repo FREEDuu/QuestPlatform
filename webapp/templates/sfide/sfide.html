@@ -33,7 +33,7 @@
           {{ creaTestSfidaOrarioEsattoForm.utente }}
         </div>
         <p></p>
-        <h6 class="border-bottom pb-2 mb-0">A che ora lo vuoi sfidare ? ?</h6>
+        <h6 class="border-bottom pb-2 mb-0">A che ora lo vuoi sfidare?</h6>
         <p></p>
         <div class="input-group mb-3">
           <span class="input-group-text" id="inputGroup-sizing-default">time</span>
@@ -51,72 +51,39 @@
 
 
 
-    <div class="col-md-6">
-
-      <h1>QUI VANNO LE SFIDE PASSATE</h1>
-
-      <div class="row">
-        <div class="col">
-          Utente sfidante
- 
-        </div>
-        <div class="col">
-          Utente Sfidato
-        </div>
-        <div class="col-5">
-          Ora Sfida
-
-        </div>
-        <div class="col">
-          Vincitore
-       
-        </div>
-      </div>
-      <p></p>
-
-      {% for ut ,uts ,ora ,vinc in sfide_fatte%}
-      <div class="row">
-        <div class="col">
-
-          {{ut}}
-        </div>
-        <div class="col">
-          {{uts}}
-        </div>
-        <div class="col-5">
-          {{ora}}
-
-        </div>
-        <div class="col">
-          {{vinc}}
-       
-        </div>
-      </div>
-      <p></p>
-      {% endfor %}
-      {% for ut, uts, ora, vinc in sfide_ricevute%}
-      <div class="row">
-        <div class="col">
-
-          {{ut}}
-        </div>
-        <div class="col">
-          {{uts}}
-        </div>
-        <div class="col-5">
-          {{ora}}
-
-        </div>
-        <div class="col">
-          {{vinc}}
-       
-        </div>
-      </div>
-      <p></p>
-      {% endfor %}
-      
-      
+    <div class="col-md-6 text-center">
+      <h2 class=" mb-4">Storico delle sfide</h2>
+    
+      <table class="table table-striped table-bordered shadow-lg">
+        <thead>
+          <tr>
+            <th scope="col">Utente sfidante</th>
+            <th scope="col">Utente Sfidato</th>
+            <th scope="col">Ora Sfida</th>
+            <th scope="col">Vincitore</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ut, uts, ora, vinc in sfide_fatte %}
+          <tr>
+            <td>{{ ut }}</td>
+            <td>{{ uts }}</td>
+            <td>{{ ora }}</td>
+            <td>{{ vinc }}</td>
+          </tr>
+          {% endfor %}
+          {% for ut, uts, ora, vinc in sfide_ricevute %}
+          <tr>
+            <td>{{ ut }}</td>
+            <td>{{ uts }}</td>
+            <td>{{ ora }}</td>
+            <td>{{ vinc }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+    
     
     
   

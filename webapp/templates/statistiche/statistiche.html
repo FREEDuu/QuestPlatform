@@ -17,22 +17,41 @@
 <p></p>
 
 
-<div class="container-xl mb-4">
-      <h6 class="border-bottom pb-2 mb-0 text-center p-3">TIPOLOGIE DI DOMANDA IN CUI SBAGLI ! </h6>
-      <p></p>
-      <div>
-        {{chart|safe}}
- 
+<div class="container-xl">
+  <h5 class="border-bottom pb-2 mb-0 text-center p-3">Tipologie di domande in cui sbagli</h5>
+  <p></p>
+
+  <div class="row justify-content-center align-items-center">
+
+    <!-- TABLE -->
+    <div class="col-md-4">
+      <table class="table">
+        <tbody>
+          <tr>
+            <td>Numero totale di test non completati</td>
+            <td>{{ test_incompleti }}</td>
+          </tr>
+          <tr>
+            <td>Numero totale di errori text</td>
+            <td>{{ errori_t }}</td>
+          </tr>
+          <tr>
+            <td>Numero totale di errori select</td>
+            <td>{{ errori_s }}</td>
+          </tr>
+          <tr>
+            <td>Numero totale di errori checkbox</td>
+            <td>{{ errori_c }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      {{ chart|safe }}
+    </div>
+
   </div>
-
-<div class="container-xl"> 
-  
-  <h3>NUMERO TOTALE DI TEST NON COMPLETATI {{test_incompleti}}</h3>
-  <h3>NUMERO TOTALE DI ERRORI TEXT {{errori_t}}</h3>
-  <h3>NUMERO TOTALE DI ERRORI SELECT {{errori_s}}</h3>
-  <h3>NUMERO TOTALE DI ERRORI CHECKBOX {{errori_c}}</h3>
-
-
 </div>
 
 

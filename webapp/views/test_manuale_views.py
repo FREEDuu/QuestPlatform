@@ -15,13 +15,60 @@ from django.utils.datastructures import MultiValueDict
 from datetime import datetime, timedelta
 from . import test_common_views
 import random
+import string
 
 
-def genRandomFromSeed(seed, rispostaGiusta):
-    random.seed(seed)
-    ret = [('1',str(randint(0,9))),('2',str(randint(0,8))),(str(rispostaGiusta), str(rispostaGiusta))]
-    random.shuffle(ret)
-    return ret , seed+1
+def genRandomint(num):
+    if randint(0,1) == 0:
+        return randint(0, num-1)
+    else: 
+        return randint(num+1, 9)
+def randomGen(lungh, to_repl):
+    ret = random.choices(string.ascii_lowercase, k=lungh)
+    while ret == to_repl:
+       ret = random.choices(string.ascii_lowercase, k=lungh)
+    
+    return ret[0]
+def genRandomFromSeed(tipo, seed, rispostaGiusta):
+    if True :
+        if tipo == 's':
+            app_list = list()
+            app_list.append(('', '- selezionare opzione -'))
+            
+            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+                for _ in range(0, randint(6,14)):
+                
+                    num = int(rispostaGiusta)
+                    var = genRandomint(num)
+                    app_list.append((str(_), str(var)))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            else:
+                for _ in range(0, randint(6,14)):
+                    var = str(rispostaGiusta)
+                    to_repl = var[randint(0,len(var)-1)]
+                    var  = var.replace(to_repl, randomGen(1, to_repl))
+                    app_list.append((str(_), var))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            
+        else:
+            app_list = list()
+            for _ in range(0, randint(6,14)):
+                var = str(rispostaGiusta)
+                to_repl = var[randint(0,len(var)-1)]
+                var  = var.replace(to_repl, randomGen(1, to_repl))
+                app_list.append((str(_), var))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
+    # Per le select mescolare tutto tranne il primo valore di default
+    if tipo == 's':
+        shuffled_options = ret[1:]
+        random.shuffle(shuffled_options)
+        ret[1:] = shuffled_options
+    else:
+        random.shuffle(ret)
+    return ret , seed
 
 @login_required(login_url='login')
 def creaTestManuale(req):
@@ -62,7 +109,7 @@ def creaTestManuale(req):
 def TestStart(req, idGruppi, idTest, counter, seed):
 
     ctx = []
-    
+    random.seed(seed)
     ultimo = False
     if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
         ultimo = True
@@ -72,43 +119,44 @@ def TestStart(req, idGruppi, idTest, counter, seed):
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
+    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
 
     if req.method == 'POST':
 
-        formRisposta = FormDomanda(domande_to_render, req.POST)
+        formRisposta = FormDomanda(domande_to_render,risposte_esatte, req.POST)
         check = False
         for n in range(counter * 5, (counter + 1) * 5):
             if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 check = True
             else:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n)])
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         if check:
             for n in range(counter * 5, (counter + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, })
         else:
             if test['nrGruppo'] -1 == counter:
                 return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
             counter += 1
             ctx = []
             for n in range(counter * 5, (counter + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n],seed, test_to_render[n].variante.rispostaEsatta)
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             
-            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed+1})
 
     else:
-        forms = FormDomanda(domande_to_render)
+        forms = FormDomanda(domande_to_render, risposte_esatte)
         
         for n in range(counter * 5, (counter + 1) * 5):
             
-            forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(seed, test_to_render[n].variante.rispostaEsatta)
-            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n)])
+            forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n],seed, test_to_render[n].variante.rispostaEsatta)
+            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
 
@@ -125,14 +173,14 @@ def preTest(req, idGruppi, idTest):
         
         if(nrTest >= 0):
             
-            domande = Domande.objects.select_related()
-
+            domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
+            choice = random.sample(range(0, len(domande)), 16)
             app_list = list()
 
             # Associa domande casuali con la relativa variante casuale al nuovo test creato
             for _ in range(15):
 
-                random_domanda = randint(0, len(domande)-1)
+                random_domanda = choice[_]
 
                 varianti = Varianti.objects.filter(domanda = domande[random_domanda])
 
