@@ -15,6 +15,7 @@ from random import randint
 from django.utils.datastructures import MultiValueDict
 from ..utils import utils
 import plotly_express as px
+from django.views.decorators.csrf import csrf_exempt
 
 
 
@@ -248,6 +249,7 @@ def creaTestCollettivo(req, pagine, idTest):
 
     return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
 
+@csrf_exempt
 @login_required(login_url='login')
 def creaTestCollettivoDisplay(req, idTest, n):
     if req.method == 'POST':
@@ -257,17 +259,17 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
             domanda = form.cleaned_data['Domanda']
             risposta = form.cleaned_data['Risposta']
-            variante = form.cleaned_data['Varianti']
+            varianti = form.cleaned_data['Varianti']
             tipo = form.cleaned_data['tipo']
 
 
             domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = n)
-            variante = Varianti.objects.create(domanda = domanda_test, corpo = variante, rispostaEsatta = risposta)
+            varianti = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
             test = Test.objects.filter(idTest = idTest)[0]
             print(test)
-            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = variante)    
+            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = varianti)    
 
-            return HttpResponse(domanda+' '+risposta+'  '+ variante)
+            return HttpResponse(domanda+' '+risposta+'  '+ str(varianti))
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 

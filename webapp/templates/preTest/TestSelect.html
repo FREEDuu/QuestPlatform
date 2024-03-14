@@ -35,18 +35,42 @@
   
         {% if ultimo %}
         {% csrf_token %}
-        {% for domanda, variante, form, corretto, dom in ctx %}
+        {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
             <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
-                <div class="{% if corretto %} border border-danger
-                {% endif%}">
-
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
                 
-                {{form}}
-            </div>
+                {% if tipo == 'm' %}
+                <div class="d-flex form-inline multiple">
+                    {{ form }}
+                </div>
+                <p></p>
+
+            {% elif tipo == 'c' %}
+                <div class="d-flex flex-column">
+                    {% for radio in form %}
+                        <label for="{{ radio.id_for_label }}" >
+                            <span>{{ radio.tag }}</span>
+                            <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                    </div>
+                    <p></p>
+
+            {% elif tipo == 'cr' %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{ form }}
+                </div>
+                <p></p>
+                
+            {% else %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{form}}
+                </div>
+                <p></p>
+            {% endif %}
                 <p></p>
             {% endfor %}
                 <p></p>
@@ -128,6 +152,18 @@
     </div>
 </footer>
 
+<script>
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', function() {
+            checkboxes.forEach((cb) => {
+                if (cb !== this) {
+                    cb.checked = false;
+                }
+            });
+        });
+    });
+</script>
 </body>
 
 </html>

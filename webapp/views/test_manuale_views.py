@@ -14,6 +14,7 @@ from ..utils import utils
 from django.utils.datastructures import MultiValueDict
 from datetime import datetime, timedelta
 from . import test_common_views
+from ..utils.utils import genRandomStaticAnswers
 import random
 import string
 
@@ -70,6 +71,7 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
         random.shuffle(ret)
     return ret , seed
 
+
 @login_required(login_url='login')
 def creaTestManuale(req):
     if req.method == 'POST':
@@ -104,7 +106,6 @@ def creaTestManuale(req):
 
 
 
-
 @login_required(login_url='login')
 def TestStart(req, idGruppi, idTest, counter, seed):
 
@@ -125,18 +126,50 @@ def TestStart(req, idGruppi, idTest, counter, seed):
 
         formRisposta = FormDomanda(domande_to_render,risposte_esatte, req.POST)
         check = False
+        
+        # VALIDAZIONE RISPOSTE
         for n in range(counter * 5, (counter + 1) * 5):
-            if req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+            
+            if domande_to_render[n] == 'm': 
+                concat_string = ''
+                for i in range(len(risposte_esatte[n])):
+                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
+                    concat_string = ''.join([concat_string, user_input])
+                    
+                    if user_input != risposte_esatte[n][i]: 
+                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                
+                if concat_string != test_to_render[n].variante.rispostaEsatta:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
-                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+            elif domande_to_render[n] == 'cr':
+                if req.POST.get('domanda_{}'.format(n)) != '1':
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
+
         if check:
             for n in range(counter * 5, (counter + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                
             return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, })
         else:
             if test['nrGruppo'] -1 == counter:
@@ -144,7 +177,11 @@ def TestStart(req, idGruppi, idTest, counter, seed):
             counter += 1
             ctx = []
             for n in range(counter * 5, (counter + 1) * 5):
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n],seed, test_to_render[n].variante.rispostaEsatta)
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
             
@@ -155,7 +192,11 @@ def TestStart(req, idGruppi, idTest, counter, seed):
         
         for n in range(counter * 5, (counter + 1) * 5):
             
-            forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n],seed, test_to_render[n].variante.rispostaEsatta)
+            if domande_to_render[n] == 'cr':
+                forms.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+            else:
+                forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+            
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
@@ -178,7 +219,7 @@ def preTest(req, idGruppi, idTest):
             app_list = list()
 
             # Associa domande casuali con la relativa variante casuale al nuovo test creato
-            for _ in range(15):
+            for _ in range(14):
 
                 random_domanda = choice[_]
 
@@ -186,6 +227,18 @@ def preTest(req, idGruppi, idTest):
 
                 app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
         
+            domande_cr = Domande.objects.filter(tipo='cr')
+            random_domanda_cr = randint(0, len(domande_cr)-1)
+            varianti_cr = Varianti.objects.filter(domanda = domande_cr[random_domanda_cr])
+            random_variante_cr = randint(0, len(varianti_cr)-1)
+            
+            domanda_test_cr = Test_Domande_Varianti(test = singolo_test, domanda = domande_cr[random_domanda_cr], variante = varianti_cr[random_variante_cr])
+            
+            if randint(0, 1) == 0:
+                app_list.insert(0,domanda_test_cr)
+            else:
+                app_list.append(domanda_test_cr)
+
             Test_Domande_Varianti.objects.bulk_create(app_list)
 
             return redirect('TestStart' , idGruppi = idGruppi, idTest = idTest, counter = 0, seed = randint(0,1000))

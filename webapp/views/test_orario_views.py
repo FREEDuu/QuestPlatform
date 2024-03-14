@@ -161,7 +161,7 @@ def preTestOrario(req, idGruppi, idTest, counter):
 
 
 
-
+@login_required(login_url='login')
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
