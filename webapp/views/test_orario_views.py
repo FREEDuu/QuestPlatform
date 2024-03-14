@@ -287,8 +287,8 @@ def creaTestSfidaOrarioEsatto(req):
         if dataorainizio > datetime.now():
 
             sfida = Sfide.objects.create(utente = req.user, utenteSfidato = utente)
-            t1 = TestsGroup.objects.create(utente = req.user, dataOraInizio = dataorainizio, tipo = 'sfida_attesa_1', nrGruppo = 3, nrTest = sfida.idSfida)
-            t2 = TestsGroup.objects.create(utente = utente, dataOraInizio = dataorainizio, tipo = 'sfida_attesa_2', nrGruppo = 3, nrTest = sfida.idSfida)
+            TestsGroup.objects.create(utente = req.user, dataOraInizio = dataorainizio, tipo = 'sfida_attesa_1', nrGruppo = 3, nrTest = sfida.idSfida)
+            TestsGroup.objects.create(utente = utente, dataOraInizio = dataorainizio, tipo = 'sfida_attesa_2', nrGruppo = 3, nrTest = sfida.idSfida)
 
         else : 
            return redirect('Sfida')

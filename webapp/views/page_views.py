@@ -41,6 +41,7 @@ def log_in(req):
                 messages.error(req, 'username o password non corretti')    
             
     return render(req, "login/login.html")
+
 def rifiutaSfida(req, idGruppi, id):
     Sfide.objects.filter(idSfida = id).delete()
     TestsGroup.objects.filter(nrTest = id).delete()
@@ -81,45 +82,54 @@ def home(req):
     display_sfide_attesa_1 = TestsGroup.objects.filter(tipo = 'sfida_attesa_1', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest','tipo')
     display_sfide_attesa_2 = TestsGroup.objects.filter(tipo = 'sfida_attesa_2', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest', 'tipo')
     display_sfide_accettate = TestsGroup.objects.filter(tipo = 'sfida_accettata', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
-    print(display_sfide_attesa_1)
     display_sfida_attesa_1 = []
     display_sfida_attesa_2 = []
     display_sfida_accettate = []
-    print(display_sfide_attesa_2)
     
     for sfida in display_sfide_attesa_1:
-        sfida['utente_sfidato'] = TestsGroup.objects.filter(tipo='sfida_attesa_2', nrTest=sfida['nrTest']).select_related('utente').values('utente__username')
+
+        utente = Sfide.objects.filter(idSfida = sfida['nrTest'])[0]
         
         if sfida['dataOraInizio'] != None:
 
             if sfida['dataOraInizio'] < datetime.now() : 
 
-                TestsGroup.objects.filter(nrTest = sfida['idGruppi']).delete()
+                TestsGroup.objects.filter(nrTest = sfida['nrTest']).delete()
 
             else : 
-                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['utente_sfidato'].first()['utente__username'], sfida['nrTest']])
+                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], utente.utenteSfidato, sfida['nrTest']])
                 
     for sfida2 in display_sfide_attesa_2:
-        sfida2['utente_sfidante'] = TestsGroup.objects.filter(tipo='sfida_attesa_1', nrTest=sfida2['nrTest']).select_related('utente').values('utente__username')
-        
+
+        utente = Sfide.objects.filter(idSfida = sfida2['nrTest'])[0]
+
         if sfida2['dataOraInizio'] != None:
 
             if sfida2['dataOraInizio'] < datetime.now() : 
 
-                TestsGroup.objects.filter(nrTest = sfida2['idGruppi']).delete()
+                TestsGroup.objects.filter(nrTest = sfida2['nrTest']).delete()
             else : 
-                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], sfida2['utente_sfidante'].first()['utente__username'], sfida2['nrTest']])
+                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], utente.utente, sfida2['nrTest']])
                 
     for sfida3 in display_sfide_accettate:
-        sfida3['utente_avversario'] = TestsGroup.objects.filter(tipo='sfida_accettata', nrTest=sfida3['nrTest']).exclude(utente=req.user.id).select_related('utente').values('utente__username')
-        
+
+        utente = Sfide.objects.filter(idSfida = sfida3['nrTest'])[0]
+
+        if utente.utente == req.user:
+            
+            utente = utente.utenteSfidato
+
+        else:
+
+            utente = utente.utente
+
         if sfida3['dataOraInizio'] != None:
 
             if sfida3['dataOraInizio'] < datetime.now() : 
 
-                TestsGroup.objects.filter(nrTest = sfida3['idGruppi']).delete()
+                TestsGroup.objects.filter(nrTest = sfida3['nrTest']).delete()
             else : 
-                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], sfida3['utente_avversario'].first()['utente__username'], sfida3['nrTest']])
+                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], utente, sfida3['nrTest']])
 
     gruppi_programmati = []
     for te in display_test_programmati:
