@@ -57,6 +57,10 @@ def accettaSfida(req,idGruppi,id):
 # HOME
 @login_required(login_url='login')
 def home(req):
+
+    staff = True
+    if req.user.is_staff == False:
+        staff = False
     #Test.objects.filter(tipo = 'collettivo').delete()
     #Domande.objects.filter().delete()
     '''
@@ -165,7 +169,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
+    return render(req, 'home/home.html', {'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
 
 
 
@@ -214,6 +218,11 @@ def Sfida(req):
 
 @login_required(login_url='login')
 def testCollettivi(req):
+
+
+    if req.user.is_staff == False:
+        return redirect('home')
+
     if req.method == 'POST':
 
         form = FormTestCollettivi(req.POST)
@@ -297,15 +306,21 @@ def statistiche(req):
 def controllo(req):
     
     if req.user.is_staff == False:
-        redirect('home')
+        return redirect('home')
 
     utenti_inf = []
+    utenti_stelle = []
     print(req.user.username)
     utenti = User.objects.all()
     for utente in utenti:
+
         check =Test.objects.filter(utente= utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
         if len(check) <= 100:
+
             utenti_inf.append([utente, len(check)])
+    stelle = Statistiche.objects.filter(tipoDomanda = 'stelle').order_by('-nrErrori').values('utente', 'nrErrori')
+    for st in stelle:
+        ut = User.objects.filter(id = st['utente'])[0]
+        utenti_stelle.append([ut, st['nrErrori']])
 
-
-    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf})
+    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf, 'utenti_stelle' : utenti_stelle})

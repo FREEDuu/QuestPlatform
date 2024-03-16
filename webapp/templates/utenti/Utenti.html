@@ -43,6 +43,31 @@
               </div>
             </div>
 
+            <h2 class="m-2">Utenti con più Stelle </h2>
+
+            <!-- TABELLA -->
+            <div class="mt-4 d-flex justify-content-center">
+              <div class="col-md-6">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">Utente</th>
+                      <th scope="col">Numero Test</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ut, num in utenti_stelle %}
+                    <tr>
+                      <td>{{ ut }}</td>
+                      <td>{{ num }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+
           </div>
         </div>
       </main>
