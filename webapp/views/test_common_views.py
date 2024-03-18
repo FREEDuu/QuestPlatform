@@ -94,7 +94,7 @@ def TestProgrammatiStart(req, idTest, counter):
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), domande_to_render[n]])
 
             elif domande_to_render[n] == 'cr':
-                if req.POST.get('domanda_{}'.format(n)) != '1':
+                if req.POST.get('domanda_{}'.format(n)) != var_to_r[n].rispostaEsatta:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), domande_to_render[n]])
                     check = True
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
@@ -111,10 +111,7 @@ def TestProgrammatiStart(req, idTest, counter):
         
         if check:
             for n in range(len(domande_to_render)):
-                if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-                else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
+                formRisposta.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
                 
             return render(req, 'preTest/TestSelectProgrammati.html', {'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx})
         
@@ -143,11 +140,7 @@ def TestProgrammatiStart(req, idTest, counter):
             print(formRisposta)
             
             for n in range(len(domande_to_render)):
-                if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-                else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
-                
+                formRisposta.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
                 ctx.append([dom_to_r[n], var_to_r[n].corpo, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), domande_to_render[n]])
 
             return render(req, 'preTest/TestSelectProgrammati.html', {'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx})
@@ -156,10 +149,7 @@ def TestProgrammatiStart(req, idTest, counter):
         forms = FormDomanda(domande_to_render, risposte_esatte)
         
         for n in range(len(domande_to_render)):
-            if domande_to_render[n] == 'cr':
-                forms.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-            else:
-                forms.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
+            forms.fields['domanda_{}'.format(n)].choices = genRandomFromSeedCollettivi(var_to_r[n].corpo, var_to_r[n].rispostaEsatta)
             ctx.append([dom_to_r[n], var_to_r[n].corpo, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), domande_to_render[n]])
 
         return render(req, 'preTest/TestSelectProgrammati.html', {'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx})

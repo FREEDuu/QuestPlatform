@@ -40,7 +40,7 @@
             <form method="post" action = "{% url 'TestProgrammatiStart'  idTest counter   %}" {{idTest}} {{counter}}>
                 {% csrf_token %}
 
-                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
+                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} {% endif %}</h6>
 
                 {% if tipo == 'm' %}
                     <div class=" d-flex form-inline multiple">
@@ -86,7 +86,7 @@
             <form method="post" action = "{% url 'TestProgrammatiStart' idTest counter %}" {{idTest}} {{counter}} >
                 {% csrf_token %}
 
-                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
+                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} {% endif %}</h6>
 
                 {% if tipo == 'm' %}
                     <div class=" d-flex form-inline multiple">
@@ -144,6 +144,19 @@
     </div>
 </footer>
 
+
+<script>
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', function() {
+            checkboxes.forEach((cb) => {
+                if (cb !== this) {
+                    cb.checked = false;
+                }
+            });
+        });
+    });
+</script>
 </body>
 
 </html>
