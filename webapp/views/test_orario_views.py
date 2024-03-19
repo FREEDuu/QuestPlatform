@@ -478,7 +478,7 @@ def FinishTestOrarioSfida(req, idTest):
     if sfida['dataOraInizio'] == None : 
         Sfide.objects.filter(idSfida = end['nrTest']).update(dataOraInizio = end['dataOraFine'], vincitore = req.user.username)
         Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') + 1)
-        if sfida['utente'] == req.user:
+        if sfida['utente'] == req.user.id:
             Statistiche.objects.filter(utente = sfida['utenteSfidato'] , tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') - 1)
         else:
             Statistiche.objects.filter(utente = sfida['utente'] , tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') - 1)

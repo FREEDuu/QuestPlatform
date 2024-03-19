@@ -57,8 +57,7 @@ def accettaSfida(req,idGruppi,id):
 # HOME
 @login_required(login_url='login')
 def home(req):
-
-    staff = True
+    staff = True    
     if req.user.is_staff == False:
         staff = False
     #print(Test.objects.filter().all())
