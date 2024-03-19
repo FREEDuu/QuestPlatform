@@ -67,6 +67,40 @@
               </div>
             </div>
 
+            <div class="mt-4 d-flex justify-content-center">
+              <div class="col-md-6">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">Utente</th>
+                      <th scope="col">id Test</th>
+                      <th scope="col">Data Fine Test</th>
+                      <th scope="col">Data Inizio Test</th>
+                      <th scope="col">Numero Pagine Test</th>
+                      <th scope="col">Numero Errori</th>
+                      <th scope="col">Malus F5</th>
+                      <th scope="col">Tempo Completamento</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ut, id,fine,inizio, nrpag, numerr, mal, tempo in arr_display %}
+                    <tr>
+                      <td>{{ ut }}</td>
+                      <td>{{ id }}</td>
+                      <td>{{ fine }}</td>
+                      <td>{{ inizio }}</td>
+                      <td>{{ nrpag }}</td>
+                      <td>{{ numerr }}</td>
+                      <td>{{ mal }}</td>
+                      <td>{{ tempo }}</td>
+
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
 
           </div>
         </div>

@@ -36,7 +36,6 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
             
             if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
                 for _ in range(0, randint(6,14)):
-                
                     num = int(rispostaGiusta)
                     var = genRandomint(num)
                     app_list.append((str(_), str(var)))
@@ -47,19 +46,30 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
                     var = str(rispostaGiusta)
                     to_repl = var[randint(0,len(var)-1)]
                     var  = var.replace(to_repl, randomGen(1, to_repl))
-                    app_list.append((str(_), var))
+                    if str(var) != str(rispostaGiusta):
+                        app_list.append((str(_), var))
                 app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
                 ret = app_list
             
         else:
             app_list = list()
-            for _ in range(0, randint(6,14)):
-                var = str(rispostaGiusta)
-                to_repl = var[randint(0,len(var)-1)]
-                var  = var.replace(to_repl, randomGen(1, to_repl))
-                app_list.append((str(_), var))
-            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-            ret = app_list
+
+            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+                for _ in range(0, randint(6,14)):
+                    num = int(rispostaGiusta)
+                    var = genRandomint(num)
+                    app_list.append((str(_), str(var)))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            else:
+                for _ in range(0, randint(6,14)):
+                    var = str(rispostaGiusta)
+                    to_repl = var[randint(0,len(var)-1)]
+                    var  = var.replace(to_repl, randomGen(1, to_repl))
+                    if str(var) != str(rispostaGiusta):
+                            app_list.append((str(_), var))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
     # Per le select mescolare tutto tranne il primo valore di default
     if tipo == 's':
         shuffled_options = ret[1:]
@@ -165,7 +175,7 @@ def preTestOrario(req, idGruppi, idTest, counter):
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
-    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
+    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
@@ -173,6 +183,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
     
     ctx = []
     if req.method == 'POST':
+        Test.objects.filter(idTest = idTest).update(inSequenza = False)
         formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
         check = False
         
@@ -191,6 +202,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                 if concat_string != test_to_render[n].variante.rispostaEsatta:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -200,6 +212,8 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
@@ -207,6 +221,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -239,6 +254,10 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
             return render(req, 'preTestOrario/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': test['nrGruppo'], 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx , 'seed': seed})
 
     else:
+        if test['inSequenza'] == True:
+            Test.objects.filter(idTest = idTest).update(malusF5 = True)
+            print('MALUS F5')
+        Test.objects.filter(idTest = idTest).update(inSequenza = True)
         formRisposta = FormDomanda(domande_to_render, risposte_esatte)
 
         for n in range(len(test_to_render)):
@@ -257,16 +276,23 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 def FinishTestOrario(req, idGruppi, idTest, counter):
         
     counter += 1
-    end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
+    end =  Test.objects.filter(idTest = idTest).values('dataOraFine', 'malusF5')[0]
+    malus = False
+    
+
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
     
     tt = Test.objects.filter(idTest = idTest)
     tempo_test_finale = tt[0].dataOraFine
     tempo_test_iniziale = tt[0].dataOraInizio
+    tempo_end = (tempo_test_finale-tempo_test_iniziale).total_seconds()
+    if end['malusF5'] == True:
+        malus = True
+        tempo_end = (tempo_test_finale-tempo_test_iniziale + timedelta(0,  5)).total_seconds
+        Test.objects.filter(idTest = idTest).update(dataOraFine = tempo_test_finale + timedelta(0,5))
 
-
-    return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : (tempo_test_finale-tempo_test_iniziale).total_seconds() , 'counter' : counter})
+    return render(req, 'preTestOrario/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' :  tempo_end, 'counter' : counter, 'malus' : malus})
 
 
 
@@ -340,13 +366,14 @@ def preTestSfida(req, idGruppi, id):
 def testStartOrarioSfida(req, idTest, displayer):
 
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante')
-    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
+    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
 
     ctx = []
     if req.method == 'POST':
+        Test.objects.filter(idTest = idTest).update(inSequenza = False) 
         formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
         check = False
 
@@ -365,6 +392,7 @@ def testStartOrarioSfida(req, idTest, displayer):
                 if concat_string != test_to_render[n].variante.rispostaEsatta:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -373,6 +401,7 @@ def testStartOrarioSfida(req, idTest, displayer):
                 if req.POST.get('domanda_{}'.format(n)) != '1':
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)             
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -380,6 +409,7 @@ def testStartOrarioSfida(req, idTest, displayer):
             elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
 
             else:
@@ -413,6 +443,10 @@ def testStartOrarioSfida(req, idTest, displayer):
             return render(req, 'preTestOrario/TestSelectSfida.html', {'ultimo': test['nrGruppo'], 'idTest': idTest, 'displayer': displayer, 'ctx': ctx })
 
     else:
+        if test['inSequenza'] == True:
+            Test.objects.filter(idTest = idTest).update(malusF5 = True)
+            print('MALUS F5')
+        Test.objects.filter(idTest = idTest).update(inSequenza = True) 
         forms = FormDomanda(domande_to_render, risposte_esatte)
         
         for n in range(len(test_to_render)):
@@ -428,20 +462,30 @@ def testStartOrarioSfida(req, idTest, displayer):
     
 def FinishTestOrarioSfida(req, idTest):
         
-    end =  Test.objects.filter(idTest = idTest).values('dataOraInizio','dataOraFine', 'nrTest')[0]
+    end =  Test.objects.filter(idTest = idTest).values('dataOraInizio','dataOraFine', 'nrTest', 'malusF5')[0]
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
-    
+    end =  Test.objects.filter(idTest = idTest).values('dataOraInizio','dataOraFine', 'nrTest', 'malusF5')[0]
+    malus = False
     tt = Test.objects.filter(idTest = idTest)
     tempo_test_finale = tt[0].dataOraFine
     tempo_test_iniziale = tt[0].dataOraInizio
 
-    sfida = Sfide.objects.filter(idSfida = end['nrTest']).values('dataOraInizio')[0]
+    sfida = Sfide.objects.filter(idSfida = end['nrTest']).values('dataOraInizio', 'utente', 'utenteSfidato')[0]
     print(sfida)
+    tempo_end = (tempo_test_finale-tempo_test_iniziale).total_seconds()
+ 
     if sfida['dataOraInizio'] == None : 
-        
         Sfide.objects.filter(idSfida = end['nrTest']).update(dataOraInizio = end['dataOraFine'], vincitore = req.user.username)
         Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') + 1)
+        if sfida['utente'] == req.user:
+            Statistiche.objects.filter(utente = sfida['utenteSfidato'] , tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') - 1)
+        else:
+            Statistiche.objects.filter(utente = sfida['utente'] , tipoDomanda = 'stelle').update(nrErrori=F('nrErrori') - 1)
+    if end['malusF5'] == True:
+        malus = True
+        tempo_end = (tempo_test_finale-tempo_test_iniziale + timedelta(0,  5)).total_seconds()
+        Test.objects.filter(idTest = idTest).update(dataOraFine = tempo_test_finale + timedelta(0,5))
 
-    return render(req, 'preTestOrario/FinishTestSfida.html', {'tempo' : (tempo_test_finale-tempo_test_iniziale).total_seconds()})
+    return render(req, 'preTestOrario/FinishTestSfida.html', {'tempo' : tempo_end, 'malus' : malus})
     

@@ -38,7 +38,6 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
             
             if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
                 for _ in range(0, randint(6,14)):
-                
                     num = int(rispostaGiusta)
                     var = genRandomint(num)
                     app_list.append((str(_), str(var)))
@@ -49,19 +48,30 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
                     var = str(rispostaGiusta)
                     to_repl = var[randint(0,len(var)-1)]
                     var  = var.replace(to_repl, randomGen(1, to_repl))
-                    app_list.append((str(_), var))
+                    if str(var) != str(rispostaGiusta):
+                        app_list.append((str(_), var))
                 app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
                 ret = app_list
             
         else:
             app_list = list()
-            for _ in range(0, randint(6,14)):
-                var = str(rispostaGiusta)
-                to_repl = var[randint(0,len(var)-1)]
-                var  = var.replace(to_repl, randomGen(1, to_repl))
-                app_list.append((str(_), var))
-            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-            ret = app_list
+
+            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+                for _ in range(0, randint(6,14)):
+                    num = int(rispostaGiusta)
+                    var = genRandomint(num)
+                    app_list.append((str(_), str(var)))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
+            else:
+                for _ in range(0, randint(6,14)):
+                    var = str(rispostaGiusta)
+                    to_repl = var[randint(0,len(var)-1)]
+                    var  = var.replace(to_repl, randomGen(1, to_repl))
+                    if str(var) != str(rispostaGiusta):
+                            app_list.append((str(_), var))
+                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+                ret = app_list
     # Per le select mescolare tutto tranne il primo valore di default
     if tipo == 's':
         shuffled_options = ret[1:]
@@ -115,7 +125,7 @@ def TestStart(req, idGruppi, idTest, counter, seed):
     if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
         ultimo = True
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante')
-    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio').first()
+    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
     
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
@@ -123,6 +133,7 @@ def TestStart(req, idGruppi, idTest, counter, seed):
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
 
     if req.method == 'POST':
+        Test.objects.filter(idTest = idTest).update(inSequenza = False)
 
         formRisposta = FormDomanda(domande_to_render,risposte_esatte, req.POST)
         check = False
@@ -143,6 +154,7 @@ def TestStart(req, idGruppi, idTest, counter, seed):
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
@@ -151,6 +163,8 @@ def TestStart(req, idGruppi, idTest, counter, seed):
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                     check = True
                     Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
                 else:
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
@@ -158,6 +172,8 @@ def TestStart(req, idGruppi, idTest, counter, seed):
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 check = True
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -188,6 +204,10 @@ def TestStart(req, idGruppi, idTest, counter, seed):
             return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed+1})
 
     else:
+        if test['inSequenza'] == True:
+            Test.objects.filter(idTest = idTest).update(malusF5 = True)
+            print('MALUS F5')
+        Test.objects.filter(idTest = idTest).update(inSequenza = True) 
         forms = FormDomanda(domande_to_render, risposte_esatte)
         
         for n in range(counter * 5, (counter + 1) * 5):
@@ -259,19 +279,20 @@ def FinishTest(req, idGruppi, idTest):
     test_finito = Test.objects.filter(idTest = idTest).values('dataOraInizio', 'secondiRitardo')[0]
     id_next_test = Test.objects.create(utente = req.user, dataOraInizio = test_finito['dataOraInizio'] + timedelta(0, tests['secondiRitardo']), nrGruppo = randint(2,3))
     TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = id_next_test.dataOraInizio)
-    end =  Test.objects.filter(idTest = idTest).values('dataOraFine')[0]
+    end =  Test.objects.filter(idTest = idTest).values('dataOraFine', 'malusF5')[0]
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
     tt = Test.objects.filter(idTest = idTest)
-    tempo_test_finale = tt[0].dataOraFine.second
-    tempo_test_iniziale = tt[0].dataOraInizio.second
+    tempo_test_finale = tt[0].dataOraFine
+    tempo_test_iniziale = tt[0].dataOraInizio
+    tempo_end = (tempo_test_finale-tempo_test_iniziale).total_seconds
 
-    if tempo_test_finale < tempo_test_iniziale:
-            tempo_finish = tempo_test_finale +60  - tempo_test_iniziale
-    else:
-        tempo_finish = tempo_test_finale - tempo_test_iniziale
+    if end['malusF5'] == True:
+        malus = True
+        tempo_end = (tempo_test_finale-tempo_test_iniziale + timedelta(0,  5)).total_seconds
+        Test.objects.filter(idTest = idTest).update(dataOraFine = tempo_test_finale + timedelta(0,5))
 
-    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_finish, 'idTest' : id_next_test.idTest })
+    return render(req, 'preTest/FinishTest.html', {'idGruppi' : idGruppi ,'tempo' : tempo_end, 'idTest' : id_next_test.idTest , 'malus' : malus})
 
 
 ##### SFIDA #####

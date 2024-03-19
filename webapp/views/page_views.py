@@ -61,8 +61,8 @@ def home(req):
     staff = True
     if req.user.is_staff == False:
         staff = False
-    #Test.objects.filter(tipo = 'collettivo').delete()
-    #Domande.objects.filter().delete()
+    #print(Test.objects.filter().all())
+    #Sfide.objects.filter(dataOraInizio__isnull = True).delete()
     '''
     Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 's')
     Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 't')
@@ -198,11 +198,11 @@ def Sfida(req):
 
     for el in storico_sfide_fatte:
         if el.vincitore != 'pareggio':
-            sf_fatte.append([el.utente, el.utenteSfidato, el.dataOraInserimento, el.vincitore])
+            sf_fatte.append([el.utente, el.utenteSfidato, el.dataOraInizio, el.vincitore])
 
     for el1 in storico_sfide_ricevute:
         if el1.vincitore != 'pareggio':
-            sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInserimento, el1.vincitore])
+            sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInizio, el1.vincitore])
 
     # Ordina per data discendente
     sf_fatte.sort(key=lambda x: x[2], reverse=True)
@@ -305,12 +305,18 @@ def statistiche(req):
 @login_required(login_url='login')
 def controllo(req):
     
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+    
+    arr_display = []
+
+    for el in tutti_test:
+        arr_display.append([el.utente.username, el.idTest, el.dataOraFine, el.dataOraInizio, el.nrGruppo, el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
+    print(arr_display)
     if req.user.is_staff == False:
         return redirect('home')
 
     utenti_inf = []
     utenti_stelle = []
-    print(req.user.username)
     utenti = User.objects.all()
     for utente in utenti:
 
@@ -323,4 +329,4 @@ def controllo(req):
         ut = User.objects.filter(id = st['utente'])[0]
         utenti_stelle.append([ut, st['nrErrori']])
 
-    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf, 'utenti_stelle' : utenti_stelle})
+    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf, 'utenti_stelle' : utenti_stelle, 'arr_display' : arr_display})
