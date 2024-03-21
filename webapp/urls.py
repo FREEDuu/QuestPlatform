@@ -11,6 +11,7 @@ urlpatterns = [
     path('' , page_views.home, name= 'home'),
     path('home' , page_views.home, name= 'home'),
     path('controllo' , page_views.controllo, name= 'controllo'),
+    path('csv-riepilogo_test' , page_views.csv_riepilogo_test, name= 'csv_riepilogo_test'),
     path('testCollettivi' , page_views.testCollettivi, name= 'testCollettivi'),
     path('creaTestCollettivo/<int:pagine>/<int:idTest>' , page_views.creaTestCollettivo, name= 'creaTestCollettivo'),
     path('creaTestCollettivoDisplay/<int:idTest>/<int:n>' , page_views.creaTestCollettivoDisplay, name= 'creaTestCollettivoDisplay'),

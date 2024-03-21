@@ -16,7 +16,8 @@ from django.utils.datastructures import MultiValueDict
 from ..utils import utils
 import plotly_express as px
 from django.views.decorators.csrf import csrf_exempt
-
+import csv
+from io import StringIO
 
 
 # LOGIN
@@ -309,8 +310,8 @@ def controllo(req):
     arr_display = []
 
     for el in tutti_test:
-        arr_display.append([el.utente.username, el.idTest, el.dataOraFine, el.dataOraInizio, el.nrGruppo, el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
-    print(arr_display)
+        arr_display.append([el.utente.username, el.idTest, el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"), el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"), el.nrGruppo, el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
+    
     if req.user.is_staff == False:
         return redirect('home')
 
@@ -329,3 +330,41 @@ def controllo(req):
         utenti_stelle.append([ut, st['nrErrori']])
 
     return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf, 'utenti_stelle' : utenti_stelle, 'arr_display' : arr_display})
+
+
+@login_required(login_url='login')
+def csv_riepilogo_test(req):
+    current_date = datetime.now().strftime("%Y%m%d")
+    filename = f"data_{current_date}.csv"
+
+    csv_buffer = StringIO()
+    
+    writer = csv.writer(csv_buffer, delimiter=';')
+
+    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
+    writer.writerow(header_row)
+
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+    for test in tutti_test:
+        tempo_completamento = (test.dataOraFine - test.dataOraInizio).total_seconds()
+        tempo_completamento_str = str(tempo_completamento).replace('.', ',')
+
+        writer.writerow([
+            test.utente.username,
+            test.idTest,
+            test.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
+            test.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
+            test.nrGruppo,
+            test.numeroErrori,
+            test.malusF5,
+            tempo_completamento_str
+        ])
+
+    csv_content = csv_buffer.getvalue()
+
+    csv_buffer.close()
+
+    response = HttpResponse(csv_content, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
