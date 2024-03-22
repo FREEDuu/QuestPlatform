@@ -124,7 +124,7 @@ def TestStart(req, idGruppi, idTest, counter, seed):
     ultimo = False
     if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
         ultimo = True
-    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante')
+    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
     
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
