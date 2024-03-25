@@ -5,9 +5,9 @@ import time
 # Database connection parameters
 DB_NAME = "questApplication"
 DB_USER = "carl"
-DB_PASSWORD = "AVNS_PJS7hQPAKb1CseH_-qr"
-DB_HOST = "questplatform-do-user-15624693-0.c.db.ondigitalocean.com"
-DB_PORT = "25060"
+DB_PASSWORD = "pondsama"
+DB_HOST = "2.56.212.172"
+DB_PORT = "5432"
 
 # Number of objects to create
 NUM_OBJECTS = 1000  # Adjust as needed

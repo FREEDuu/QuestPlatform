@@ -3,7 +3,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import F
 from webapp.models import Test 
 from django.contrib.auth import authenticate, login, logout 
-from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormTestCollettivi, FormDomandaCollettiva
+from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormTestCollettivi, FormDomandaCollettiva, FormDomandaCollettivaCrea
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -15,7 +15,12 @@ from random import randint
 from django.utils.datastructures import MultiValueDict
 from ..utils import utils
 import plotly_express as px
-
+from django.views.decorators.csrf import csrf_exempt
+import csv
+from io import StringIO
+from django.core.paginator import Paginator
+from django.template.response import TemplateResponse
+from django.urls import reverse
 
 
 # LOGIN
@@ -42,39 +47,109 @@ def log_in(req):
             
     return render(req, "login/login.html")
 
+def rifiutaSfida(req, idGruppi, id):
+    Sfide.objects.filter(idSfida = id).delete()
+    TestsGroup.objects.filter(nrTest = id).delete()
+    return redirect('home')
+
+def accettaSfida(req,idGruppi,id):
+
+    TestsGroup.objects.filter(nrTest = id).update(tipo = 'sfida_accettata')
+
+    return redirect('home')
 
 # HOME
 @login_required(login_url='login')
 def home(req):
-    #Test.objects.filter(tipo = 'sfida').delete()
-    #Domande.objects.filter(tipo = 's').delete()
-    display_test_manuale = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
-    display_test_orario = TestsGroup.objects.prefetch_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
-    display_test_programmati = Test.objects.filter(tipo = 'programmato').values('idTest', 'dataOraInizio')
-    display_sfide = TestsGroup.objects.filter(tipo = 'sfida', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
-    display_sfida = []
+    staff = True    
+    if req.user.is_staff == False:
+        staff = False
+    #print(Test.objects.filter().all())
+    #Sfide.objects.filter(dataOraInizio__isnull = True).delete()
+    '''
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 's')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 't')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'c')
+    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'm')
+    domandone = Domande.objects.all()
 
-    for sfida in display_sfide:
+    for domandona in domandone :
+        Varianti.objects.create(domanda = domandona, corpo = 'BIANCO', rispostaEsatta = 'bianco')
+    '''
+    if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 's', nrErrori = 0)
+        Statistiche.objects.create(utente = req.user, tipoDomanda = 'r', nrErrori = 0)
+
+    stelle = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')[0].nrErrori
+
+    display_test_manuale = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'manuale').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo', 'dataOraInizio', 'secondiRitardo')
+    display_test_orario = TestsGroup.objects.select_related().filter(utente=req.user.id, tipo = 'orario').values('idGruppi', 'dataOraInserimento', 'nrTest', 'nrGruppo')
+    display_test_programmati = Test.objects.filter(tipo = 'collettivo').values('idTest', 'dataOraInizio')
+    display_sfide_attesa_1 = TestsGroup.objects.filter(tipo = 'sfida_attesa_1', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest','tipo')
+    display_sfide_attesa_2 = TestsGroup.objects.filter(tipo = 'sfida_attesa_2', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest', 'tipo')
+    display_sfide_accettate = TestsGroup.objects.filter(tipo = 'sfida_accettata', utente = req.user).values('dataOraInizio', 'idGruppi', 'nrTest')
+    display_sfida_attesa_1 = []
+    display_sfida_attesa_2 = []
+    display_sfida_accettate = []
+    
+    for sfida in display_sfide_attesa_1:
+
+        utente = Sfide.objects.filter(idSfida = sfida['nrTest'])[0]
         
         if sfida['dataOraInizio'] != None:
 
             if sfida['dataOraInizio'] < datetime.now() : 
 
-                Test.objects.filter(idTest = sfida['idGruppi']).delete()
+                TestsGroup.objects.filter(nrTest = sfida['nrTest']).delete()
+
             else : 
+                display_sfida_attesa_1.append([sfida['dataOraInizio'] , sfida['idGruppi'], utente.utenteSfidato, sfida['nrTest']])
+                
+    for sfida2 in display_sfide_attesa_2:
 
-                display_sfida.append([sfida['dataOraInizio'] , sfida['idGruppi'], sfida['nrTest']])
+        utente = Sfide.objects.filter(idSfida = sfida2['nrTest'])[0]
 
-    print(display_sfida)
+        if sfida2['dataOraInizio'] != None:
+
+            if sfida2['dataOraInizio'] < datetime.now() : 
+
+                TestsGroup.objects.filter(nrTest = sfida2['nrTest']).delete()
+            else : 
+                display_sfida_attesa_2.append([sfida2['dataOraInizio'] , sfida2['idGruppi'], utente.utente, sfida2['nrTest']])
+                
+    for sfida3 in display_sfide_accettate:
+
+        utente = Sfide.objects.filter(idSfida = sfida3['nrTest'])[0]
+
+        if utente.utente == req.user:
+            
+            utente = utente.utenteSfidato
+
+        else:
+
+            utente = utente.utente
+
+        if sfida3['dataOraInizio'] != None:
+
+            if sfida3['dataOraInizio'] < datetime.now() : 
+
+                TestsGroup.objects.filter(nrTest = sfida3['nrTest']).delete()
+            else : 
+                display_sfida_accettate.append([sfida3['dataOraInizio'] , sfida3['idGruppi'], utente, sfida3['nrTest']])
+
     gruppi_programmati = []
     for te in display_test_programmati:
-        gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
-    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('-dataOraInizio')
+        if te['dataOraInizio'] > datetime.now():
+            gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
+        else:
+            Test.objects.filter(idTest = te['idTest']).delete()
+    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
     gruppi_manuale = []
     gruppi_orario = []
-    print(display_test_manuale)
     if len(display_test_manuale) != 0:
         for test in display_test_manuale:
             count = 0
@@ -97,7 +172,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'display_sfida': display_sfida, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0})
+    return render(req, 'home/home.html', {'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
 
 
 
@@ -113,66 +188,110 @@ def creazioneTest(req):
 
 @login_required(login_url='login')
 def Sfida(req):
+
     user_list = User.objects.exclude(Q(id = req.user.id))
     user_lists = list()
     user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
+
+    storico_sfide_fatte = Sfide.objects.filter(utente = req.user)
+    storico_sfide_ricevute = Sfide.objects.filter(utenteSfidato = req.user)
+
+    sf_fatte = []
+    sf_ric = []
+
+    for el in storico_sfide_fatte:
+        if el.vincitore != 'pareggio':
+            sf_fatte.append([el.utente, el.utenteSfidato, el.dataOraInizio, el.vincitore])
+
+    for el1 in storico_sfide_ricevute:
+        if el1.vincitore != 'pareggio':
+            sf_ric.append([el1.utente, el1.utenteSfidato, el1.dataOraInizio, el1.vincitore])
+
+    # Ordina per data discendente
+    sf_fatte.sort(key=lambda x: x[2], reverse=True)
+    sf_ric.sort(key=lambda x: x[2], reverse=True)
 
     creaTestSfidaOrarioEsattoForm = TestSfidaOrarioEsattoForm()
 
     creaTestSfidaOrarioEsattoForm.fields['utente'].choices = user_lists
 
-    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm}
+    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm, 'sfide_ricevute' : sf_ric, 'sfide_fatte' : sf_fatte}
 )
 
 
+@login_required(login_url='login')
 def testCollettivi(req):
 
-    ctx = {'form' : FormTestCollettivi(), 'prima' : True}
 
-    return render(req, 'test/testCollettivi.html', ctx)
-
-def creaTestCollettivo(req):
+    if req.user.is_staff == False:
+        return redirect('home')
 
     if req.method == 'POST':
 
         form = FormTestCollettivi(req.POST)
         mutable_data = MultiValueDict(form.data.lists())
-        mutable_data['ora'] = utils.reformat_date(mutable_data['ora'])
+        mutable_data['dataOraInizio'] = utils.reformat_date(mutable_data['dataOraInizio'])
         form = FormTestCollettivi(mutable_data) 
+
         if form.is_valid():
 
             nPagine = form.cleaned_data['nPagine']
-            dataOraInizio = form.cleaned_data['ora']
-            #test_collettivo = Test.objects.create(utente = req.user , dataOraInizio = dataOraInizio, nrGruppo = nPagine)
+            dataOraInizio = form.cleaned_data['dataOraInizio']
+
+            test_collettivo = Test.objects.create(utente = req.user , nrGruppo = nPagine, tipo = 'collettivo', dataOraInizio = dataOraInizio)
             
-            return render(req, 'test/testCollettivi.html', {'domande' : range(1, nPagine+1)})
+            return redirect('creaTestCollettivo' , pagine = nPagine, idTest = test_collettivo.idTest)
         else: 
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.warning(req, f"Errore: {error}")
             print(form.errors)
-            return testCollettivi(req)
+           
 
-def creaTestCollettivoDisplay(req):
+    ctx = {'form' : FormTestCollettivi()}
+
+    return render(req, 'test/testCollettivi.html', ctx)
+
+@login_required(login_url='login')
+def creaTestCollettivo(req, pagine, idTest):
+
     if req.method == 'POST':
+                
+        return redirect('home')
 
+    return render(req, 'test/testCollettiviDom.html', {'domande' : range(pagine) , 'pagine' : pagine,'idTest' : idTest})
+
+@csrf_exempt
+@login_required(login_url='login')
+def creaTestCollettivoDisplay(req, idTest, n):
+    if req.method == 'POST':
+        
         form = FormDomandaCollettiva(req.POST)
         if form.is_valid():
 
             domanda = form.cleaned_data['Domanda']
             risposta = form.cleaned_data['Risposta']
             varianti = form.cleaned_data['Varianti']
-            print(domanda, risposta, varianti)
-            return HttpResponse(risposta+varianti+domanda)
+            tipo = form.cleaned_data['tipo']
 
-    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva()})
 
+            domanda_test = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = n)
+            varianti = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
+            test = Test.objects.filter(idTest = idTest)[0]
+            print(test)
+            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = varianti)    
+
+            return HttpResponse(domanda+' '+risposta+'  '+ str(varianti))
+
+    return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
+
+@login_required(login_url='login')
 def statistiche(req):
 
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
     print(chart_tests)
 
-    tipiDomande = ['testo','selezione','checkbox']
+    tipiDomande = ['testo','selezione','checkbox', 'stelle']
     nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
 
     print(nrErrori)    
@@ -185,3 +304,128 @@ def statistiche(req):
 
 
     return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
+
+@login_required(login_url='login')
+def controllo(req):
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+
+    # Paginazione
+    paginator = Paginator(tutti_test, 10)
+    page_number = req.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    arr_display = []
+    for el in page_obj:
+        arr_display.append([
+            el.utente.username,
+            el.idTest,
+            el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
+            el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
+            el.nrGruppo,
+            el.nrTest,
+            el.numeroErrori,
+            el.malusF5,
+            (((el.dataOraFine - el.dataOraInizio).total_seconds()))
+        ])
+
+    if req.user.is_staff == False:
+        return redirect('home')
+
+    utenti_inf = []
+    utenti_stelle = []
+    utenti = User.objects.all()
+
+    for utente in utenti:
+        check = Test.objects.filter(utente=utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
+        if len(check) <= 100:
+            utenti_inf.append([utente, len(check)])
+
+    stelle = Statistiche.objects.filter(tipoDomanda='stelle').order_by('-nrErrori').values('utente', 'nrErrori')
+    for st in stelle:
+        ut = User.objects.filter(id=st['utente'])[0]
+        utenti_stelle.append([ut, st['nrErrori']])
+
+    # If this is an HTMX request, render the HTMX template, otherwise render the regular template
+    if req.headers.get('HX-Request'):
+        template_name = 'utenti/tabellaRiepilogoTest.html'
+        context = {'page_obj': page_obj, 'arr_display': arr_display}
+        return TemplateResponse(req, template_name, context)
+    else:
+        template_name = 'utenti/Utenti.html'
+        context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj, 'arr_display': arr_display}
+        return TemplateResponse(req, template_name, context)
+
+
+
+@login_required(login_url='login')
+def csv_riepilogo_test(req):
+    current_date = datetime.now().strftime("%Y%m%d")
+    filename = f"data_{current_date}.csv"
+
+    csv_buffer = StringIO()
+    
+    writer = csv.writer(csv_buffer, delimiter=';')
+
+    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
+    writer.writerow(header_row)
+
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+    for test in tutti_test:
+        tempo_completamento = (test.dataOraFine - test.dataOraInizio).total_seconds()
+        tempo_completamento_str = str(tempo_completamento).replace('.', ',')
+
+        writer.writerow([
+            test.utente.username,
+            test.idTest,
+            test.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
+            test.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
+            test.nrGruppo,
+            test.nrTest,
+            test.numeroErrori,
+            test.malusF5,
+            tempo_completamento_str
+        ])
+
+    csv_content = csv_buffer.getvalue()
+
+    csv_buffer.close()
+
+    response = HttpResponse(csv_content, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
+ 
+
+def creaDomande(req):
+
+    if req.user.is_staff == False:
+        return redirect('home')
+    
+
+    
+    return render(req, 'creaDomande/creaDomande.html')
+
+def creaDomandeDisplay(req):
+    
+    if req.method == 'POST':
+        
+        form = FormDomandaCollettiva(req.POST)
+        if form.is_valid():
+
+            domanda = form.cleaned_data['Domanda']
+            risposte = form.cleaned_data['Risposta']
+            risposte = risposte.split(';')
+            varianti = form.cleaned_data['Varianti']
+            varianti = varianti.split(';')
+            tipo = form.cleaned_data['tipo']
+
+            domanda = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = -1)
+            to_list = list()
+            for _ in range(len(risposte)):
+                to_list.append(Varianti(domanda = domanda, corpo = varianti[_], rispostaEsatta = risposte[_]))
+            Varianti.objects.bulk_create(to_list)
+            print(to_list, domanda)
+
+            return HttpResponse('variante creata')
+
+    return render(req, 'creaDomande/displayDom.html', {'form' : FormDomandaCollettiva()})

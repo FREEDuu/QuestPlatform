@@ -19,7 +19,7 @@
       <div class=" container">
         <svg class="bi d-block mx-auto mb-1 float-start" width="50" height="50"><use xlink:href="#people-circle"/></svg>
           <span class="fs-4 ms-2">Ciao  {{ request.user.username }}</span>
-          <span class="fs-4 ms-2 float-end">15</span>
+          <span class="fs-4 ms-2 float-end">{{stelle}}</span>
 
         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="float-end" viewBox="0 0 16 16">
           <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
@@ -34,8 +34,10 @@
       <div class="mb-5">
         {% load static %}
         <a href="{% url 'test' %}" class="btn btn-primary btn-lg px-4">Crea Test</a>
+        {% if staff%}
+        <a href="{% url 'creaDomande' %}" class="btn btn-primary btn-lg px-4 ">Crea Domanda</a>
         <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4 float-end">Test Collettivi</a>
-
+        {% endif %}
         
               </div>
                 <div class="row g-4">
@@ -83,22 +85,49 @@
                             <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
                             <p></p>
 
-                            {% for data, idGruppi, id in display_sfida %}
+                            {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
                                         
                             <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                               
                               <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                  <span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>
+                                  <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                                  
-                                  <strong class="m-1"> La Sifda inizia nel {{data}}</strong>
+                                  <strong class="m-2">{{data}}  </strong>|  {{utente_sfidato}}
                                 </div>
                               
-                                  <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
-                                    <button class="btn btn-primary float-end m-2">
+                                  <span class="m-2">In attesa di conferma</span>
+                             
+                            </div>
+                    
+                            
+                                                       
+                      {% endfor %}
+                      <p></p>
+
+                            {% for data, idGruppi, utente_sfidante, id in display_sfida_attesa_2 %}
+                                        
+                            <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                              
+                              <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                                  <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                                  
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
-                                        <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                      </svg>
+                                  <strong class="m-1">{{data}}  </strong>|  {{utente_sfidante}} 
+                                </div>
+                              
+                                  <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
+                                    <button class="btn btn-success float-end m-2">
+                                 
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855a.75.75 0 0 0-.124 1.329l4.995 3.178 1.531 2.406a.5.5 0 0 0 .844-.536L6.637 10.07l7.494-7.494-1.895 4.738a.5.5 0 1 0 .928.372zm-2.54 1.183L5.93 9.363 1.591 6.602z"/>
+                                        <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0m-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686"/>
+                                        </svg>
+                                    </button>
+                                  </a>
+                                  <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
+                                    <button class="btn btn-danger float-end m-2">
+                                 
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                        <path d="M15 8a6.97 6.97 0 0 0-1.71-4.584l-9.874 9.875A7 7 0 0 0 15 8M2.71 12.584l9.874-9.875a7 7 0 0 0-9.874 9.874ZM16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0"/>                                      </svg>
                                     </button>
                                   </a>
                              
@@ -107,6 +136,32 @@
                             
                                                        
                       {% endfor %}
+                      <p></p>
+
+                      {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
+                                  
+                      <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                        
+                        <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                            <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
+                           
+                            <strong class="m-1"> {{data}}  </strong>|  {{utente_avversario}} 
+                          </div>
+                        
+                            <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
+                              <button class="btn btn-primary float-end m-2">
+                           
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                                  <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                </svg>
+                              </button>
+                            </a>
+                       
+                      </div>
+              
+                      
+                                                 
+                {% endfor %}
 
 
 
@@ -168,7 +223,7 @@
                               
                               <div
                                   class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">                                 
-                                  <strong class="m-4"> TEST CREATO IL {{data}}</strong>
+                                  <strong class="m-4">{{data}}</strong>
                             </div>
 
 
@@ -401,6 +456,13 @@
     return colors;
   }
   
+
+  // ATTIVA I TOOLTIP 
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+
 </script>
 
 {% endblock %}

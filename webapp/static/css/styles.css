@@ -1,0 +1,17 @@
+.pagination .page-link {
+    color: black;
+}
+
+.pagination .page-link:hover {
+    color: black;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #157347; /* Light gray */
+    color: white;
+    border-color: #157347; /* Set the border color to a darker gray */
+}
+
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 128, 0, 0.25); /* Green outline */
+}

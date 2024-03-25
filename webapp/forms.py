@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 from .models import *
 from  random import randint, random
 import string
+from django.forms.widgets import RadioSelect
 
 def Create_other_var(array):
 
@@ -27,38 +28,59 @@ class LoginForm(forms.Form):
 
 class FormTestCollettivi(forms.Form):
     
-    nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages)
-    ora = forms.DateTimeField(widget=forms.DateTimeInput(
+    nPagine = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, error_messages=messages , validators=[validators.MinValueValidator(1)])
+    dataOraInizio = forms.DateTimeField(widget=forms.DateTimeInput(
         attrs={
             "class": "form-control",
             "data-field": "datetime",
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)
-    def clean_dataOraInizio(self):
-        input_date = self.cleaned_data.get('dataOraInizio')
-        if input_date:
-            if input_date < timezone.now():
-                raise ValidationError("La data deve essere nel futuro.")
-            return input_date
-        return None
-    
+
+class CustomMultiWidget(forms.MultiWidget):
+    def __init__(self, common_attrs, widgetCount, attrs=None):
+        widgets = [forms.TextInput(attrs=common_attrs) for _ in range(widgetCount)]
+        super().__init__(widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            return value
+        return [None for _ in range(len(self.widgets))]
+
+
+class CustomMultiValueField(forms.MultiValueField):
+    def __init__(self, char_fields, common_attrs, *args, **kwargs):
+        fields = (char_fields)
+        super().__init__(fields, widget=CustomMultiWidget(common_attrs, len(char_fields)), *args, **kwargs)
+
+    def compress(self, data_list):
+        return data_list
+
 
 class FormDomanda(forms.Form):
     
-    def __init__(self, domande, *args, **kwargs):
+    def __init__(self, domande, risposte_esatte, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
-                self.fields[field_name] = forms.CharField(widget = forms.TextInput(attrs={"class": "form-control"}))
+                self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}), required= False)
             elif domande[i] == 'c':
-                self.fields[field_name] = forms.ChoiceField(widget = forms.RadioSelect(attrs={"class": "forms-control"})) 
+                self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"}),  required= False) 
+            elif domande[i] == 'cr':
+                self.fields[field_name] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple() , required= False)
+            elif domande[i] == 'm':
+                common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;"}
+                numero_input = len(risposte_esatte[i])
+                
+                char_fields = [forms.CharField() for _ in range(numero_input)]
+
+                self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs, required= False)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget = forms.Select(attrs={"class": "form-control"}), 
-                choices = ([('1','1'), ('2','2'),('3','3'), ]), required = True,)
-            
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('', 'Selezionare opzione'), ('1', '1'), ('2', '2'), ('3', '3')], initial='', required= False)
+
     def get_interest_fields(self):
         ret = []
         for field_name in self.fields:
@@ -68,10 +90,16 @@ class FormDomanda(forms.Form):
 
 class FormDomandaCollettiva(forms.Form):
     
-    tipo = forms.CharField()
-    Domanda = forms.CharField()
-    Risposta = forms.CharField()
-    Varianti = forms.CharField()
+    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
+    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
+    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
+    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
+
+class FormDomandaCollettivaCrea(forms.Form):
+    
+    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
+    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
+    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
 
     
 class TestManualeForm(forms.Form):
@@ -84,6 +112,7 @@ class TestManualeForm(forms.Form):
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)
     
     def clean_dataOraInizio(self):
@@ -114,4 +143,5 @@ class TestSfidaOrarioEsattoForm(forms.Form):
             "required": "required",
             "name": "dataOraInizio", 
             "type": "text",
+            "autocomplete": "off"
         }), label = False)

@@ -33,50 +33,151 @@
     <h4>INSERIMENTO DATI</h4>
 
   
-        {% if ultimo %}
+        {% if ultimo == counter %}
         {% csrf_token %}
-        {% for domanda, variante, form, corretto, dom in ctx %}
+        {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed  %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
-                <div class="{% if corretto %} border border-danger
-                {% endif%}">
-
+            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed num %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{seed}} {{num}} novalidate>
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
                 
-                {{form}}
-            </div>
+                {% if tipo == 'm' %}
+                <div class="d-flex form-inline multiple">
+                    {{ form }}
+                </div>
+                <p></p>
+
+            {% elif tipo == 'c' %}
+                <div class="d-flex flex-column">
+                    {% for radio in form %}
+                        <label for="{{ radio.id_for_label }}" >
+                            <span>{{ radio.tag }}</span>
+                            <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                        </label>
+                    {% endfor %}
+                    </div>
+                    <p></p>
+
+            {% elif tipo == 'cr' %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{ form }}
+                </div>
+                <p></p>
+                
+            {% else %}
+                <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                    {{form}}
+                </div>
+                <p></p>
+            {% endif %}
                 <p></p>
             {% endfor %}
                 <p></p>
-        <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
-        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                {% if random == 0 %}
+
+                <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;">AVANTI</button>
+                <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+        
+                <div class="text-center">
+                    <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+                </div>        
+                {% elif random == 1 %}
+                <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+        
+                <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                <div class="text-center">
+                    <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+                </div>        
+                {% else  %}
+                <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                <button id="prosegui" class="btn text-light float-end" type="submit" style="background-color: #069901;">AVANTI</button>
+        
+                <div class="text-center">
+                    <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+                </div>
+        
+                {%  endif %}
 
 
     </form>    
         {% else %}
 
-            {% for domanda, variante, form, corretto, dom in ctx %}
+            {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed%}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
-                <div class="{% if corretto %}border border-danger
-                {% endif%}">
+            <form method="post" action = "{% url 'TestStart' idGruppi idTest counter seed num %}" {{idGruppi}} {{idTest}} {{counter}} {{seed}} {{num}} >
+                <div>
 
               
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
-                
+                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
+                    
+    
+                    {% if tipo == 'm' %}
+                    <div class="d-flex form-inline multiple">
+                        {{ form }}
+                    </div>
+                    <p></p>
+    
+                {% elif tipo == 'c' %}
+                    <div class="d-flex flex-column">
+                        {% for radio in form %}
+                            <label for="{{ radio.id_for_label }}" >
+                                <span>{{ radio.tag }}</span>
+                                <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                        <p></p>
+    
+                {% elif tipo == 'cr' %}
+                    <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                        {{ form }}
+                    </div>
+                    <p></p>
+                    
+                {% else %}
+                    <div class="{% if corretto %}border border-danger rounded {% endif%}">
+                        {{form}}
+                    </div>
+                    <p></p>
+                {% endif %}
+    
+                </div>
+                    <p></p>
+                    {% endfor %}
+    
 
-                {{form}}
-            </div>
-                <p></p>
-                {% endfor %}
+                    {% if random == 0 %}
 
-              <button type="submit" id="prosegui" class="btn text-light" style="background-color: #069901;">PROSEGUI</button>
+                    <button type="submit" id="prosegui" class="btn text-light  float-start" style="background-color: #022d5e;">PROSEGUI</button>
+                    <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
             
-              <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
-
+                    <div class="text-center">
+                        <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+                    </div>        
+                    {% elif random == 1 %}
+            
+                    <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                    <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+    
+                    <div class="text-center">
+                        <button type="submit" id="prosegui" class="btn text-light " style="background-color: #022d5e;">PROSEGUI</button>
+                    </div>        
+                    {% else  %}
+                    <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                    <button type="submit" id="prosegui" class="btn text-light  float-end" style="background-color: #022d5e;">PROSEGUI</button>
+            
+                    <div class="text-center">
+                        <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+                    </div>
+            
+                    {%  endif %}        
+    
+    
+                </form>     
+    
+    
             </form>     
 
 
@@ -97,6 +198,18 @@
     </div>
 </footer>
 
+<script>
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', function() {
+            checkboxes.forEach((cb) => {
+                if (cb !== this) {
+                    cb.checked = false;
+                }
+            });
+        });
+    });
+</script>
 </body>
 
 </html>
