@@ -348,11 +348,11 @@ def controllo(req):
     # If this is an HTMX request, render the HTMX template, otherwise render the regular template
     if req.headers.get('HX-Request'):
         template_name = 'utenti/tabellaRiepilogoTest.html'
-        context = {'page_obj': page_obj}
+        context = {'page_obj': page_obj, 'arr_display': arr_display}
         return TemplateResponse(req, template_name, context)
     else:
         template_name = 'utenti/Utenti.html'
-        context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj}
+        context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj, 'arr_display': arr_display}
         return TemplateResponse(req, template_name, context)
 
 

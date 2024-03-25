@@ -87,19 +87,19 @@
                           </tr>
                       </thead>
                       <tbody>
-                          {% for item in page_obj %}
-                          <tr>
-                              <td>{{ item.utente.username }}</td>
-                              <td>{{ item.idTest }}</td>
-                              <td>{{ item.dataOraFine|date:"d/m/Y H:i:s" }}</td>
-                              <td>{{ item.dataOraInizio|date:"d/m/Y H:i:s" }}</td>
-                              <td>{{ item.nrGruppo }}</td>
-                              <td>{{ item.nrTest }}</td>
-                              <td>{{ item.numeroErrori }}</td>
-                              <td>{{ item.malusF5 }}</td>
-                              <td>{{ item.dataOraFine|timeuntil:item.dataOraInizio }}</td>
-                          </tr>
-                          {% endfor %}
+                        {% for ut, id,fine,inizio, nrpag, nrdom, numerr, mal, tempo in arr_display %}
+                        <tr>
+                          <td>{{ ut }}</td>
+                          <td>{{ id }}</td>
+                          <td>{{ fine }}</td>
+                          <td>{{ inizio }}</td>
+                          <td>{{ nrpag }}</td>
+                          <td>{{ nrdom }}</td>
+                          <td>{{ numerr }}</td>
+                          <td>{{ mal }}</td>
+                          <td>{{ tempo }}</td>
+                        </tr>
+                        {% endfor %}
                       </tbody>
                   </table>
           
