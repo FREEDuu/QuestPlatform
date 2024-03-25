@@ -95,6 +95,12 @@ class FormDomandaCollettiva(forms.Form):
     Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
     Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
 
+class FormDomandaCollettivaCrea(forms.Form):
+    
+    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
+    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
+    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
+
     
 class TestManualeForm(forms.Form):
     numeroTest = forms.IntegerField(widget=forms.NumberInput(attrs={"class": "form-control"}), label = False, validators=[validators.MinValueValidator(0)], error_messages=messages)

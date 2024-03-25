@@ -117,16 +117,17 @@ def creaTestManuale(req):
 
 
 @login_required(login_url='login')
-def TestStart(req, idGruppi, idTest, counter, seed):
+def TestStart(req, idGruppi, idTest, counter, seed, num):
+
 
     ctx = []
+
     random.seed(seed)
-    ultimo = False
-    if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] - 1 <= counter:
-        ultimo = True
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
-    
+    if test['nrGruppo'] - 1 <= counter:
+        return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
+    print(Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'], counter)
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
@@ -139,9 +140,10 @@ def TestStart(req, idGruppi, idTest, counter, seed):
         check = False
         
         # VALIDAZIONE RISPOSTE
-        for n in range(counter * 5, (counter + 1) * 5):
-            
+        for n in range((counter * 5), ((counter + 1) * 5) - num):
             if domande_to_render[n] == 'm': 
+                domande_to_render[n]
+   
                 concat_string = ''
                 for i in range(len(risposte_esatte[n])):
                     user_input = req.POST.get('domanda_{}_{}'.format(n, i))
@@ -180,28 +182,30 @@ def TestStart(req, idGruppi, idTest, counter, seed):
 
 
         if check:
-            for n in range(counter * 5, (counter + 1) * 5):
+            for n in range((counter * 5), ((counter + 1) * 5) - num ):
                 if domande_to_render[n] == 'cr':
                     formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
                 else:
                     formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
-                
-            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, })
+            print('qui 2')
+            return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, 'num' : num })
         else:
-            if test['nrGruppo'] -1 == counter:
-                return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
+
+            Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
+            seed += 1
             counter += 1
+            num = randint(0,3)
             ctx = []
-            for n in range(counter * 5, (counter + 1) * 5):
+            for n in range(counter * 5, ((counter + 1) * 5)- num ):
                 if domande_to_render[n] == 'cr':
                     formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
                 else:
                     formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
 
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
             
-            return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed+1})
+            print('qui 1')
+            return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed':  seed, 'num' : num})
 
     else:
         if test['inSequenza'] == True:
@@ -210,7 +214,7 @@ def TestStart(req, idGruppi, idTest, counter, seed):
         Test.objects.filter(idTest = idTest).update(inSequenza = True) 
         forms = FormDomanda(domande_to_render, risposte_esatte)
         
-        for n in range(counter * 5, (counter + 1) * 5):
+        for n in range(counter * 5, ((counter + 1) * 5) - num ):
             
             if domande_to_render[n] == 'cr':
                 forms.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
@@ -218,8 +222,8 @@ def TestStart(req, idGruppi, idTest, counter, seed):
                 forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
             
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-        return render(req, 'preTest/TestSelect.html', {'idGruppi': idGruppi, 'ultimo': ultimo, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed})
+        
+        return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed , 'num' : num})
 
 
 def preTest(req, idGruppi, idTest):
@@ -260,8 +264,9 @@ def preTest(req, idGruppi, idTest):
                 app_list.append(domanda_test_cr)
 
             Test_Domande_Varianti.objects.bulk_create(app_list)
-
-            return redirect('TestStart' , idGruppi = idGruppi, idTest = idTest, counter = 0, seed = randint(0,1000))
+            num = randint(0,3)
+            Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
+            return redirect('TestStart' , idGruppi = idGruppi, idTest = idTest, counter = 0, seed = randint(0,1000), num = num)
 
         else :
 
@@ -286,7 +291,7 @@ def FinishTest(req, idGruppi, idTest):
     tempo_test_finale = tt[0].dataOraFine
     tempo_test_iniziale = tt[0].dataOraInizio
     tempo_end = (tempo_test_finale-tempo_test_iniziale).total_seconds
-
+    malus = False
     if end['malusF5'] == True:
         malus = True
         tempo_end = (tempo_test_finale-tempo_test_iniziale + timedelta(0,  5)).total_seconds

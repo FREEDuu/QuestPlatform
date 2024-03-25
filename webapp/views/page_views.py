@@ -3,7 +3,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import F
 from webapp.models import Test 
 from django.contrib.auth import authenticate, login, logout 
-from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormTestCollettivi, FormDomandaCollettiva
+from ..forms import LoginForm, TestManualeForm, TestOrarioEsattoForm, TestSfidaManualeForm, TestSfidaOrarioEsattoForm, FormTestCollettivi, FormDomandaCollettiva, FormDomandaCollettivaCrea
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -310,7 +310,7 @@ def controllo(req):
     arr_display = []
 
     for el in tutti_test:
-        arr_display.append([el.utente.username, el.idTest, el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"), el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"), el.nrGruppo, el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
+        arr_display.append([el.utente.username, el.idTest, el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"), el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"), el.nrGruppo, el.nrTest,  el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
     
     if req.user.is_staff == False:
         return redirect('home')
@@ -341,7 +341,7 @@ def csv_riepilogo_test(req):
     
     writer = csv.writer(csv_buffer, delimiter=';')
 
-    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
+    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
     writer.writerow(header_row)
 
     tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
@@ -355,6 +355,7 @@ def csv_riepilogo_test(req):
             test.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
             test.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
             test.nrGruppo,
+            test.nrTest,
             test.numeroErrori,
             test.malusF5,
             tempo_completamento_str
@@ -368,3 +369,38 @@ def csv_riepilogo_test(req):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     return response
+ 
+
+def creaDomande(req):
+
+    if req.user.is_staff == False:
+        return redirect('home')
+    
+
+    
+    return render(req, 'creaDomande/creaDomande.html')
+
+def creaDomandeDisplay(req):
+    
+    if req.method == 'POST':
+        
+        form = FormDomandaCollettiva(req.POST)
+        if form.is_valid():
+
+            domanda = form.cleaned_data['Domanda']
+            risposte = form.cleaned_data['Risposta']
+            risposte = risposte.split(';')
+            varianti = form.cleaned_data['Varianti']
+            varianti = varianti.split(';')
+            tipo = form.cleaned_data['tipo']
+
+            domanda = Domande.objects.create(corpo = domanda, tipo = tipo, numeroPagine = -1)
+            to_list = list()
+            for _ in range(len(risposte)):
+                to_list.append(Varianti(domanda = domanda, corpo = varianti[_], rispostaEsatta = risposte[_]))
+            Varianti.objects.bulk_create(to_list)
+            print(to_list, domanda)
+
+            return HttpResponse('variante creata')
+
+    return render(req, 'creaDomande/displayDom.html', {'form' : FormDomandaCollettiva()})

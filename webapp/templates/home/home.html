@@ -35,6 +35,7 @@
         {% load static %}
         <a href="{% url 'test' %}" class="btn btn-primary btn-lg px-4">Crea Test</a>
         {% if staff%}
+        <a href="{% url 'creaDomande' %}" class="btn btn-primary btn-lg px-4 ">Crea Domanda</a>
         <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4 float-end">Test Collettivi</a>
         {% endif %}
         

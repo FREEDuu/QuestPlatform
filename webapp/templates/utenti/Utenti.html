@@ -79,19 +79,21 @@
                       <th scope="col">Data Inizio</th>
                       <th scope="col">Data Fine</th>
                       <th scope="col">Nr Pagine</th>
+                      <th scope="col">Nr Domande</th>
                       <th scope="col">Nr Errori</th>
                       <th scope="col">Malus F5</th>
                       <th scope="col">Tempo Completamento</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for ut, id,fine,inizio, nrpag, numerr, mal, tempo in arr_display %}
+                    {% for ut, id,fine,inizio, nrpag, nrdom, numerr, mal, tempo in arr_display %}
                     <tr>
                       <td>{{ ut }}</td>
                       <td>{{ id }}</td>
                       <td>{{ fine }}</td>
                       <td>{{ inizio }}</td>
                       <td>{{ nrpag }}</td>
+                      <td>{{ nrdom }}</td>
                       <td>{{ numerr }}</td>
                       <td>{{ mal }}</td>
                       <td>{{ tempo }}</td>
