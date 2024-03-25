@@ -18,6 +18,9 @@ import plotly_express as px
 from django.views.decorators.csrf import csrf_exempt
 import csv
 from io import StringIO
+from django.core.paginator import Paginator
+from django.template.response import TemplateResponse
+from django.urls import reverse
 
 
 # LOGIN
@@ -304,32 +307,54 @@ def statistiche(req):
 
 @login_required(login_url='login')
 def controllo(req):
-    
     tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
-    
-    arr_display = []
 
-    for el in tutti_test:
-        arr_display.append([el.utente.username, el.idTest, el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"), el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"), el.nrGruppo, el.nrTest,  el.numeroErrori, el.malusF5, (((el.dataOraFine - el.dataOraInizio).total_seconds()))])
-    
+    # Paginazione
+    paginator = Paginator(tutti_test, 10)
+    page_number = req.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    arr_display = []
+    for el in page_obj:
+        arr_display.append([
+            el.utente.username,
+            el.idTest,
+            el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
+            el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
+            el.nrGruppo,
+            el.nrTest,
+            el.numeroErrori,
+            el.malusF5,
+            (((el.dataOraFine - el.dataOraInizio).total_seconds()))
+        ])
+
     if req.user.is_staff == False:
         return redirect('home')
 
     utenti_inf = []
     utenti_stelle = []
     utenti = User.objects.all()
+
     for utente in utenti:
-
-        check =Test.objects.filter(utente= utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
+        check = Test.objects.filter(utente=utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
         if len(check) <= 100:
-
             utenti_inf.append([utente, len(check)])
-    stelle = Statistiche.objects.filter(tipoDomanda = 'stelle').order_by('-nrErrori').values('utente', 'nrErrori')
+
+    stelle = Statistiche.objects.filter(tipoDomanda='stelle').order_by('-nrErrori').values('utente', 'nrErrori')
     for st in stelle:
-        ut = User.objects.filter(id = st['utente'])[0]
+        ut = User.objects.filter(id=st['utente'])[0]
         utenti_stelle.append([ut, st['nrErrori']])
 
-    return render(req, 'utenti/Utenti.html', {'utenti_inf' : utenti_inf, 'utenti_stelle' : utenti_stelle, 'arr_display' : arr_display})
+    # If this is an HTMX request, render the HTMX template, otherwise render the regular template
+    if req.headers.get('HX-Request'):
+        template_name = 'utenti/tabellaRiepilogoTest.html'
+        context = {'page_obj': page_obj}
+        return TemplateResponse(req, template_name, context)
+    else:
+        template_name = 'utenti/Utenti.html'
+        context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj}
+        return TemplateResponse(req, template_name, context)
+
 
 
 @login_required(login_url='login')
