@@ -215,7 +215,7 @@ def Sfida(req):
 
     creaTestSfidaOrarioEsattoForm.fields['utente'].choices = user_lists
 
-    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm, 'sfide_ricevute' : sf_ric, 'sfide_fatte' : sf_fatte}
+    return render(req, 'sfide/sfide.html', {"creaTestSfidaOrarioEsattoForm": creaTestSfidaOrarioEsattoForm, 'sfide_ricevute' : sf_ric[:5], 'sfide_fatte' : sf_fatte[:5]}
 )
 
 
