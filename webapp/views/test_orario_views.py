@@ -181,8 +181,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
     print(displayer, test['nrGruppo'])
-    if test['nrGruppo'] -1 <= displayer:
-        return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
@@ -246,7 +244,8 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
         
         else:
             Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
-
+            if test['nrGruppo'] -1 <= displayer:
+                return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
             displayer += 1
             seed += 1
             num = randint(0,3)

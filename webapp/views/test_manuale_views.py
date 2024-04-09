@@ -125,8 +125,7 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
     random.seed(seed)
     test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).select_related('domanda','variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
-    if test['nrGruppo'] - 1 <= counter:
-        return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
+    
     print(Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'], counter)
         #Test_Domande_Varianti.objects.create(test=nuovo_test, domanda=Domande.objects.get(idDomanda=idDomandaCasuale), variante=Varianti.objects.get(idVariante=idVarianteCasuale))
 
@@ -190,7 +189,8 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
             print('qui 2')
             return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, 'num' : num })
         else:
-
+            if test['nrGruppo'] - 1 <= counter:
+                return redirect('FinishTest', idGruppi = idGruppi, idTest = idTest)
             Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
             seed += 1
             counter += 1
@@ -204,7 +204,6 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
 
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
             
-            print('qui 1')
             return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed':  seed, 'num' : num})
 
     else:
