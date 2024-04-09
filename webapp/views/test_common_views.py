@@ -10,7 +10,7 @@ from ..utils.utils import genRandomStaticAnswers
 from ..forms import *
 def genRandomFromSeedCollettivi(varianti, risposta):
 
-    arr = varianti.split(' ')
+    arr = varianti.split(';')
     arr.append( str(risposta))
     ret = list()
 
