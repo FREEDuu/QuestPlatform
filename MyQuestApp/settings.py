@@ -32,9 +32,9 @@ SECRET_KEY = 'django-insecure-h)q*ms73h19kdl&x+)11ch7aqub+561^8%$&k3=0v9x7n*&2)+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['questplatform.fly.dev', 'localhost', '127.0.0.1', 'mousex.it']
+ALLOWED_HOSTS = ['questplatform.fly.dev', 'localhost', '127.0.0.1', 'mousex.it', 'www.mousex.it']
 
-CSRF_TRUSTED_ORIGINS = ['https://questplatform.fly.dev', 'https://mousex.it']
+CSRF_TRUSTED_ORIGINS = ['https://questplatform.fly.dev', 'https://mousex.it', 'https://www.mousex.it']
 
 CSRF_COOKIE_DOMAIN = None
 
