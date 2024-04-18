@@ -102,8 +102,7 @@ def TestProgrammatiStart(req, idTest, counter):
                     ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), domande_to_render[n]])
 
             elif req.POST.get('domanda_{}'.format(n)) != var_to_r[n].rispostaEsatta:
-                print(req.POST, )
-                ctx.append([dom_to_r[n], var_to_r[n].corpo, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), domande_to_render[n]])
+                ctx.append([dom_to_r[n], var_to_r[n].corpo, formRisposta['domanda_{}'.format(n)], True,'domanda_{}'.format(n), domande_to_render[n]])
                 #Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 check = True
             else:
@@ -163,7 +162,7 @@ def TestProgrammatiFinish(req, idTest):
         
         tests = Test.objects.filter(idTest = idTest).values('dataOraInizio', 'secondiRitardo')[0]
 
-        test_finito = Test.objects.create(dataOraInizio = tests['dataOraInizio'] , dataOraFine = datetime.now(), tipo = 'collettivo_finito_' + str(idTest))
+        test_finito = Test.objects.create(utente = req.user, dataOraInizio = tests['dataOraInizio'] , dataOraFine = datetime.now(), tipo = 'collettivo_finito_' + str(idTest))
     else :
         test_finito = Test.objects.filter(utente = req.user, tipo = 'collettivo_finito_' + str(idTest))[0]
 
