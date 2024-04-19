@@ -137,3 +137,7 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 webapp/testdb.py
+webapp/assets/admin/*
+webapp/assets/css/*
+webapp/assets/webapp/*
+webapp/assets/staticfiles.json

@@ -307,7 +307,7 @@ def statistiche(req):
 
 @login_required(login_url='login')
 def controllo(req):
-    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
 
     # Paginazione
     paginator = Paginator(tutti_test, 10)
@@ -369,7 +369,8 @@ def csv_riepilogo_test(req):
     header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
     writer.writerow(header_row)
 
-    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).order_by('-dataOraInizio')
+    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
+    
     for test in tutti_test:
         tempo_completamento = (test.dataOraFine - test.dataOraInizio).total_seconds()
         tempo_completamento_str = str(tempo_completamento).replace('.', ',')
