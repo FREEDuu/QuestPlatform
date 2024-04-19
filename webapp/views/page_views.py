@@ -143,8 +143,6 @@ def home(req):
     for te in display_test_programmati:
         if te['dataOraInizio'] > datetime.now():
             gruppi_programmati.append([te['idTest'], te['dataOraInizio']])
-        else:
-            Test.objects.filter(idTest = te['idTest']).delete()
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
