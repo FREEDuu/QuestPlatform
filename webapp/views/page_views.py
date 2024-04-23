@@ -21,6 +21,7 @@ from io import StringIO
 from django.core.paginator import Paginator
 from django.template.response import TemplateResponse
 from django.urls import reverse
+from time import perf_counter
 
 
 # LOGIN
@@ -303,8 +304,9 @@ def statistiche(req):
 
     return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
 
-@login_required(login_url='login')
+#@login_required(login_url='login')
 def controllo(req):
+    start_time = perf_counter()
     tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
 
     # Paginazione
@@ -347,10 +349,15 @@ def controllo(req):
     if req.headers.get('HX-Request'):
         template_name = 'utenti/tabellaRiepilogoTest.html'
         context = {'page_obj': page_obj, 'arr_display': arr_display}
+        elapsed_time = perf_counter() - start_time
+        print(f"View processing time: {elapsed_time:.4f} seconds")
+
         return TemplateResponse(req, template_name, context)
     else:
         template_name = 'utenti/Utenti.html'
         context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj, 'arr_display': arr_display}
+        elapsed_time = perf_counter() - start_time
+        print(f"View processing time: {elapsed_time:.4f} seconds")
         return TemplateResponse(req, template_name, context)
 
 

@@ -11,4 +11,5 @@ pytz==2022.1
 psycopg2-binary==2.9.9
 plotly==5.18.0
 plotly-express==0.4.1
-locust==2.24.1
+locust==2.26.0
+bs4==0.0.2
