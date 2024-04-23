@@ -42,16 +42,18 @@ class Test(models.Model):
     idTest = models.AutoField(primary_key=True)
     utente = models.ForeignKey(User, on_delete=models.CASCADE, default = 1)
     nrGruppo = models.IntegerField(default=0)
-    tipo = models.CharField(max_length=50, default="manuale")
     inSequenza = models.BooleanField(null=False, default=False)
+    tipo = models.CharField(max_length=50, default="manuale")
     secondiRitardo = models.IntegerField(default=1)
     dataOraInizio = models.DateTimeField(null=True)
     nrTest = models.IntegerField(default=0)
     dataOraFine = models.DateTimeField(null=True)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
+    malusF5 = models.BooleanField(null=False, default=False)
+    numeroErrori = models.IntegerField(default=0)
 
     def __str__(self):
-        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza} |  dataOraInserimento: {self.dataOraFine}'
+        return f'id: {self.idTest}  |  nrGruppo: {self.nrGruppo}  |  tipo: {self.tipo}  |  inSequenza: {self.inSequenza} |  malus: {self.malusF5} numeroErrori: {self.numeroErrori}'
 
     @classmethod
     def get_next_gruppo(cls):

@@ -51,7 +51,7 @@ def TestStartService(idGruppi, idTest, counter):
     ultimo = False
     if Test.objects.filter(idTest = idTest).values('nrGruppo')[0]['nrGruppo'] -1 <= counter:
         ultimo = True
-    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante')
+    test_to_render = Test_Domande_Varianti.objects.filter(test = idTest).prefetch_related('domanda','variante').order_by('id')
     
     for domanda in test_to_render:
         

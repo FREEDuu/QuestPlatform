@@ -45,6 +45,11 @@
       <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
         <h6>L'invio della domanda è stato effettuato correttamente</h6>
         <h6>TEMPO : {{tempo}}</h6>
+        {% if malus %}
+        <h5>
+            HAI RICEVUTO IL MALUS F5 PER AVER RICARICATO LA PAGINA (SONO STATI AGGIUNTI 5 SECONDI AL TUO TEMPO FINALE)
+        </h5>
+        {% endif %}
         <a href= "{% url 'home' %}"  {{idGruppi}} {{counter}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Home</button></a>
 
   </div>

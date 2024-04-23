@@ -66,20 +66,20 @@ class FormDomanda(forms.Form):
         for i in range(len(domande)):
             field_name = 'domanda_%s' % (i,)
             if domande[i] == 't':
-                self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}))
+                self.fields[field_name] = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}), required= False)
             elif domande[i] == 'c':
-                self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"})) 
+                self.fields[field_name] = forms.ChoiceField(widget=forms.RadioSelect(attrs={"class": "forms-control"}),  required= False) 
             elif domande[i] == 'cr':
-                self.fields[field_name] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple())
+                self.fields[field_name] = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple() , required= False)
             elif domande[i] == 'm':
                 common_attrs = {"class": "form-control", "autocomplete": "off", "maxlength": "1", "style": "width: 38px; margin-right: 10px;"}
                 numero_input = len(risposte_esatte[i])
                 
-                char_fields = [forms.CharField(error_messages={'required': 'This field is required'}) for _ in range(numero_input)]
+                char_fields = [forms.CharField() for _ in range(numero_input)]
 
-                self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs)
+                self.fields[field_name] = CustomMultiValueField(char_fields, common_attrs, required= False)
             else:
-                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('', 'Selezionare opzione'), ('1', '1'), ('2', '2'), ('3', '3')], initial='', required=True)
+                self.fields[field_name] = forms.ChoiceField(widget=forms.Select(attrs={"class": "form-control"}), choices=[('', 'Selezionare opzione'), ('1', '1'), ('2', '2'), ('3', '3')], initial='', required= False)
 
     def get_interest_fields(self):
         ret = []
@@ -93,7 +93,13 @@ class FormDomandaCollettiva(forms.Form):
     tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
     Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
     Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
-    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'variante'}))
+    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
+
+class FormDomandaCollettivaCrea(forms.Form):
+    
+    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
+    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
+    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
 
     
 class TestManualeForm(forms.Form):

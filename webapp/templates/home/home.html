@@ -34,8 +34,10 @@
       <div class="mb-5">
         {% load static %}
         <a href="{% url 'test' %}" class="btn btn-primary btn-lg px-4">Crea Test</a>
+        {% if staff%}
+        <a href="{% url 'creaDomande' %}" class="btn btn-primary btn-lg px-4 ">Crea Domanda</a>
         <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4 float-end">Test Collettivi</a>
-
+        {% endif %}
         
               </div>
                 <div class="row g-4">
@@ -90,10 +92,10 @@
                               <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
                                   <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
                                  
-                                  <strong class="m-1">{{data}}  </strong>|  {{utente_sfidato}}
+                                  <strong class="m-2">{{data}}  </strong>|  {{utente_sfidato}}
                                 </div>
                               
-                                  In attesa di conferma
+                                  <span class="m-2">In attesa di conferma</span>
                              
                             </div>
                     

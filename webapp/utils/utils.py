@@ -53,6 +53,8 @@ def genRandomStaticAnswers(tipo, rispostaGiusta):
             ret.append(('2', '* Non accetto i termini e condizioni sulla privacy e sul trattamento dei dati personali'))  
         elif rispostaGiusta == 'Accetto i termini del bando':
             ret.append(('2', 'Non accetto i termini del bando'))  
+        elif rispostaGiusta == 'Accetto i termini del contratto':
+            ret.append(('2', 'Non accetto i termini del contratto'))  
 
         random.shuffle(ret) 
         
