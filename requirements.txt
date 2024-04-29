@@ -13,3 +13,4 @@ plotly==5.18.0
 plotly-express==0.4.1
 locust==2.26.0
 bs4==0.0.2
+django-debug-toolbar==4.3.0
