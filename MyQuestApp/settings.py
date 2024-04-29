@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-h)q*ms73h19kdl&x+)11ch7aqub+561^8%$&k3=0v9x7n*&2)+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['questplatform.fly.dev', 'localhost', '127.0.0.1', 'mousex.it', 'www.mousex.it']
 
