@@ -276,25 +276,37 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
+
 @login_required(login_url='login')
 def statistiche(req):
+    tipiDomande = ['testo', 'selezione', 'checkbox']
+    tipo_to_label = {'t': 'testo', 's': 'selezione', 'c': 'checkbox'}
+    
+    nrErrori_raw = queries.get_numero_errori(req.user.id)
+    error_dict = {tipo: 0 for tipo in tipiDomande}  # Inizializza con valori a zero
 
-    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
-    print(chart_tests)
+    for count, tipo in nrErrori_raw:
+        if tipo in tipo_to_label:
+            error_dict[tipo_to_label[tipo]] = count
 
-    tipiDomande = ['testo','selezione','checkbox', 'stelle']
-    nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
+    nrErrori = [error_dict[tipo] for tipo in tipiDomande]
 
-    print(nrErrori)    
-    chart = px.pie( names = tipiDomande, values = nrErrori)
+    chart = px.pie(names=tipiDomande, values=nrErrori)
 
-    errori_t = Statistiche.objects.filter(utente = req.user, tipoDomanda = 't').values('nrErrori')[0]['nrErrori']
-    errori_s = Statistiche.objects.filter(utente = req.user, tipoDomanda = 's').values('nrErrori')[0]['nrErrori']
-    errori_c = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'r').values('nrErrori')[0]['nrErrori']
+    errori_t = queries.get_errori_per_tipo(req.user.id, 't')
+    errori_s = queries.get_errori_per_tipo(req.user.id, 's')
+    errori_c = queries.get_errori_per_tipo(req.user.id, 'c')
+    
+    test_incompleti = queries.get_test_incompleti(req.user.id)
 
+    return render(req, 'statistiche/statistiche.html', {
+        'chart': chart.to_html(),
+        'test_incompleti': len(test_incompleti),
+        'errori_t': errori_t,
+        'errori_s': errori_s,
+        'errori_c': errori_c
+    })
 
-
-    return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
 
 #@login_required(login_url='login')
 def controllo(req):
