@@ -35,6 +35,7 @@ def get_user_test_info():
             WHERE 
                 webapp_test."dataOraFine" IS NOT NULL AND 
                 NOT (webapp_test.tipo = 'sfida' OR webapp_test.tipo LIKE 'collettivo%')
+                AND webapp_test.utente_id NOT IN (1,2,3)
             ORDER BY 
                 webapp_test."dataOraInizio" DESC;
         """)
@@ -70,7 +71,8 @@ def get_users_tests_100():
             GROUP BY 
                 auth_user.username
             HAVING 
-                COUNT(webapp_test."idTest") < 100;
+                COUNT(webapp_test."idTest") < 100
+            ORDER BY test_count DESC;
         """)
         result_set = cursor.fetchall()
     return result_set 

@@ -182,7 +182,7 @@ def Sfida(req):
 
     user_list = User.objects.exclude(Q(id = req.user.id))
     user_lists = list()
-    user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
+    [user_lists.append((user.username,user.username)) for user in user_list]
 
     storico_sfide_fatte = Sfide.objects.filter(utente = req.user)
     storico_sfide_ricevute = Sfide.objects.filter(utenteSfidato = req.user)
@@ -404,11 +404,9 @@ def csv_riepilogo_test(req):
  
 
 def creaDomande(req):
-
+    
     if req.user.is_staff == False:
         return redirect('home')
-    
-
     
     return render(req, 'creaDomande/creaDomande.html')
 
