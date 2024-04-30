@@ -57,11 +57,19 @@ def get_stelle_statistics():
 def get_users_tests_100():
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT auth_user.username, COUNT(webapp_test."idTest") AS test_count
-            FROM auth_user
-            LEFT JOIN webapp_test ON webapp_test.utente_id = auth_user.id AND webapp_test."dataOraFine" IS NOT NULL
-            GROUP BY auth_user.username
-            HAVING COUNT(webapp_test."idTest") <= 100;
+            SELECT 
+                auth_user.username, 
+                COUNT(webapp_test."idTest") AS test_count
+            FROM 
+                auth_user
+            LEFT JOIN 
+                webapp_test ON webapp_test.utente_id = auth_user.id
+                    AND webapp_test."dataOraFine" IS NOT NULL
+                    AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+            GROUP BY 
+                auth_user.username
+            HAVING 
+                COUNT(webapp_test."idTest") < 100;
         """)
         result_set = cursor.fetchall()
     return result_set 

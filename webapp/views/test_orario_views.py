@@ -18,16 +18,21 @@ from ..utils.utils import genRandomStaticAnswers
 import string
 
 def genRandomint(num):
-    if randint(0,1) == 0:
+    if randint(0, 1) == 0:
         return randint(0, num-1)
-    else: 
-        return randint(num+1, 9)
+    else:
+        if num >= 9:
+            return randint(0, num-1)
+        else:
+            return randint(num+1, 9)    
+        
 def randomGen(lungh, to_repl):
     ret = random.choices(string.ascii_lowercase, k=lungh)
     while ret == to_repl:
        ret = random.choices(string.ascii_lowercase, k=lungh)
     
     return ret[0]
+
 def genRandomFromSeed(tipo, seed, rispostaGiusta):
     if True :
         if tipo == 's':
