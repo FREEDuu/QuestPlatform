@@ -279,8 +279,8 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
 @login_required(login_url='login')
 def statistiche(req):
-    tipiDomande = ['testo', 'selezione', 'checkbox']
-    tipo_to_label = {'t': 'testo', 's': 'selezione', 'c': 'checkbox'}
+    tipiDomande = ['testo', 'selezione', 'checkbox', 'input multiplo']
+    tipo_to_label = {'t': 'testo', 's': 'selezione', 'c': 'checkbox', 'm': 'input multiplo'}
     
     nrErrori_raw = queries.get_numero_errori(req.user.id)
     error_dict = {tipo: 0 for tipo in tipiDomande}  # Inizializza con valori a zero
@@ -296,6 +296,7 @@ def statistiche(req):
     errori_t = queries.get_errori_per_tipo(req.user.id, 't')
     errori_s = queries.get_errori_per_tipo(req.user.id, 's')
     errori_c = queries.get_errori_per_tipo(req.user.id, 'c')
+    errori_m = queries.get_errori_per_tipo(req.user.id, 'm')
     
     test_incompleti = queries.get_test_incompleti(req.user.id)
 
@@ -304,7 +305,8 @@ def statistiche(req):
         'test_incompleti': len(test_incompleti),
         'errori_t': errori_t,
         'errori_s': errori_s,
-        'errori_c': errori_c
+        'errori_c': errori_c,
+        'errori_m': errori_m
     })
 
 
