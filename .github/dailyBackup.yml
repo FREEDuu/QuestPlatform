@@ -33,7 +33,7 @@ jobs:
             CONTAINER_NAME="ts-postgres"
 
             # Dump the PostgreSQL database
-            echo "${VPS_PASSWORD}" | sudo -S docker exec ${CONTAINER_NAME} pg_dumpall -c -U postgres > ${BACKUP_DIR}/postgresdump_${DATE}.sql
+            echo "${VPS_PASSWORD}" | sudo -S docker exec ${CONTAINER_NAME} pg_dumpall -c -U carl > ${BACKUP_DIR}/postgresdump_${DATE}.sql
             
             # Compress the backup
             echo "${VPS_PASSWORD}" | sudo -S tar -zcvf ${BACKUP_DIR}/${BACKUP_FILE} -C ${BACKUP_DIR} postgresdump_${DATE}.sql
