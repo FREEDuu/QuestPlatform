@@ -1,22 +1,23 @@
 <form hx-trigger = " click from:#crea " hx-post = "{% url 'creaDomandeDisplay' %}"> 
     {% csrf_token %}
 
-    <div class="row">
-        <div class="col">
-            {{form.Domanda}}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form.Domanda }}
         </div>
-        <div class="col">
-            {{form.Risposta}}
+        <div class="col-md-6">
+            {{ form.Risposta }}
         </div>
-        <div class="col">
-            {{form.Varianti}}
+        <div class="col-md-6">
+            {{ form.Varianti }}
         </div>
-        <div class="col ">
-            {{form.tipo}}
+        <div class="col-md-6">
+            {{ form.tipo }}
         </div>
+
         <div class="col align-self-center">
             <button class="btn btn-danger float-end "
-            hx-on = "click: this.closest('form').remove()"  > delete</button>
+            hx-on = "click: this.closest('form').remove()"  > Delete</button>
             <div 
                 class="btn float-end "
                 data-bs-toggle="popover" 
