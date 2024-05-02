@@ -387,10 +387,10 @@
     var weekLabels = Object.keys(testsByWeek).map(function(week) {
       var startDate = getStartDateOfWeek(week);
       var endDate = getEndDateOfWeek(week);
-      var startDateFormat = startDate.toLocaleDateString('en-GB');
-      var endDateFormat = endDate.toLocaleDateString('en-GB');
-      return startDateFormat + ' \n' + endDateFormat;
-    });
+      var startDateFormat = formatDateToDayMonth(startDate);
+      var endDateFormat = formatDateToDayMonth(endDate);
+      return `${startDateFormat}_${endDateFormat}`;
+  });
   
     var testsData = Object.values(testsByWeek);
     var barColors = generateRandomColors(weekLabels.length);
@@ -427,6 +427,13 @@
       }
     });
   });
+
+  function formatDateToDayMonth(date) {
+    var d = new Date(date);
+    var day = d.getDate();
+    var month = d.getMonth() + 1; // Months are zero-indexed
+    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}`;
+  }
 
 
   function getWeek(date) {

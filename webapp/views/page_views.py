@@ -21,7 +21,11 @@ from io import StringIO
 from django.core.paginator import Paginator
 from django.template.response import TemplateResponse
 from django.urls import reverse
-
+from time import perf_counter
+from django.db import connection
+from django.http import JsonResponse
+import json
+from ..utils import queries
 
 # LOGIN
 def log_in(req):
@@ -64,18 +68,7 @@ def home(req):
     staff = True    
     if req.user.is_staff == False:
         staff = False
-    #print(Test.objects.filter().all())
-    #Sfide.objects.filter(dataOraInizio__isnull = True).delete()
-    '''
-    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 's')
-    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 't')
-    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'c')
-    Domande.objects.create(corpo = 'Cavallo Bianco di Napoleone ? ' , tipo = 'm')
-    domandone = Domande.objects.all()
 
-    for domandona in domandone :
-        Varianti.objects.create(domanda = domandona, corpo = 'BIANCO', rispostaEsatta = 'bianco')
-    '''
     if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
         Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
         Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
@@ -189,7 +182,7 @@ def Sfida(req):
 
     user_list = User.objects.exclude(Q(id = req.user.id))
     user_lists = list()
-    user_fields_list = [user_lists.append((user.username,user.username)) for user in user_list]
+    [user_lists.append((user.username,user.username)) for user in user_list]
 
     storico_sfide_fatte = Sfide.objects.filter(utente = req.user)
     storico_sfide_ricevute = Sfide.objects.filter(utenteSfidato = req.user)
@@ -283,75 +276,90 @@ def creaTestCollettivoDisplay(req, idTest, n):
 
     return render(req, 'test/displayDomanda.html', {'form' : FormDomandaCollettiva() , 'idTest' : idTest, 'n' : n})
 
+
 @login_required(login_url='login')
 def statistiche(req):
+    tipiDomande = ['testo', 'selezione', 'checkbox', 'input multiplo']
+    tipo_to_label = {'t': 'testo', 's': 'selezione', 'c': 'checkbox', 'm': 'input multiplo'}
+    
+    nrErrori_raw = queries.get_numero_errori(req.user.id)
+    error_dict = {tipo: 0 for tipo in tipiDomande}  # Inizializza con valori a zero
 
-    chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=True).order_by('-dataOraInizio')
-    print(chart_tests)
+    for count, tipo in nrErrori_raw:
+        if tipo in tipo_to_label:
+            error_dict[tipo_to_label[tipo]] = count
 
-    tipiDomande = ['testo','selezione','checkbox', 'stelle']
-    nrErrori = Statistiche.objects.filter(utente = req.user).values_list('nrErrori', flat=True)
+    nrErrori = [error_dict[tipo] for tipo in tipiDomande]
 
-    print(nrErrori)    
-    chart = px.pie( names = tipiDomande, values = nrErrori)
+    chart = px.pie(names=tipiDomande, values=nrErrori)
 
-    errori_t = Statistiche.objects.filter(utente = req.user, tipoDomanda = 't').values('nrErrori')[0]['nrErrori']
-    errori_s = Statistiche.objects.filter(utente = req.user, tipoDomanda = 's').values('nrErrori')[0]['nrErrori']
-    errori_c = Statistiche.objects.filter(utente = req.user, tipoDomanda = 'r').values('nrErrori')[0]['nrErrori']
+    errori_t = queries.get_errori_per_tipo(req.user.id, 't')
+    errori_s = queries.get_errori_per_tipo(req.user.id, 's')
+    errori_c = queries.get_errori_per_tipo(req.user.id, 'c')
+    errori_m = queries.get_errori_per_tipo(req.user.id, 'm')
+    
+    test_incompleti = queries.get_test_incompleti(req.user.id)
+
+    return render(req, 'statistiche/statistiche.html', {
+        'chart': chart.to_html(),
+        'test_incompleti': len(test_incompleti),
+        'errori_t': errori_t,
+        'errori_s': errori_s,
+        'errori_c': errori_c,
+        'errori_m': errori_m
+    })
 
 
-
-    return render(req ,'statistiche/statistiche.html', { 'chart': chart.to_html, 'test_incompleti' : len(chart_tests), 'errori_t' : errori_t , 'errori_s' : errori_s, 'errori_c' : errori_c})
-
-@login_required(login_url='login')
+#@login_required(login_url='login')
 def controllo(req):
-    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
+    if req.user.is_staff == False:
+        return redirect('home')
+    
+    result_set = queries.get_user_test_info()
+    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrTest', 'numeroErrori', 'malusF5']
+    tests = [dict(zip(columns, row)) for row in result_set]
 
     # Paginazione
-    paginator = Paginator(tutti_test, 10)
-    page_number = req.GET.get('page')
+    paginator = Paginator(tests, 10)
+    page_number = req.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
     arr_display = []
     for el in page_obj:
+        # Formatta date
+        dataOraFine_str = el['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraFine'] else ''
+        dataOraInizio_str = el['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraInizio'] else ''
+        
+        # Calcula totale secondi
+        duration_seconds = (el['dataOraFine'] - el['dataOraInizio']).total_seconds() if el['dataOraFine'] and el['dataOraInizio'] else 0
+
         arr_display.append([
-            el.utente.username,
-            el.idTest,
-            el.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
-            el.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
-            el.nrGruppo,
-            el.nrTest,
-            el.numeroErrori,
-            el.malusF5,
-            (((el.dataOraFine - el.dataOraInizio).total_seconds()))
+            el['username'],
+            el['idTest'],
+            dataOraFine_str,
+            dataOraInizio_str,
+            el['nrGruppo'],
+            el['nrTest'],
+            el['numeroErrori'],
+            el['malusF5'],
+            duration_seconds
         ])
 
-    if req.user.is_staff == False:
-        return redirect('home')
 
-    utenti_inf = []
-    utenti_stelle = []
-    utenti = User.objects.all()
+    # Fetch users with fewer than 100 tests this week
+    utenti_inf = queries.get_users_tests_100()
 
-    for utente in utenti:
-        check = Test.objects.filter(utente=utente, dataOraFine__isnull=False).order_by('-dataOraInizio')
-        if len(check) <= 100:
-            utenti_inf.append([utente, len(check)])
+    utenti_stelle = queries.get_stelle_statistics()
 
-    stelle = Statistiche.objects.filter(tipoDomanda='stelle').order_by('-nrErrori').values('utente', 'nrErrori')
-    for st in stelle:
-        ut = User.objects.filter(id=st['utente'])[0]
-        utenti_stelle.append([ut, st['nrErrori']])
-
-    # If this is an HTMX request, render the HTMX template, otherwise render the regular template
+    # Render response based on HTMX request or not
     if req.headers.get('HX-Request'):
         template_name = 'utenti/tabellaRiepilogoTest.html'
         context = {'page_obj': page_obj, 'arr_display': arr_display}
-        return TemplateResponse(req, template_name, context)
     else:
         template_name = 'utenti/Utenti.html'
         context = {'utenti_inf': utenti_inf, 'utenti_stelle': utenti_stelle, 'page_obj': page_obj, 'arr_display': arr_display}
-        return TemplateResponse(req, template_name, context)
+
+    return TemplateResponse(req, template_name, context)
 
 
 
@@ -396,11 +404,9 @@ def csv_riepilogo_test(req):
  
 
 def creaDomande(req):
-
+    
     if req.user.is_staff == False:
         return redirect('home')
-    
-
     
     return render(req, 'creaDomande/creaDomande.html')
 

@@ -141,3 +141,5 @@ webapp/assets/admin/*
 webapp/assets/css/*
 webapp/assets/webapp/*
 webapp/assets/staticfiles.json
+webapp/docz.adoc
+.vscode/settings.json
