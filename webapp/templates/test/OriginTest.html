@@ -17,11 +17,11 @@
 
       <div class="row">
 
-        <!-- FORM RITARDO MANUALE -->
+        <!-- FORM TEST STANDARD -->
         <form class="col-md-6" action="{% url 'creaTestManuale' %}" method="POST">
           {% csrf_token %}
           <div class="my-3 p-3 bg-body rounded shadow-lg">
-            <h6 class="border-bottom pb-2 mb-0">Creazione con ritardo manuale</h6>
+            <h6 class="border-bottom pb-2 mb-0">Creazione Test standard</h6>
             <p></p>
             <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi creare?</h6>
             <div class="input-group mb-3">
@@ -46,11 +46,11 @@
           </div>
         </form>
 
-        <!-- FORM ORARIO ESATTO -->
+        <!-- FORM ORARIO PREDEFINITO -->
         <form class="col-md-6" action="{% url 'creaTestOrarioEsatto' %}" method="POST">
           {% csrf_token %}
           <div class="my-3 p-3 bg-body rounded shadow-lg">
-            <h6 class="border-bottom pb-2 mb-0">Creazione con orario esatto</h6>
+            <h6 class="border-bottom pb-2 mb-0">Creazione con orario predefinito</h6>
             <p></p>
             <h6 class="border-bottom pb-2 mb-0">Quanti test vuoi
               creare?</h6>

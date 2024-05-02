@@ -38,229 +38,202 @@
         <a href="{% url 'creaDomande' %}" class="btn btn-primary btn-lg px-4 ">Crea Domanda</a>
         <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4 float-end">Test Collettivi</a>
         {% endif %}
-        
-              </div>
+      </div>
+
                 <div class="row g-4">
-                  <div class="col-md-6">
-                    <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
-                      <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (RITARDO MANUALE) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">Elimina tutti i test</button> </a></h6>
+
+                  <!-- TEST STANDARD-->
+                    <div class="my-3 p-3 bg-body rounded shadow-lg text-left">
+                      <h5 class="border-bottom pb-3 mb-0">Test standard <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">Elimina tutti i test</button> </a></h5>
                       <p></p>                                
-                                  {% for idGruppi, nrTest, data in gruppi_orario %}
-                                       
-                                        <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
-                                          
-                                          <div class="d-flex align-items-center my-lg-0 me-lg-auto text-center">
-                                              <span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
-                                             
-                                              <strong class="m-1"> Test creato il {{data}}</strong>
-
-                                            </div> 
-                                              <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
-                                                <div class="float-end">
-                                                  <button class="btn btn-danger float-end m-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                                    </svg>
-                                                  </button>
-                                                </div>
-                                              </a>
-
-                                              <a class="float-end" href="{% url 'CreazioneTestOrario' idGruppi zero %} " {{idGruppi}} {{zero}}>
-                                                <button class="btn btn-primary float-end m-2">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
-                                                    <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                                  </svg>
-                                                </button>
-                                              </a>
-                                         
-                                         
-                                        </div>
-                                                                   
-                                  {% endfor %}
-                        
-                  </div>
-                    
-                          <div class="my-3 p-3 bg-body rounded shadow-lg">
-                            <h6 class="border-bottom pb-2 mb-0 text-center">SFIDE PROGRAMMATE</h6>
-                            <p></p>
-
-                            {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
-                                        
-                            <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
-                              
-                              <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                  <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
-                                 
-                                  <strong class="m-2">{{data}}  </strong>|  {{utente_sfidato}}
-                                </div>
-                              
-                                  <span class="m-2">In attesa di conferma</span>
-                             
-                            </div>
-                    
-                            
-                                                       
-                      {% endfor %}
-                      <p></p>
-
-                            {% for data, idGruppi, utente_sfidante, id in display_sfida_attesa_2 %}
-                                        
-                            <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
-                              
-                              <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                  <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
-                                 
-                                  <strong class="m-1">{{data}}  </strong>|  {{utente_sfidante}} 
-                                </div>
-                              
-                                  <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
-                                    <button class="btn btn-success float-end m-2">
-                                 
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855a.75.75 0 0 0-.124 1.329l4.995 3.178 1.531 2.406a.5.5 0 0 0 .844-.536L6.637 10.07l7.494-7.494-1.895 4.738a.5.5 0 1 0 .928.372zm-2.54 1.183L5.93 9.363 1.591 6.602z"/>
-                                        <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0m-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686"/>
-                                        </svg>
-                                    </button>
-                                  </a>
-                                  <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
-                                    <button class="btn btn-danger float-end m-2">
-                                 
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                        <path d="M15 8a6.97 6.97 0 0 0-1.71-4.584l-9.874 9.875A7 7 0 0 0 15 8M2.71 12.584l9.874-9.875a7 7 0 0 0-9.874 9.874ZM16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0"/>                                      </svg>
-                                    </button>
-                                  </a>
-                             
-                            </div>
-                    
-                            
-                                                       
-                      {% endfor %}
-                      <p></p>
-
-                      {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
+                          {% for idGruppi, nrTest, data in gruppi_orario %}
+                              <div class="d-flex flex-wrap justify-content-md-end shadow-md rounded-2 border-bottom">
                                   
+                                  <div class="d-flex align-items-center my-lg-0 me-lg-auto text-center">
+                                      <span class="input-group-text text-center m-2" id="basic-addon1"> {{nrTest}}</span>
+                                      Test creato il <strong class="m-1">{{data}}</strong>
+                                  </div> 
+
+
+                                    <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
+                                      <div class="float-end">
+                                        <button class="btn btn-danger float-end m-1">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                          </svg>
+                                        </button>
+                                      </div>
+                                    </a>
+
+                                    <a class="float-end" href="{% url 'CreazioneTestOrario' idGruppi zero %} " {{idGruppi}} {{zero}}>
+                                      <button class="btn btn-primary float-end m-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                                          <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                        </svg>
+                                      </button>
+                                    </a>
+                                </div>
+                          {% endfor %}
+                      </div>
+                    
+
+                      <!-- TEST ORARIO PREDEFINITO -->
+                      <div class="my-3 p-3 bg-body rounded shadow-lg text-left">
+                        <h5 class="border-bottom pb-3 mb-0">Test a orario predefinito <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">Elimina tutti i test</button> </a></h5>
+                        <p></p>                                
+                        {% for idGruppi, nrTest, data, idTest in gruppi_manuale %}
+                            <div class="d-flex flex-wrap justify-content-md-end shadow-md rounded-2 border-bottom">
+                              
+                                <div class="d-flex align-items-center my-1 my-lg-0 me-lg-auto text-center">
+                                    <span class="input-group-text text-center m-2" id="basic-addon1"> {{nrTest}}</span>
+                                    Test creato il <strong class="m-1">{{data}}</strong>
+                                </div>
+
+
+                                  <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
+                                    <div class="float-end">
+                                      <button class="btn btn-danger float-end m-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </a>
+
+                                  <a class="float-end" href="{% url 'preTest' idGruppi idTest%} " {{idGruppi}}>
+                                    <button class="btn btn-primary float-end m-1">
+                                  
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                                        <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                                      </svg>
+                                    </button>
+                                  </a>
+                              
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- TEST PROGRAMMATI -->
+                    <div class="my-3 p-3 bg-body rounded shadow-lg">
+                      <h5 class="border-bottom pb-2 mb-0 text-left">Test Programmati</h5>
+                      <p></p>                          
+                      {% for idTest, data in gruppi_programmati %}
+                        <div class="d-flex flex-wrap justify-content-lg-end shadow">
+                          <div
+                              class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">                                 
+                              <strong class="m-4">{{data}}</strong>
+                          </div>
+
+
+                          <a class="p-1" href="{% url 'TestProgrammati' idTest %} " {{idTest}}>
+                            <button class="btn btn-primary float-end m-2">
+                          
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                              </svg>
+                            </button>
+                          </a>
+                        </div>
+                      {% endfor %}
+                    </div>
+
+
+
+                    <!-- SFIDE PROGRAMMATE -->
+                    <div class="my-3 p-3 bg-body rounded shadow-lg">
+                      <h5 class="border-bottom pb-2 mb-0 text-left">Sfide Programmate</h5>
+                      <p></p>
+
+                      {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
+                        <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                          
+                          <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                              <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
+                              
+                              <strong class="m-2">{{data}}  </strong>|  {{utente_sfidato}}
+                            </div>
+                          
+                              <span class="m-2">In attesa di conferma</span>
+                          
+                        </div>
+                      {% endfor %}
+                      <p></p>
+
+                      {% for data, idGruppi, utente_sfidante, id in display_sfida_attesa_2 %}
+                          <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2 border-bottom">
+                            
+                            <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                                <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
+                                
+                                <strong class="m-1">{{data}}  </strong>|  {{utente_sfidante}} 
+                              </div>
+                            
+                                <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
+                                  <button class="btn btn-success float-end m-2">
+                                
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                      <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855a.75.75 0 0 0-.124 1.329l4.995 3.178 1.531 2.406a.5.5 0 0 0 .844-.536L6.637 10.07l7.494-7.494-1.895 4.738a.5.5 0 1 0 .928.372zm-2.54 1.183L5.93 9.363 1.591 6.602z"/>
+                                      <path d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0m-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686"/>
+                                      </svg>
+                                  </button>
+                                </a>
+                                <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{id}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
+                                  <button class="btn btn-danger float-end m-2">
+                                
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                                      <path d="M15 8a6.97 6.97 0 0 0-1.71-4.584l-9.874 9.875A7 7 0 0 0 15 8M2.71 12.584l9.874-9.875a7 7 0 0 0-9.874 9.874ZM16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0"/>                                      </svg>
+                                  </button>
+                                </a>
+                          </div>
+                      {% endfor %}
+                      <p></p>
+
+                    {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
                       <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                         
                         <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                            <!--<span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{uno}}</span>-->
-                           
                             <strong class="m-1"> {{data}}  </strong>|  {{utente_avversario}} 
-                          </div>
+                        </div>
                         
-                            <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
-                              <button class="btn btn-primary float-end m-2">
-                           
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
-                                  <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                </svg>
-                              </button>
-                            </a>
-                       
+                        <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
+                          <button class="btn btn-primary float-end m-2">
+                      
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                              <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                            </svg>
+                          </button>
+                        </a>
                       </div>
-              
-                      
-                                                 
-                {% endfor %}
-
-
-
-                          </div>
+                    {% endfor %}
+                    </div>
+                    
                 </div>
-                
-                
-                <div class="col-md-6">
-                  <div class="my-3 p-4 bg-body rounded shadow-lg text-center">
-                    <h6 class="border-bottom pb-3 mb-0">TEST UTENTE (ORA ESATTA) <a href="/cancella-test"> <button type="button" class="btn btn-danger btn-sm float-end">Elimina tutti i test</button> </a></h6>
-                    <p></p>                                
-                                {% for idGruppi, nrTest, data, idTest in gruppi_manuale %}
-                                        
-                                      <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
-                                        
-                                        <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                                            <span class="input-group-text text-center shadow-sm m-2" style="width: 55px;" id="basic-addon1"> {{nrTest}}</span>
-                                           
-                                            <strong class="m-1"> Test creato il {{data}}</strong>
-                                          </div>
-                                            <a href="{% url 'cancella_un_test' idGruppi %} " {{idGruppi}}>
-                                              <div class="">
-                                                <button class="btn btn-danger float-end m-2">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                                  </svg>
-                                                </button>
-                                              </div>
-                                            </a>
+
+
+
+                <!-- GRAFICI -->
+                <div class="bg-body rounded shadow-lg my-4">
+                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
+                  <p></p>
+                  <div>
+                    <canvas id="lineChart"></canvas>
+                  </div>
+                </div>
     
-                                            <a class="" href="{% url 'preTest' idGruppi idTest%} " {{idGruppi}}>
-                                              <button class="btn btn-primary float-end m-2">
-                                           
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
-                                                  <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                                </svg>
-                                              </button>
-                                            </a>
-                                       
-                                      </div>
-                              
-                                      
-                                                                 
-                                {% endfor %}
-                      
+    
+                <div class="bg-body rounded shadow-lg">
+                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
+                  <p></p>
+                  <div>
+                    <canvas id="barChart"></canvas>
+                  </div>
                 </div>
 
-                
-                <div class="my-3 p-3 bg-body rounded shadow-lg">
-                  <h6 class="border-bottom pb-2 mb-0 text-center">TEST PROGRAMMATI</h6>
-                          
-                            <p></p>                          
-                            {% for idTest, data in gruppi_programmati %}
-                                          
-                                        
-                                       
-                            <div class="d-flex flex-wrap justify-content-lg-end shadow">
-                              
-                              <div
-                                  class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">                                 
-                                  <strong class="m-4">{{data}}</strong>
-                            </div>
-
-
-                              <a class="p-1" href="{% url 'TestProgrammati' idTest %} " {{idTest}}>
-                                <button class="btn btn-primary float-end m-2">
-                             
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                                    <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                                  </svg>
-                                </button>
-                              </a>
-                             
-                            </div>
-                      {% endfor %}
-                </div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="bg-body rounded shadow-lg">
-              <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
-              <p></p>
-              <div>
-                <canvas id="lineChart"></canvas>
-              </div>
-            </div>
           </div>
 
 
-          <div class="col-md-6">
-            <div class="bg-body rounded shadow-lg">
-              <h6 class="border-bottom pb-2 mb-0 text-center p-3">Test completati per settimana</h6>
-              <p></p>
-              <div>
-                <canvas id="barChart"></canvas>
-              </div>
-            </div>
-          </div>
           
       </div>
       
