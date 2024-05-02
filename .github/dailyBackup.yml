@@ -1,0 +1,45 @@
+# - This workflow executes a postgresdump to backup the running postgres container db and store it in the shared volume which
+# - containes all the backups. The backup is zipped and a date is appended to the file. The workflow eliminates backups 
+# - older than 14 days.
+
+name: Daily Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Daily backup Postgres
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            DATE=$(date +'%Y%m%d')
+            BACKUP_DIR="/home/carl/backup_postgres"
+            BACKUP_FILE="postgresdump_${DATE}.tar.gz"
+            VPS_PASSWORD="${{ secrets.VPS_PASSWORD }}"
+            CONTAINER_NAME="ts-postgres"
+
+            # Dump the PostgreSQL database
+            echo "${VPS_PASSWORD}" | sudo -S docker exec ${CONTAINER_NAME} pg_dumpall -c -U postgres > ${BACKUP_DIR}/postgresdump_${DATE}.sql
+            
+            # Compress the backup
+            echo "${VPS_PASSWORD}" | sudo -S tar -zcvf ${BACKUP_DIR}/${BACKUP_FILE} -C ${BACKUP_DIR} postgresdump_${DATE}.sql
+            
+            # Delete the uncompressed SQL dump file after compressing
+            echo "${VPS_PASSWORD}" | sudo -S rm ${BACKUP_DIR}/postgresdump_${DATE}.sql
+
+            # Delete backups older than two weeks
+            echo "${VPS_PASSWORD}" | sudo -S find ${BACKUP_DIR} -type f -name 'postgresdump_*' -mtime +14 -exec rm -f {} \;
