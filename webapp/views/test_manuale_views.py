@@ -14,72 +14,9 @@ from ..utils import utils
 from django.utils.datastructures import MultiValueDict
 from datetime import datetime, timedelta
 from . import test_common_views
-from ..utils.utils import genRandomStaticAnswers
+from ..utils import utils
 import random
-import string
 
-
-def genRandomint(num):
-    if randint(0,1) == 0:
-        return randint(0, num-1)
-    else: 
-        return randint(num+1, 9)
-def randomGen(lungh, to_repl):
-    ret = random.choices(string.ascii_lowercase, k=lungh)
-    while ret == to_repl:
-       ret = random.choices(string.ascii_lowercase, k=lungh)
-    
-    return ret[0]
-def genRandomFromSeed(tipo, seed, rispostaGiusta):
-    if True :
-        if tipo == 's':
-            app_list = list()
-            app_list.append(('', '- selezionare opzione -'))
-            
-            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(6,14)):
-                    num = int(rispostaGiusta)
-                    var = genRandomint(num)
-                    app_list.append((str(_), str(var)))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            else:
-                for _ in range(0, randint(6,14)):
-                    var = str(rispostaGiusta)
-                    to_repl = var[randint(0,len(var)-1)]
-                    var  = var.replace(to_repl, randomGen(1, to_repl))
-                    if str(var) != str(rispostaGiusta):
-                        app_list.append((str(_), var))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            
-        else:
-            app_list = list()
-
-            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(6,14)):
-                    num = int(rispostaGiusta)
-                    var = genRandomint(num)
-                    app_list.append((str(_), str(var)))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            else:
-                for _ in range(0, randint(6,14)):
-                    var = str(rispostaGiusta)
-                    to_repl = var[randint(0,len(var)-1)]
-                    var  = var.replace(to_repl, randomGen(1, to_repl))
-                    if str(var) != str(rispostaGiusta):
-                            app_list.append((str(_), var))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-    # Per le select mescolare tutto tranne il primo valore di default
-    if tipo == 's':
-        shuffled_options = ret[1:]
-        random.shuffle(shuffled_options)
-        ret[1:] = shuffled_options
-    else:
-        random.shuffle(ret)
-    return ret , seed
 
 
 @login_required(login_url='login')
@@ -183,9 +120,9 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
         if check:
             for n in range((counter * 5), ((counter + 1) * 5) - num ):
                 if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
                 else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
             print('qui 2')
             return render(req, 'preTest/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter,'ctx': ctx, 'seed': seed, 'num' : num })
         else:
@@ -198,9 +135,9 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
             ctx = []
             for n in range(counter * 5, ((counter + 1) * 5)- num ):
                 if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
                 else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
 
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
             
@@ -216,9 +153,9 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
         for n in range(counter * 5, ((counter + 1) * 5) - num ):
             
             if domande_to_render[n] == 'cr':
-                forms.fields['domanda_{}'.format(n)].choices = genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                forms.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
             else:
-                forms.fields['domanda_{}'.format(n)].choices, seed = genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                forms.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
             
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante, forms['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
         

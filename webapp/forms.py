@@ -89,12 +89,41 @@ class FormDomanda(forms.Form):
     
 
 class FormDomandaCollettiva(forms.Form):
-    
-    tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
-    Domanda = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'domanda'}))
-    Risposta = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'risposta'}))
-    Varianti = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off", 'placeholder': 'varianti'}))
-
+    tipo = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "required": "required",
+            "class": "form-control",
+            "autocomplete": "off",
+            'placeholder': 'Tipo'  # Placeholder text adjusted for clarity
+        })
+    )
+    Domanda = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "required": "required",
+            "class": "form-control",
+            "autocomplete": "off",
+            'placeholder': 'Inserisci la domanda qui...',
+            'rows': 2
+        })
+    )
+    Risposta = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "required": "required",
+            "class": "form-control",
+            "autocomplete": "off",
+            'placeholder': 'Inserisci la risposta qui...',
+            'rows': 2
+        })
+    )
+    Varianti = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "required": "required",
+            "class": "form-control",
+            "autocomplete": "off",
+            'placeholder': 'Inserisci varianti separate da punto e virgola...',
+            'rows': 2
+        })
+    )
 class FormDomandaCollettivaCrea(forms.Form):
     
     tipo = forms.CharField(widget = forms.TextInput(attrs={"required": "required","class": "form-control", "autocomplete": "off",'placeholder': 'tipo'}))
