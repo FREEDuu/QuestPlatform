@@ -26,6 +26,7 @@ from django.db import connection
 from django.http import JsonResponse
 import json
 from ..utils import queries
+import random
 
 # LOGIN
 def log_in(req):
@@ -434,3 +435,17 @@ def creaDomandeDisplay(req):
             return HttpResponse('variante creata')
 
     return render(req, 'creaDomande/displayDom.html', {'form' : FormDomandaCollettiva()})
+
+
+def RiepilogoTest(req, idGruppi, idTest ,counter):
+
+    random.seed(idTest)
+    test_compilato = Test_Domande_Varianti.objects.filter(test = idTest)
+    scelte = random.sample(range(1, len(test_compilato)), 4)
+    
+    context = []
+    for scelta in scelte:
+        context.append([test_compilato[scelta].domanda, test_compilato[scelta]])
+
+    print(context)
+    return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter})

@@ -38,5 +38,6 @@ urlpatterns = [
     path('preTestSfida/<int:idGruppi>/<int:id>', test_orario_views.preTestSfida, name = 'preTestSfida'),
     path('testStartOrarioSfida/<int:idTest>/<int:displayer>', test_orario_views.testStartOrarioSfida, name = 'testStartOrarioSfida'),
     path('FinishTestOrarioSfida/<int:idTest>', test_orario_views.FinishTestOrarioSfida, name = 'FinishTestOrarioSfida'),
-    path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario')
+    path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario'),
+    path('RiepilogoTest/<int:idGruppi>/<int:idTest>/<int:counter>', page_views.RiepilogoTest, name = 'RiepilogoTest')
 ]
