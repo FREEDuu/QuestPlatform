@@ -28,7 +28,7 @@ class Varianti(models.Model):
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     rispostaEsatta = models.CharField(max_length=100 , default = '')  
-
+    is_dynamic = models.BooleanField(default=False)
 
     def __str__(self):
         return self.corpo

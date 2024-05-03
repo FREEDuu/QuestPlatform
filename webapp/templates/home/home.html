@@ -190,23 +190,23 @@
                       {% endfor %}
                       <p></p>
 
-                    {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
-                      <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                      {% for data, idGruppi, utente_avversario, id in display_sfida_accettate %}
+                        <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
+                          
+                          <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
+                              <strong class="m-1"> {{data}}  </strong>|  {{utente_avversario}} 
+                          </div>
+                          
+                          <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
+                            <button class="btn btn-primary float-end m-2">
                         
-                        <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
-                            <strong class="m-1"> {{data}}  </strong>|  {{utente_avversario}} 
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
+                                <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+                              </svg>
+                            </button>
+                          </a>
                         </div>
-                        
-                        <a class="" href="{% url 'preTestSfida' idGruppi id%}" {{idGruppi}} {{id}}>
-                          <button class="btn btn-primary float-end m-2">
-                      
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 14 14">
-                              <path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
-                            </svg>
-                          </button>
-                        </a>
-                      </div>
-                    {% endfor %}
+                      {% endfor %}
                     </div>
                     
                 </div>
