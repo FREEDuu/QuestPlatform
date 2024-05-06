@@ -95,9 +95,13 @@ def preTestOrario(req, idGruppi, idTest, counter):
     
     nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
     #singolo_test = Test.objects.filter(idTest = idTest)[0]
-
+    random.seed(idTest)
+    if random.randint(0,1) == 1:
+        variazione_randomica =  test[0]['dataOraInizio'] - timedelta(seconds=1)
+    else:
+        variazione_randomica = test[0]['dataOraInizio'] + timedelta(seconds=1)
     if nrTest >= 0 : 
-        if(datetime.now() < test[0]['dataOraInizio']):
+        if(datetime.now() < variazione_randomica):
             return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : test[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
         else:
             TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = None)
@@ -116,7 +120,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
 
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
-    print(displayer, test['nrGruppo'])
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
@@ -181,7 +184,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
         else:
             Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
             if test['nrGruppo'] -1 <= displayer:
-                return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
+                if random.randint(0,1) == 1:
+                    return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
+                else: 
+                    #return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
+                    return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
             displayer += 1
             seed += 1
             num = randint(0,3)

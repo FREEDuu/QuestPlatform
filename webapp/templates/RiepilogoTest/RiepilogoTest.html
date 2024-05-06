@@ -44,13 +44,14 @@
   </div>
       <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
         <h6>L'invio della domanda è stato effettuato correttamente</h6>
-        <h6>TEMPO : {{tempo}}</h6>
-        {% if malus %}
-        <h5>
-            HAI RICEVUTO UNO SVANTAGGIO PER AVER RICARICATO LA PAGINA (SONO STATI AGGIUNTI 5 SECONDI AL TUO TEMPO FINALE)
-        </h5>
-        {% endif %}
-        <a href= "{% url 'preTest' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Inizia</button></a>
+        
+        {% for domanda, risposta in ctx %}
+
+           <h5 class=" text-muted "  > <span class="text-dark"> {{domanda}}</span> {{risposta}} </h5> 
+
+        {%  endfor %}
+
+        <a href= "{% url 'FinishTestOrario' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Inizia</button></a>
 
   </div>
 

@@ -37,14 +37,14 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
             app_list.append(('', '- selezionare opzione -'))
             
             if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(6,14)):
+                for _ in range(0, randint(5,9)):
                     num = int(rispostaGiusta)
                     var = genRandomint(num)
                     app_list.append((str(_), str(var)))
                 app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
                 ret = app_list
             else:
-                for _ in range(0, randint(6,14)):
+                for _ in range(0, randint(5,9)):
                     var = str(rispostaGiusta)
                     to_repl = var[randint(0,len(var)-1)]
                     var  = var.replace(to_repl, randomGen(1, to_repl))
@@ -57,14 +57,14 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
             app_list = list()
 
             if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(6,14)):
+                for _ in range(0, randint(5,9)):
                     num = int(rispostaGiusta)
                     var = genRandomint(num)
                     app_list.append((str(_), str(var)))
                 app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
                 ret = app_list
             else:
-                for _ in range(0, randint(6,14)):
+                for _ in range(0, randint(5,9)):
                     var = str(rispostaGiusta)
                     to_repl = var[randint(0,len(var)-1)]
                     var  = var.replace(to_repl, randomGen(1, to_repl))
