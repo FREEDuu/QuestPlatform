@@ -88,7 +88,7 @@ def genRandomStaticAnswers(tipo, rispostaGiusta):
     
     if tipo == 'cr':
         ret.append(('1', rispostaGiusta))  
-        
+
         if rispostaGiusta == '* Accetto i termini e condizioni sulla privacy e sul trattamento dei dati personali':
             ret.append(('2', '* Non accetto i termini e condizioni sulla privacy e sul trattamento dei dati personali'))  
         elif rispostaGiusta == 'Accetto i termini del bando':
@@ -114,3 +114,15 @@ def reformat_date(input_date):
         return iso_date
     else:
         raise ValueError("Tipo di input non supportato per formattazione data")
+
+
+
+
+def validateDynamicQuestions(formDomanda):
+    if 'domani' in formDomanda.corpo:
+        correct_answer = datetime.now().strftime("%Y/%m/%d")
+        if formDomanda.risposta == correct_answer:
+            return True
+        else:
+            return False
+    return 'continua...'

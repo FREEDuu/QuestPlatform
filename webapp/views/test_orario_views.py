@@ -206,7 +206,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
     else:
         if test['inSequenza'] == True:
             Test.objects.filter(idTest = idTest).update(malusF5 = True)
-            print('MALUS F5')
         Test.objects.filter(idTest = idTest).update(inSequenza = True)
         formRisposta = FormDomanda(domande_to_render, risposte_esatte)
 
@@ -395,7 +394,6 @@ def testStartOrarioSfida(req, idTest, displayer):
     else:
         if test['inSequenza'] == True:
             Test.objects.filter(idTest = idTest).update(malusF5 = True)
-            print('MALUS F5')
         Test.objects.filter(idTest = idTest).update(inSequenza = True) 
         forms = FormDomanda(domande_to_render, risposte_esatte)
         

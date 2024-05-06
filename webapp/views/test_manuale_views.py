@@ -146,7 +146,6 @@ def TestStart(req, idGruppi, idTest, counter, seed, num):
     else:
         if test['inSequenza'] == True:
             Test.objects.filter(idTest = idTest).update(malusF5 = True)
-            print('MALUS F5')
         Test.objects.filter(idTest = idTest).update(inSequenza = True) 
         forms = FormDomanda(domande_to_render, risposte_esatte)
         

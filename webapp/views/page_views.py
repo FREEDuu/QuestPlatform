@@ -373,7 +373,7 @@ def csv_riepilogo_test(req):
     
     writer = csv.writer(csv_buffer, delimiter=';')
 
-    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Malus F5', 'Tempo Completamento']
+    header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Penalty refresh', 'Tempo Completamento']
     writer.writerow(header_row)
 
     tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
