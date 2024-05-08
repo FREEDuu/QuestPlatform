@@ -43,15 +43,99 @@
     </div>
   </div>
       <div class=" container-fluid mb-4 p-5" style="background: #dfdfdf;">
-        <h6>L'invio della domanda è stato effettuato correttamente</h6>
-        
+        <h5 class="mb-4">INSERIMENTO DATI</h5>
+        <p></p>
+        <h5 class="mb-4">Riepilogo Dati Inseriti</h5>
         {% for domanda, risposta in ctx %}
+        <div class="row">
+            <div class="col-3">
+                
+                    <h6>{{domanda}} </h6>
+            </div>
+            
+            <div class="col-8"><span class="text-muted">{{risposta}}</span></div>
+          </div>
 
-           <h5 class=" text-muted "  > <span class="text-dark"> {{domanda}}</span> {{risposta}} </h5> 
+        <p>
 
+        </p>
         {%  endfor %}
+        <p class="m-4"></p>
 
-        <a href= "{% url 'FinishTestOrario' idGruppi idTest counter %}"  {{idGruppi}} {{idTest}} {{counter}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Inizia</button></a>
+        
+ 
+
+        {% if random == 0%}
+
+            <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                <label class="form-check-label" for="flexCheckDefault">
+                  Accetto
+                </label>
+              </div>
+
+        {% elif random == 1%}
+        <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+                Accetto
+                        </label>
+          </div>
+        {% else %}
+        <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+            <label class="form-check-label" for="flexCheckDefault">
+                Accetto
+            </label>
+          </div>
+        {% endif %}
+          <p></p>
+        <h6>Cliccare su Modifica per modificare</h6>
+
+        <h6>Cliccare su Invia per Inviare</h6>
+        
+        <p class="mt-4"></p>
+        {%if random == 0%}
+        <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+            <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;">AVANTI</button>
+
+        </a>
+        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
+        <div class="text-center">
+            <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+        </div>        
+
+
+        {% elif random == 1%}
+        <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+            <button id="prosegui" class="btn text-light float-end" type="submit" style="background-color: #069901;">AVANTI</button>
+
+        </a>
+        <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
+        <div class="text-center">
+            <button class="btn btn-primary text-center" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+        </div>        
+        {% else %}
+        <button class="btn btn-primary float-start" type="button" style="background-color: #022d5e;" onclick="location.reload()">ESCI</button>
+
+        <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+
+        <div class="text-center">
+            <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+                <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
+    
+            </a>
+        </div>        
+
+        {% endif %}
+        <p></p>
+
+
 
   </div>
 

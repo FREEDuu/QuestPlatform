@@ -69,7 +69,9 @@ def home(req):
     staff = True    
     if req.user.is_staff == False:
         staff = False
-
+    user_utente = req.user.username
+    if '.' in user_utente:
+        user_utente = user_utente.split('.')[0]
     if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
         Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
         Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
@@ -164,7 +166,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
+    return render(req, 'home/home.html', {'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
 
 
 
@@ -440,12 +442,15 @@ def creaDomandeDisplay(req):
 def RiepilogoTest(req, idGruppi, idTest ,counter):
 
     random.seed(idTest)
-    test_compilato = Test_Domande_Varianti.objects.filter(test = idTest)
-    scelte = random.sample(range(1, len(test_compilato)), 4)
-    
+    test_compilato = Test_Domande_Varianti.objects.filter(test = idTest).select_related()
+    print(test_compilato)
+    scelte = random.sample(range(1, len(test_compilato)), 6)
+    random.seed(datetime.now().second)
+    randomico = random.randint(0,2)
+    print(randomico)
     context = []
     for scelta in scelte:
-        context.append([test_compilato[scelta].domanda, test_compilato[scelta]])
+        context.append([test_compilato[scelta].domanda.corpo + ' ' +test_compilato[scelta].variante.corpo, test_compilato[scelta].variante.rispostaEsatta])
 
     print(context)
-    return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter})
+    return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter, 'random' : randomico})

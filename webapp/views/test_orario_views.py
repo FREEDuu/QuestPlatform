@@ -187,8 +187,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed, num):
                 if random.randint(0,1) == 1:
                     return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
                 else: 
-                    #return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
-                    return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
+                    return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
             displayer += 1
             seed += 1
             num = randint(0,3)
