@@ -48,3 +48,20 @@ WHERE
     AND "dataOraFine" IS NULL 
     AND "dataOraInizio" <= CURRENT_DATE - INTERVAL '1 day'
 ORDER BY "dataOraInizio" desc;
+
+
+-- Query per vedere domande con poche varianti associate
+SELECT 
+    d."idDomanda",
+    MAX(d.corpo) as corpo,
+    MAX(d.tipo) as tipo,
+    COUNT(*)
+FROM 
+    webapp_domande d
+JOIN 
+    webapp_varianti v ON d."idDomanda" = v.domanda_id
+WHERE 
+    d.corpo not like '%(%' 
+    AND d.tipo != 'cr'
+GROUP BY 
+    d."idDomanda" having COUNT(*) <= 3

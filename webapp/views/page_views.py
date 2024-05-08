@@ -319,7 +319,7 @@ def controllo(req):
         return redirect('home')
     
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrTest', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tests = [dict(zip(columns, row)) for row in result_set]
 
     # Paginazione
@@ -342,7 +342,7 @@ def controllo(req):
             dataOraFine_str,
             dataOraInizio_str,
             el['nrGruppo'],
-            el['nrTest'],
+            el['nrDomande'],
             el['numeroErrori'],
             el['malusF5'],
             duration_seconds
@@ -375,24 +375,28 @@ def csv_riepilogo_test(req):
     
     writer = csv.writer(csv_buffer, delimiter=';')
 
+    # Estrazione dati test
+    result_set = queries.get_user_test_info()
+    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    tutti_test = [dict(zip(columns, row)) for row in result_set]
+    
+    # Titoli colonne header del CSV
     header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Penalty refresh', 'Tempo Completamento']
     writer.writerow(header_row)
-
-    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
     
     for test in tutti_test:
-        tempo_completamento = (test.dataOraFine - test.dataOraInizio).total_seconds()
+        tempo_completamento = (test['dataOraFine'] - test['dataOraInizio']).total_seconds()
         tempo_completamento_str = str(tempo_completamento).replace('.', ',')
 
         writer.writerow([
-            test.utente.username,
-            test.idTest,
-            test.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
-            test.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
-            test.nrGruppo,
-            test.nrTest,
-            test.numeroErrori,
-            test.malusF5,
+            test['username'],
+            test['idTest'],
+            test['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S"),
+            test['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S"),
+            test['nrGruppo'],
+            test['nrDomande'],
+            test['numeroErrori'],
+            test['malusF5'],
             tempo_completamento_str
         ])
 

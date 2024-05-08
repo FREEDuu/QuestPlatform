@@ -19,19 +19,30 @@ def get_user_test_count():
 def get_user_test_info():
     with connection.cursor() as cursor:
         cursor.execute("""
+            WITH conteggioDomande as (
+                SELECT 
+                    test_id,
+                    COUNT(*) as "nrDomande"
+                FROM 
+                    webapp_test_domande_varianti
+                GROUP BY
+                    test_id
+            )
             SELECT 
                 auth_user.username, 
                 webapp_test."idTest", 
                 webapp_test."dataOraFine", 
                 webapp_test."dataOraInizio", 
                 webapp_test."nrGruppo", 
-                webapp_test."nrTest", 
+                conteggioDomande."nrDomande",
                 webapp_test."numeroErrori", 
                 webapp_test."malusF5"
             FROM 
                 webapp_test
             JOIN 
                 auth_user ON webapp_test.utente_id = auth_user.id
+            JOIN 
+                conteggioDomande ON conteggioDomande.test_id = webapp_test."idTest"
             WHERE 
                 webapp_test."dataOraFine" IS NOT NULL AND 
                 NOT (webapp_test.tipo = 'sfida' OR webapp_test.tipo LIKE 'collettivo%')
