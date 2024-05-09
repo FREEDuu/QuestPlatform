@@ -14,7 +14,14 @@ def get_user_test_count():
         result_set = cursor.fetchall()
     return result_set
 
+def get_user_media():
+    with connection.cursor() as cursor:
+        #calcola la media di quell'utente
+        cursor.execute("""
 
+        """)
+        result_set = cursor.fetchall()
+    return result_set
 #tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
 def get_user_test_info():
     with connection.cursor() as cursor:

@@ -333,7 +333,7 @@ def controllo(req):
         dataOraFine_str = el['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraFine'] else ''
         dataOraInizio_str = el['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraInizio'] else ''
         
-        # Calcula totale secondi
+        # calcola totale secondi
         duration_seconds = (el['dataOraFine'] - el['dataOraInizio']).total_seconds() if el['dataOraFine'] and el['dataOraInizio'] else 0
 
         arr_display.append([
@@ -458,3 +458,6 @@ def RiepilogoTest(req, idGruppi, idTest ,counter):
 
     print(context)
     return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter, 'random' : randomico})
+
+def CheckTest():
+    print('ciao')

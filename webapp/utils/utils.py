@@ -3,9 +3,53 @@ from datetime import datetime, date
 from random import randint
 import random
 import string
+from django.db.models import F
+
+from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti, Statistiche
+
 
 
 ### FUNZIONI DI GENERAZIONE ###
+def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte):
+    ctx = []
+    for n in range(len(domande_to_render)):
+            if domande_to_render[n] == 'm' and not req['Trovato']: 
+                concat_string = ''
+                for i in range(len(risposte_esatte[n])):
+                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
+                    concat_string = ''.join([concat_string, user_input])
+                    
+                    if user_input != risposte_esatte[n][i]: 
+                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                
+                if concat_string != test_to_render[n].variante.rispostaEsatta:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                    
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif domande_to_render[n] == 'cr':
+                if req.POST.get('domanda_{}'.format(n)) != '1':
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+                req.session['Errore'] = req.POST.get('domanda_{}'.format(n))
+                req.session['Trovato'] = True
+                print(req['Errore'])
+
+            else:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+    return ctx
 
  # Non c'è rischio num > 9 perchè questa funzione viene chiamata solo per numeri a singole cifre, da 0 a 9
 def genRandomint(num):

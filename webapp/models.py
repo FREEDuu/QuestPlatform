@@ -85,7 +85,7 @@ class Test_Domande_Varianti(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     variante = models.ForeignKey(Varianti, on_delete=models.CASCADE)
-    
+    nrPagina =  models.IntegerField(default=0)
     def __str__(self):
         return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
     
