@@ -349,7 +349,7 @@ def controllo(req):
         ])
 
 
-    # Fetch users with fewer than 100 tests this week
+    # Utenti con meno di 100 test in questa settimana
     utenti_inf = queries.get_users_tests_100()
 
     utenti_stelle = queries.get_stelle_statistics()

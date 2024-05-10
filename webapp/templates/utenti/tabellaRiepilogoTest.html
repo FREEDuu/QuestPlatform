@@ -29,8 +29,9 @@
       </tbody>
   </table>
 
-<!-- Pagination -->
-<nav aria-label="Page navigation">
+
+  <!-- PAGINAZIONE -->
+  <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
         <li class="page-item">
@@ -42,7 +43,19 @@
         </li>
         {% endif %}
 
+        <!-- First page and leading ellipses -->
+        {% if page_obj.number > 4 %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1" hx-get="{% url 'controllo' %}?page=1" hx-trigger="click">1</a>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+
+        <!-- Page number links -->
         {% for page_num in page_obj.paginator.page_range %}
+        {% if page_num >= page_obj.number|add:-2 and page_num <= page_obj.number|add:2 %}
         {% if page_obj.number == page_num %}
         <li class="page-item active">
             <span class="page-link">{{ page_num }}</span>
@@ -52,7 +65,18 @@
             <a class="page-link" href="?page={{ page_num }}" hx-get="{% url 'controllo' %}?page={{ page_num }}" hx-trigger="click">{{ page_num }}</a>
         </li>
         {% endif %}
+        {% endif %}
         {% endfor %}
+
+        <!-- Last page and trailing ellipses -->
+        {% if page_obj.paginator.num_pages > page_obj.number|add:2 %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" hx-get="{% url 'controllo' %}?page={{ page_obj.paginator.num_pages }}" hx-trigger="click">{{ page_obj.paginator.num_pages }}</a>
+        </li>
+        {% endif %}
 
         {% if page_obj.has_next %}
         <li class="page-item">
@@ -65,3 +89,4 @@
         {% endif %}
     </ul>
 </nav>
+
