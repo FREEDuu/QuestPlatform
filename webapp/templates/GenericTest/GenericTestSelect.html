@@ -49,6 +49,7 @@
                         <p></p>
 
                     {% elif tipo == 'c' %}
+                        carl
                         <div class="d-flex flex-column">
                             {% for radio in form %}
                                 <label for="{{ radio.id_for_label }}" >
@@ -111,6 +112,8 @@
             <form method="post" class="clearfix" action = "{% url 'testStartOrario' idGruppi idTest counter displayer seed %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}}  >
                 {% csrf_token %}
                 {% for domanda, variante, form, corretto, dom, tipo in ctx %}
+                     <!--{{domanda}} / {{variante}} / {{dom}} / {{tipo}} -->
+
                     {% csrf_token %}
                     <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}} </span> {% endif %}</h6>
                     

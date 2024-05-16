@@ -65,3 +65,32 @@ WHERE
     AND d.tipo != 'cr'
 GROUP BY 
     d."idDomanda" having COUNT(*) <= 3
+
+
+-- Query per controllare se esistono varianti con rispostaEsatta vuoto.
+-- varianti con rispostaEsatta vuoto possono causare bug sulla creazione del form dei test su genRandomFromSeed
+select  
+	webapp_domande."idDomanda",
+	webapp_domande.tipo,
+	webapp_domande.corpo as "corpoDomanda",
+	webapp_varianti."idVariante",
+	webapp_varianti.corpo as "corpoVariante",
+	webapp_varianti."rispostaEsatta",
+	webapp_varianti."dataOraInserimento"
+from webapp_varianti 
+join webapp_domande on webapp_domande."idDomanda" = webapp_varianti.domanda_id 
+where "rispostaEsatta" = ''
+
+
+-- Conta numero di test totali per ogni utente
+select 
+	auth_user.username,
+	COUNT(*) as nrTest
+from webapp_test 
+join auth_user on auth_user.id = webapp_test.utente_id 
+where 
+	webapp_test."dataOraInserimento" > '2024-05-01' 
+	and utente_id not in (1,2,3)
+group by
+	auth_user.username
+order by nrTest desc

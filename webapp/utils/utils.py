@@ -7,49 +7,59 @@ from django.db.models import F
 
 from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti, Statistiche
 
-
-
-### FUNZIONI DI GENERAZIONE ###
+### VALIDAZIONE ###
 def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte):
     ctx = []
     for n in range(len(domande_to_render)):
-            if domande_to_render[n] == 'm' and not req['Trovato']: 
-                concat_string = ''
-                for i in range(len(risposte_esatte[n])):
-                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
-                    concat_string = ''.join([concat_string, user_input])
-                    
-                    if user_input != risposte_esatte[n][i]: 
-                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+        if domande_to_render[n] == 'm' and not req['Trovato']: 
+            concat_string = ''
+            for i in range(len(risposte_esatte[n])):
+                user_input = req.POST.get('domanda_{}_{}'.format(n, i))
+                concat_string = ''.join([concat_string, user_input])
                 
-                if concat_string != test_to_render[n].variante.rispostaEsatta:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
-                    
-                else:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                if user_input != risposte_esatte[n][i]: 
+                    formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+            
+            if concat_string != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                
+            else:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
-            elif domande_to_render[n] == 'cr':
-                if req.POST.get('domanda_{}'.format(n)) != '1':
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-
-                else:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+        elif domande_to_render[n] == 'cr':
+            if req.POST.get('domanda_{}'.format(n)) != '1':
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
                 Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-                req.session['Errore'] = req.POST.get('domanda_{}'.format(n))
-                req.session['Trovato'] = True
-                print(req['Errore'])
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+        elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+            Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+            Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+            req.session['Errore'] = req.POST.get('domanda_{}'.format(n))
+            req.session['Trovato'] = True
+
+        else:
+            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
     return ctx
+
+
+### FUNZIONI DI GENERAZIONE ###
+
+# Genera opzioni di risposta statiche per le CR, random per tutto il resto
+def generaOpzioniRisposta(formRisposta, test_to_render, seed):
+    for n, formDomanda in enumerate(test_to_render):
+        if formDomanda.domanda.tipo == 'cr':
+            choices = genRandomStaticAnswers('cr', formDomanda.variante.rispostaEsatta)
+        else:
+            choices, _ = genRandomFromSeed(formDomanda.domanda.tipo, seed, formDomanda.variante.rispostaEsatta)
+        formRisposta.fields[f'domanda_{n}'].choices = choices
+
 
  # Non c'è rischio num > 9 perchè questa funzione viene chiamata solo per numeri a singole cifre, da 0 a 9
 def genRandomint(num):
@@ -75,47 +85,47 @@ def randomGen(lungh, to_repl):
     return ret[0]
 
 def genRandomFromSeed(tipo, seed, rispostaGiusta):
-    if True :
-        if tipo == 's':
-            app_list = list()
-            app_list.append(('', '- selezionare opzione -'))
-            
-            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(5,9)):
-                    num = int(rispostaGiusta)
-                    var = genRandomint(num)
-                    app_list.append((str(_), str(var)))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            else:
-                for _ in range(0, randint(5,9)):
-                    var = str(rispostaGiusta)
-                    to_repl = var[randint(0,len(var)-1)]
-                    var  = var.replace(to_repl, randomGen(1, to_repl))
-                    if str(var) != str(rispostaGiusta):
-                        app_list.append((str(_), var))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            
+    if tipo == 's':
+        app_list = list()
+        app_list.append(('', '- selezionare opzione -'))
+        
+        if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+            for _ in range(0, randint(5,9)):
+                num = int(rispostaGiusta)
+                var = genRandomint(num)
+                app_list.append((str(_), str(var)))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
         else:
-            app_list = list()
+            for _ in range(0, randint(5,9)):
+                var = str(rispostaGiusta)
+                to_repl = var[randint(0,len(var)-1)]
+                var  = var.replace(to_repl, randomGen(1, to_repl))
+                if str(var) != str(rispostaGiusta):
+                    app_list.append((str(_), var))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
+        
+    else:
+        app_list = list()
 
-            if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
-                for _ in range(0, randint(5,9)):
-                    num = int(rispostaGiusta)
-                    var = genRandomint(num)
-                    app_list.append((str(_), str(var)))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
-            else:
-                for _ in range(0, randint(5,9)):
-                    var = str(rispostaGiusta)
-                    to_repl = var[randint(0,len(var)-1)]
-                    var  = var.replace(to_repl, randomGen(1, to_repl))
-                    if str(var) != str(rispostaGiusta):
-                            app_list.append((str(_), var))
-                app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
-                ret = app_list
+        if len(rispostaGiusta) == 1 and str(rispostaGiusta).isdigit() :
+            for _ in range(0, randint(5,9)):
+                num = int(rispostaGiusta)
+                var = genRandomint(num)
+                app_list.append((str(_), str(var)))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
+        else:
+            for _ in range(0, randint(5,9)):
+                var = str(rispostaGiusta)
+                to_repl = var[randint(0,len(var)-1)]
+                var  = var.replace(to_repl, randomGen(1, to_repl))
+                if str(var) != str(rispostaGiusta):
+                        app_list.append((str(_), var))
+            app_list.append((str(rispostaGiusta), str(rispostaGiusta)))
+            ret = app_list
+            
     # Per le select mescolare tutto tranne il primo valore di default
     if tipo == 's':
         shuffled_options = ret[1:]
@@ -127,7 +137,6 @@ def genRandomFromSeed(tipo, seed, rispostaGiusta):
 
 
 def genRandomStaticAnswers(tipo, rispostaGiusta):
-    cr_elements = ['Non Accetto i termini del bando1', 'Non Accetto2', 'Non Accetto3', 'Non Accetto4'] 
     ret = []
     
     if tipo == 'cr':

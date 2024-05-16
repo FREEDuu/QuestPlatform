@@ -13,6 +13,7 @@ from random import randint
 import random
 from . import test_common_views
 from ..utils import utils
+from django.urls import reverse
 
 
 @login_required(login_url='login')
@@ -213,40 +214,49 @@ def testStartOrario1(req, idGruppi, idTest, counter, displayer, seed, num):
 
 @login_required(login_url='login')
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
+    print(req.session['Errore'])  # Outputs to your server console or logs
+    print(req.session['Trovato'])
 
-    ctx = []
-    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest, nrPagina = displayer).select_related('domanda', 'variante').order_by('id')
+
+    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest, nrPagina=displayer).select_related('domanda', 'variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
 
     domande_to_render = [d.domanda.tipo for d in test_to_render]
     risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
-    random.seed(seed)    
+    random.seed(seed)
     formRisposta = FormDomanda(domande_to_render, risposte_esatte)
 
+    utils.generaOpzioniRisposta(formRisposta, test_to_render, seed)
+
+    # POST: valida form
     if req.method == 'POST':
-        
         ctx = utils.Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte)
-        return render(req,'GenericTest/GenericTestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi,'ultimo': test['nrGruppo'] - 1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed})
+        if test['nrGruppo'] -1 <= displayer:
+            if random.randint(0,1) == 1:
+                return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter)
+            else: 
+                return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
 
-    else:
+        displayer+=1
+        return redirect(reverse('testStartOrario', kwargs={
+            'idGruppi': idGruppi,
+            'idTest': idTest,
+            'counter': counter,
+            'displayer': displayer,
+            'seed': seed
+        }))
 
-        if test['inSequenza'] == True:
-            Test.objects.filter(idTest = idTest).update(malusF5 = True)
-        Test.objects.filter(idTest = idTest).update(inSequenza = True)
-
-        for n in range(len(test_to_render)):
-            if domande_to_render[n] == 'cr':
-                formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-            else:
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
-                
-            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-   
-        return render(req,'GenericTest/GenericTestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi,'ultimo': test['nrGruppo'] - 1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed})
-
-
-        
+    # GET: visualizza form
+    return render(req, 'GenericTest/GenericTestSelect.html', {
+        'random': randint(0, 2),
+        'idGruppi': idGruppi,
+        'ultimo': test['nrGruppo'] - 1,
+        'idTest': idTest,
+        'counter': counter,
+        'displayer': displayer,
+        'ctx': [(d.domanda, d.variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)],
+        'seed': seed
+    })
 
 
    
