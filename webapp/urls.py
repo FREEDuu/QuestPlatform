@@ -29,7 +29,7 @@ urlpatterns = [
     path('testStart/<int:idGruppi>/<int:idTest>/<int:counter>/<int:seed>/<int:num>' , test_manuale_views.TestStart, name= 'TestStart'),
     path('testStartOrario/<int:idGruppi>/<int:idTest>/<int:counter>/<int:displayer>/<int:seed>' , test_orario_views.testStartOrario, name= 'testStartOrario'),
     path('FinishTest/<int:idGruppi>/<int:idTest>' , test_manuale_views.FinishTest, name= 'FinishTest'),
-    path('FinishTestOrario/<int:idGruppi>/<int:idTest>/<int:counter>/' , test_orario_views.FinishTestOrario, name= 'FinishTestOrario'),
+    path('FinishTestOrario/<int:idGruppi>/<int:idTest>/<int:counter>/<int:seed>' , test_orario_views.FinishTestOrario, name= 'FinishTestOrario'),
     path('testProgrammati/<int:idTest>', test_common_views.TestProgrammati, name = 'TestProgrammati'),
     path('testProgrammatiStart/<int:idTest>/<int:counter>', test_common_views.TestProgrammatiStart, name = 'TestProgrammatiStart'),
     path('testProgrammatiFinish/<int:idTest>', test_common_views.TestProgrammatiFinish, name = 'TestProgrammatiFinish'),
@@ -39,5 +39,5 @@ urlpatterns = [
     path('testStartOrarioSfida/<int:idTest>/<int:displayer>', test_orario_views.testStartOrarioSfida, name = 'testStartOrarioSfida'),
     path('FinishTestOrarioSfida/<int:idTest>', test_orario_views.FinishTestOrarioSfida, name = 'FinishTestOrarioSfida'),
     path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario'),
-    path('RiepilogoTest/<int:idGruppi>/<int:idTest>/<int:counter>', page_views.RiepilogoTest, name = 'RiepilogoTest')
+    path('RiepilogoTest/<int:idGruppi>/<int:idTest>/<int:counter>/<int:seed>', page_views.RiepilogoTest, name = 'RiepilogoTest')
 ]

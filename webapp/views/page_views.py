@@ -66,6 +66,8 @@ def accettaSfida(req,idGruppi,id):
 # HOME
 @login_required(login_url='login')
 def home(req):
+    utils.pulisci_sessione(req)
+
     staff = True    
     if req.user.is_staff == False:
         staff = False
@@ -443,21 +445,35 @@ def creaDomandeDisplay(req):
     return render(req, 'creaDomande/displayDom.html', {'form' : FormDomandaCollettiva()})
 
 
-def RiepilogoTest(req, idGruppi, idTest ,counter):
+def RiepilogoTest(req, idGruppi, idTest, counter, seed):
+    utils.print_sessione(req)
+    test_compilato = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante')
 
-    random.seed(idTest)
-    test_compilato = Test_Domande_Varianti.objects.filter(test = idTest).select_related()
-    print(test_compilato)
-    scelte = random.sample(range(1, len(test_compilato)), 6)
+    num_items = len(test_compilato)
+
+    if num_items >= 6:
+        scelte = random.sample(range(num_items), 6)
+    else:
+        scelte = list(range(num_items))
+
     random.seed(datetime.now().second)
-    randomico = random.randint(0,2)
-    print(randomico)
+    randomico = random.randint(0, 2)
+
     context = []
     for scelta in scelte:
-        context.append([test_compilato[scelta].domanda.corpo + ' ' +test_compilato[scelta].variante.corpo, test_compilato[scelta].variante.rispostaEsatta])
+        selected_item = test_compilato[scelta]
+        context.append([selected_item.domanda.corpo + ' ' + selected_item.variante.corpo, selected_item.variante.rispostaEsatta])
 
-    print(context)
-    return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter, 'random' : randomico})
+    return render(req, 'RiepilogoTest/RiepilogoTest.html', {
+        'idGruppi': idGruppi,
+        'idTest': idTest,
+        'ctx': context,
+        'counter': counter,
+        'random': randomico,
+        'seed': seed 
+    })
+
+
 
 def CheckTest():
     print('ciao')

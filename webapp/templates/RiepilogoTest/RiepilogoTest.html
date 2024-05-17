@@ -97,7 +97,7 @@
         
         <p class="mt-4"></p>
         {%if random == 0%}
-        <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+        <a href="{% url 'FinishTestOrario' idGruppi idTest counter seed  %}">
             <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;">AVANTI</button>
 
         </a>
@@ -109,7 +109,7 @@
 
 
         {% elif random == 1%}
-        <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+        <a href="{% url 'FinishTestOrario' idGruppi idTest counter seed  %}">
             <button id="prosegui" class="btn text-light float-end" type="submit" style="background-color: #069901;">AVANTI</button>
 
         </a>
@@ -124,7 +124,7 @@
         <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
 
         <div class="text-center">
-            <a href="{% url 'FinishTestOrario' idGruppi idTest counter  %}">
+            <a href="{% url 'FinishTestOrario' idGruppi idTest counter seed  %}">
                 <button id="prosegui" class="btn text-light" type="submit" style="background-color: #069901;">AVANTI</button>
     
             </a>
