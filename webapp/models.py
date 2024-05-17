@@ -9,7 +9,7 @@ class Domande(models.Model):
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     tipo = models.CharField(max_length=100, default = 't')
     numeroPagine = models.IntegerField(default = -1)
-
+    attivo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.corpo 

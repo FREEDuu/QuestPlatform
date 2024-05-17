@@ -14,6 +14,7 @@ import random
 from . import test_common_views
 from ..utils import utils
 from django.urls import reverse
+from django.db.models import Q
 
 
 @login_required(login_url='login')
@@ -53,7 +54,7 @@ def CreazioneTestOrario(req, idGruppi, counter):
 
     TestsGroup.objects.filter(idGruppi = idGruppi).update(nrGruppo=F('nrGruppo') + 1)
     singolo_test = Test.objects.create(utente = req.user, nrGruppo = randint(2,3))
-    domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
+    domande = Domande.objects.filter(numeroPagine = -1).exclude(Q(tipo='cr') | Q(attivo=False))
    
     choice = random.sample(range(0, len(domande)), 16)
     app_list = list()
@@ -65,7 +66,7 @@ def CreazioneTestOrario(req, idGruppi, counter):
             domanda_test = Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[random_variante], nrPagina = p)
             app_list.append(domanda_test)
         if randint(0,1) == 1:
-            domande_cr = Domande.objects.filter(tipo='cr')
+            domande_cr = Domande.objects.filter(tipo='cr', attivo=True)
             random_domanda_cr = randint(0, len(domande_cr)-1)
             varianti_cr = Varianti.objects.filter(domanda = domande_cr[random_domanda_cr])
             random_variante_cr = randint(0, len(varianti_cr)-1)
@@ -214,9 +215,7 @@ def testStartOrario1(req, idGruppi, idTest, counter, displayer, seed, num):
 
 @login_required(login_url='login')
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
-    print(req.session['Errore'])  # Outputs to your server console or logs
-    print(req.session['Trovato'])
-
+    print(req.session['Errore'])
 
     test_to_render = Test_Domande_Varianti.objects.filter(test=idTest, nrPagina=displayer).select_related('domanda', 'variante').order_by('id')
     test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
@@ -262,11 +261,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
    
 
 def FinishTestOrario(req, idGruppi, idTest, counter):
-        
+    print(req.session['Errori'])
+    
     counter += 1
     end =  Test.objects.filter(idTest = idTest).values('dataOraFine', 'malusF5')[0]
     malus = False
-    print(req.session['Errore'])
 
     if end['dataOraFine'] is None:
         Test.objects.filter(idTest = idTest).update(dataOraFine = datetime.now())
@@ -317,7 +316,7 @@ def preTestSfida(req, idGruppi, id):
         return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : tests[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
     else:
         singolo_test = Test.objects.create(utente = req.user, tipo = 'sfida', dataOraInizio = datetime.now(), nrGruppo = 3)
-        domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
+        domande = Domande.objects.filter(numeroPagine = -1).exclude(Q(tipo='cr') | Q(attivo=False))
     
         random.seed(id)
         app_list = list()
@@ -334,7 +333,7 @@ def preTestSfida(req, idGruppi, id):
 
             app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
             
-        domande_cr = Domande.objects.filter(tipo='cr')
+        domande_cr = Domande.objects.filter(tipo='cr', attivo=True)
         random_domanda_cr = randint(0, len(domande_cr)-1)
         varianti_cr = Varianti.objects.filter(domanda = domande_cr[random_domanda_cr])
         random_variante_cr = randint(0, len(varianti_cr)-1)

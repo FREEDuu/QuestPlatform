@@ -10,8 +10,10 @@ from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti, Statis
 ### VALIDAZIONE ###
 def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte):
     ctx = []
+    errors = []
+    
     for n in range(len(domande_to_render)):
-        if domande_to_render[n] == 'm' and not req['Trovato']: 
+        if domande_to_render[n] == 'm' and not req.session.get('Trovato', False): 
             concat_string = ''
             for i in range(len(risposte_esatte[n])):
                 user_input = req.POST.get('domanda_{}_{}'.format(n, i))
@@ -22,8 +24,9 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             
             if concat_string != test_to_render[n].variante.rispostaEsatta:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-                Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
+                Statistiche.objects.filter(utente=req.user, tipoDomanda='m').update(nrErrori=F('nrErrori') + 1)
+                errors.append({'domanda': n, 'errore': req.POST.get('domanda_{}'.format(n))})
                 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
@@ -31,21 +34,23 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
         elif domande_to_render[n] == 'cr':
             if req.POST.get('domanda_{}'.format(n)) != '1':
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+                Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
+                errors.append({'domanda': n, 'errore': req.POST.get('domanda_{}'.format(n))})
 
             else:
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
 
         elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-            Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-            Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-            req.session['Errore'] = req.POST.get('domanda_{}'.format(n))
-            req.session['Trovato'] = True
+            Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+            Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
+            errors.append({'domanda': n, 'errore': req.POST.get('domanda_{}'.format(n))})
 
         else:
             ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+    
+    req.session['Errori'] = errors 
     return ctx
 
 

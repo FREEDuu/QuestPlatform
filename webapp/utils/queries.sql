@@ -55,7 +55,9 @@ SELECT
     d."idDomanda",
     MAX(d.corpo) as corpo,
     MAX(d.tipo) as tipo,
-    COUNT(*)
+    COUNT(*),
+    STRING_AGG(v.corpo, ', ') AS varianti_corpo,
+    STRING_AGG(v."rispostaEsatta", ', ') AS "varianti_rispostaEsatta"
 FROM 
     webapp_domande d
 JOIN 
@@ -65,6 +67,7 @@ WHERE
     AND d.tipo != 'cr'
 GROUP BY 
     d."idDomanda" having COUNT(*) <= 3
+ order by corpo asc
 
 
 -- Query per controllare se esistono varianti con rispostaEsatta vuoto.
@@ -94,3 +97,14 @@ where
 group by
 	auth_user.username
 order by nrTest desc
+
+
+
+
+-- Query per cercare le domande "doppioni"
+select 
+	STRING_AGG(wd."idDomanda"::TEXT, ', ') AS "idDomande",
+	wd.corpo,
+	COUNT(*)
+from webapp_domande wd 
+group by  wd.corpo having COUNT(*) > 3
