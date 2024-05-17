@@ -277,12 +277,36 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
     else:
         # Pre-populate the form with data from the session for the current page
-        form_data = req.session.get(page_key, None)
-        if form_data:
-            for key, value in form_data.items():
-                if key != 'csrfmiddlewaretoken' and key in formRisposta.fields:
-                    formRisposta.fields[key].initial = value
+        form_data = [key for key in req.session.keys() if key.startswith('form_data_page_{}'.format(displayer))]
 
+        if not form_data :
+            ctx = [(d.domanda, d.variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)]
+        else:
+            form_data = form_data[0]
+            if req.session.get('Errori'):
+                check1 = req.session.get('Errori')[0]['pagina']
+                check2 = list(req.session.get('Errori')[0].keys())[1]
+            else:
+                check1 = 4
+                check2 = 10
+            form_data = req.session[form_data]
+            multiple = {}
+            for key, value in form_data.items():
+                if key != 'csrfmiddlewaretoken':
+                    if len(key.split('_')) == 3:
+                        chiave = key.split('_')[0]+'_'+key.split('_')[1]
+                        if chiave in multiple.keys():
+                            multiple[chiave] += value
+                        else:
+                            multiple[chiave] = value
+                        formRisposta.fields[chiave].initial = multiple[chiave]
+                    else:
+                        formRisposta.fields[key].initial = value
+            ctx = [(d.domanda, d.variante, formRisposta[f'domanda_{n}'],  check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)]
+            if req.session.get('Errori'):
+                if req.session.get('Errori')[0]['pagina'] == displayer:
+                    del req.session['Errori']
+ 
     return render(req, 'GenericTest/GenericTestSelect.html', {
         'random': randint(0, 2),
         'idGruppi': idGruppi,
@@ -290,7 +314,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         'idTest': idTest,
         'counter': counter,
         'displayer': displayer,
-        'ctx': [(d.domanda, d.variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)],
+        'ctx': ctx,
         'seed': seed
     })
 
@@ -305,6 +329,7 @@ def FinishTestOrario(req, idGruppi, idTest, counter, seed):
     if req.session.get('Errori'):
         primo_errore = req.session['Errori'][0]
         displayer = primo_errore['pagina']
+
         return redirect(reverse('testStartOrario', kwargs={
             'idGruppi': idGruppi,
             'idTest': idTest,

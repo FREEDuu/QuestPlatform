@@ -34,8 +34,10 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 Statistiche.objects.filter(utente=req.user, tipoDomanda='m').update(nrErrori=F('nrErrori') + 1)
-                errors.append({'pagina': displayer, f'domanda_{n}': user_input})
+                if len(errors) == 0:
+                    errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
+                
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
 
@@ -45,7 +47,8 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
                 Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
-                errors.append({'pagina': displayer, f'domanda_{n}': user_input})
+                if len(errors) == 0:
+                    errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
@@ -58,7 +61,8 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
                 Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
-                errors.append({'pagina': displayer, f'domanda_{n}': user_input})
+                if len(errors) == 0:
+                    errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
                 ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
@@ -72,7 +76,8 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
     combined_errors = existing_errors + errors
 
     # Salva errori in sessione
-    req.session['Errori'] = combined_errors
+    if not req.session.get('Errori'):
+        req.session['Errori'] = combined_errors
 
     req.session[f'form_data_page_{displayer}'] = form_data
     req.session.save()
