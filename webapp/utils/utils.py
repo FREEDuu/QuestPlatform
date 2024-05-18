@@ -5,6 +5,7 @@ from random import randint
 import random
 import string
 from django.db.models import F
+from ..utils import queries
 
 from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti, Statistiche
 
@@ -34,8 +35,8 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
 
             if concat_string != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
-                Statistiche.objects.filter(utente=req.user, tipoDomanda='m').update(nrErrori=F('nrErrori') + 1)
+                queries.update_test_numero_errori(idTest)
+                queries.update_statistiche_nr_errori(req.user.id, 'm')
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}_multipla': user_input})
             else:
@@ -47,8 +48,9 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != '1':
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-                Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
+                queries.update_test_numero_errori(idTest)
+                queries.update_statistiche_nr_errori(req.user.id, 'cr')
+
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
@@ -61,8 +63,9 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                Statistiche.objects.filter(utente=req.user, tipoDomanda=test_to_render[n].tipo).update(nrErrori=F('nrErrori') + 1)
-                Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
+                queries.update_test_numero_errori(idTest)
+                queries.update_statistiche_nr_errori(req.user.id, test_to_render[n].tipo)
+
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
