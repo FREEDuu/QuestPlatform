@@ -1,4 +1,6 @@
 from django.db import connection
+from collections import namedtuple
+
 
 # CONTROLLO
 def get_user_test_count():
@@ -161,7 +163,7 @@ def get_stelle_errors(user_id):
             LIMIT 1;
         """, [user_id])
         result = cursor.fetchone()
-        return result[0] if result else 0  # Default to 0 if no entry found
+        return result[0] if result else 0  
 
 
 def get_tests_group_data(user_id, test_type):
@@ -245,3 +247,50 @@ def get_errori_per_tipo(user_id, tipologia):
             return result[0]
         else:
             return 0
+    
+###
+
+
+
+### TEST
+
+def get_test_to_render(idTest, displayer):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+            	d."idDomanda",
+            	d.corpo as "corpoDomanda",
+            	d.tipo,
+            	v."idVariante",
+            	v.corpo as "corpoVariante",
+            	v."rispostaEsatta"
+            FROM webapp_test_domande_varianti tdv
+            JOIN webapp_domande d ON tdv.domanda_id = d."idDomanda"
+            JOIN webapp_varianti v ON tdv.variante_id = v."idVariante"
+            WHERE tdv.test_id = %s AND tdv."nrPagina" = %s
+            ORDER BY tdv.id;
+        """, [idTest, displayer])
+
+        columns = [col[0] for col in cursor.description]
+        TestToRender = namedtuple('TestToRender', columns)
+        
+        results = [TestToRender(*row) for row in cursor.fetchall()]
+        return results
+    
+    
+def get_test_details(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "nrGruppo", "dataOraInizio", "inSequenza"
+            FROM webapp_test
+            WHERE "idTest" = %s
+            LIMIT 1;
+        """, [idTest])
+        result = cursor.fetchone()
+        return {
+            'nrGruppo': result[0],
+            'dataOraInizio': result[1],
+            'inSequenza': result[2]
+        } if result else None
+
+###

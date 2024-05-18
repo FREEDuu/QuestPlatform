@@ -15,7 +15,7 @@ from . import test_common_views
 from ..utils import utils
 from django.urls import reverse
 from django.db.models import Q
-
+from ..utils import queries
 
 @login_required(login_url='login')
 def creaTestOrarioEsatto(req):
@@ -238,11 +238,12 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
     print("Errori: ", req.session.get('Errori'))
     page_key = f'form_data_page_{displayer}'
 
-    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest, nrPagina=displayer).select_related('domanda', 'variante').order_by('id')
-    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
+    # Replace ORM queries with raw SQL queries
+    test_to_render = queries.get_test_to_render(idTest, displayer)
+    test = queries.get_test_details(idTest)
 
-    domande_to_render = [d.domanda.tipo for d in test_to_render]
-    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
+    domande_to_render = [row.tipo for row in test_to_render]
+    risposte_esatte = [row.rispostaEsatta for row in test_to_render]
     random.seed(seed)
     formRisposta = FormDomanda(domande_to_render, risposte_esatte)
 
@@ -257,7 +258,7 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
         # Remove corrected errors from the session
         if req.session.get('Errori'):
-            req.session['Errori'] = [error for error in req.session['Errori'] if error not in corrected_errors]
+            req.session['Errori'] = [error for error in req.session.get('Errori', []) if error not in corrected_errors]
             req.session.save()  # Ensure the session data is saved
 
         if test['nrGruppo'] - 1 <= displayer:
@@ -277,12 +278,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
     else:
         # Pre-populate the form with data from the session for the current page
-        form_data = [key for key in req.session.keys() if key.startswith('form_data_page_{}'.format(displayer))]
+        form_data = req.session.get(page_key, None)
 
-        if not form_data :
-            ctx = [(d.domanda, d.variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)]
+        if not form_data:
+            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
         else:
-            form_data = form_data[0]
             if req.session.get('Errori'):
                 check1 = req.session.get('Errori')[0]['pagina']
                 check2 = list(req.session.get('Errori')[0].keys())[1]
@@ -319,11 +319,11 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                     
                     else:
                         formRisposta.fields[key].initial = value
-            ctx = [(d.domanda, d.variante, formRisposta[f'domanda_{n}'],  check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)]
+            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'],  check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
             if req.session.get('Errori'):
                 if req.session.get('Errori')[0]['pagina'] == displayer:
                     del req.session['Errori']
- 
+
     return render(req, 'GenericTest/GenericTestSelect.html', {
         'random': randint(0, 2),
         'idGruppi': idGruppi,
@@ -334,7 +334,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         'ctx': ctx,
         'seed': seed
     })
-
 
 
    

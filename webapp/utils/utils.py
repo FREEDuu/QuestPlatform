@@ -32,8 +32,8 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                 # Salva tutti gli input
                 form_data[f'domanda_{n}_{i}'] = user_input
 
-            if concat_string != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
+            if concat_string != test_to_render[n].rispostaEsatta:
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 Statistiche.objects.filter(utente=req.user, tipoDomanda='m').update(nrErrori=F('nrErrori') + 1)
                 if len(errors) == 0:
@@ -41,33 +41,33 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             else:
                 
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].tipo])
 
         elif domande_to_render[n] == 'cr':
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != '1':
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
                 Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].tipo])
 
             form_data[f'domanda_{n}'] = user_input
 
         else:
             user_input = req.POST.get(f'domanda_{n}')
-            if user_input != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].domanda.tipo])
+            if user_input != test_to_render[n].rispostaEsatta:
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
                 Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
             else:
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].domanda.tipo])
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].tipo])
 
             form_data[f'domanda_{n}'] = user_input
 
@@ -98,10 +98,10 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
 # Genera opzioni di risposta statiche per le CR, random per tutto il resto
 def generaOpzioniRisposta(formRisposta, test_to_render, seed):
     for n, formDomanda in enumerate(test_to_render):
-        if formDomanda.domanda.tipo == 'cr':
-            choices = genRandomStaticAnswers('cr', formDomanda.variante.rispostaEsatta)
+        if formDomanda.tipo == 'cr':
+            choices = genRandomStaticAnswers('cr', formDomanda.rispostaEsatta)
         else:
-            choices, _ = genRandomFromSeed(formDomanda.domanda.tipo, seed, formDomanda.variante.rispostaEsatta)
+            choices, _ = genRandomFromSeed(formDomanda.tipo, seed, formDomanda.rispostaEsatta)
         formRisposta.fields[f'domanda_{n}'].choices = choices
 
 
