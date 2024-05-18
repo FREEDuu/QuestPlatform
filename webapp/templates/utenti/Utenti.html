@@ -19,7 +19,7 @@
         <div class="p-4 p-md-5 mb-4 my-3 rounded bg-body rounded shadow-lg text-center">
 
           <div class="px-0 text-align-center" id="target">
-            <h2 class="">Utenti con meno di 100 Test (questa settimana)</h2>
+            <h2 class="">Test effettuati questa settimana (questa settimana)</h2>
 
             <!-- TABELLA -->
             <div class="mt-4 d-flex justify-content-center">
@@ -29,13 +29,17 @@
                     <tr>
                       <th scope="col">Utente</th>
                       <th scope="col">Numero Test</th>
+                      <th scope="col">Media</th>
+
                     </tr>
                   </thead>
                   <tbody>
-                    {% for ut, num in utenti_inf %}
+                    {% for ut, num, mean in utenti_inf %}
                     <tr>
                       <td>{{ ut }}</td>
                       <td>{{ num }}</td>
+                      <td>{{ mean }}</td>
+
                     </tr>
                     {% endfor %}
                   </tbody>

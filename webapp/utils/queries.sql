@@ -108,3 +108,29 @@ select
 	COUNT(*)
 from webapp_domande wd 
 group by  wd.corpo having COUNT(*) > 3
+
+ -- Query per ritornare le medie di tutti negli ultimi test della settimana
+ SELECT 
+    auth_user.username,
+    COUNT(*) as test_count,
+	case 
+	WHEN
+	    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	IS NULL then '0'
+	else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	
+	
+	end AS time_difference_in_seconds
+
+	
+	FROM
+    auth_user
+LEFT JOIN 
+    webapp_test ON webapp_test.utente_id = auth_user.id
+	and
+	webapp_test."dataOraFine" IS NOT NULL
+    AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+    
+group by 
+    auth_user.username
+order by test_count desc

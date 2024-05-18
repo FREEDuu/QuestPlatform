@@ -23,10 +23,12 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             for i in range(len(risposte_esatte[n])):
                 user_input = req.POST.get(f'domanda_{n}_{i}')
                 concat_string = ''.join([concat_string, user_input])
+                '''
 
                 if user_input != risposte_esatte[n][i]:
                     formRisposta.fields[f'domanda_{n}'].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
 
+                    '''
                 # Salva tutti gli input
                 form_data[f'domanda_{n}_{i}'] = user_input
 
@@ -35,7 +37,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 Statistiche.objects.filter(utente=req.user, tipoDomanda='m').update(nrErrori=F('nrErrori') + 1)
                 if len(errors) == 0:
-                    errors.append({'pagina': displayer, f'domanda_{n}': user_input})
+                    errors.append({'pagina': displayer, f'domanda_{n}_multipla': user_input})
             else:
                 
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})

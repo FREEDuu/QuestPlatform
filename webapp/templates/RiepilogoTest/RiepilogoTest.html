@@ -63,33 +63,17 @@
         
  
 
-        {% if random == 0%}
+
 
             <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
             <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                <label class="form-check-label" for="flexCheckDefault">
-                  Accetto
+                <input class="form-check-input" type="checkbox" value="" id = 'checkbox'>
+                <label class="form-check-label">
+                  Accetto il trattamento dei dati
                 </label>
               </div>
 
-        {% elif random == 1%}
-        <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-            <label class="form-check-label" for="flexCheckDefault">
-                Accetto
-                        </label>
-          </div>
-        {% else %}
-        <h6>Informativa : i dati inseriti posso essere soggetto di analisi dati ai fini della privacy</h6>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-            <label class="form-check-label" for="flexCheckDefault">
-                Accetto
-            </label>
-          </div>
-        {% endif %}
+
           <p></p>
         <!--<h6>Cliccare su Modifica per modificare</h6>-->
 
@@ -156,6 +140,25 @@
 </footer>
 {% endblock %}
 
+<script>
+    var bottone = document.getElementById('prosegui');
+    var checkbox = document.getElementById('checkbox');
+    function cambiaBotton(){
+        if(checkbox.checked){
+            bottone.disabled = false;
+
+        }
+        else{
+            bottone.disabled = true;
+        }
+    }
+    cambiaBotton();
+    checkbox.addEventListener('change', cambiaBotton())
+
+</script>
+
+</body>
 
 
-</body></html>
+
+</html>

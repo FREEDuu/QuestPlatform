@@ -215,7 +215,7 @@
 
                 <!-- GRAFICI -->
                 <div class="bg-body rounded shadow-lg my-4">
-                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
+                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test ( la tua media {{media}})</h6>
                   <p></p>
                   <div>
                     <canvas id="lineChart"></canvas>
@@ -249,7 +249,7 @@
   var minSeconds = Infinity;
   var maxSeconds = -Infinity;
   var under30Count = 0;
-  var lastTestsConsidered = 100;
+  var lastTestsConsidered = 99;
 
   //### LINE CHART & TOTAL STATISTICS CALCULATIONS ###//
   for (var i = 0; i < chart_tests.length; i++) {
@@ -288,7 +288,7 @@
     partialAverageSeconds = partialSumSeconds / lastTestsConsidered;
   }
    
-
+  totalAverageSeconds = {{media | safe}};
   // Update table in the DOM with general statistics
   document.addEventListener('DOMContentLoaded', function () {
     var statsRow = document.getElementById('statsRow');
@@ -296,12 +296,11 @@
         <td>${chart_tests.length}</td>
         <td>${minSeconds.toFixed(2)}</td>
         <td>${maxSeconds.toFixed(2)}</td>
-        <td>${totalAverageSeconds.toFixed(2)}</td>
         <td>${under30Count}</td>
     `;
   });
 
-
+  partialAverageSeconds = {{ media | safe}};
   // Update lineChart & barChart DOM content
   document.addEventListener('DOMContentLoaded', function() {
     //### LINE CHART ###//

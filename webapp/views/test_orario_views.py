@@ -287,19 +287,36 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
                 check1 = req.session.get('Errori')[0]['pagina']
                 check2 = list(req.session.get('Errori')[0].keys())[1]
             else:
-                check1 = 4
-                check2 = 10
+                check1 = '4'
+                check2 = 'ciao_'
             form_data = req.session[form_data]
             multiple = {}
             for key, value in form_data.items():
                 if key != 'csrfmiddlewaretoken':
+                    chiave = key.split('_')[0]+'_'+key.split('_')[1]
                     if len(key.split('_')) == 3:
-                        chiave = key.split('_')[0]+'_'+key.split('_')[1]
+                        
+                        controllo = risposte_esatte[int( check2.split('_')[1])]
                         if chiave in multiple.keys():
-                            multiple[chiave] += value
+                            if value == '':
+                                multiple[chiave] += ' '
+                            else:
+                                multiple[chiave] += value
                         else:
-                            multiple[chiave] = value
+                            if value == ' ':
+                                multiple[chiave] = ' '
+                            else:
+                                multiple[chiave] = value
                         formRisposta.fields[chiave].initial = multiple[chiave]
+                    
+                    if multiple.get(chiave) != None:
+                        if  len(multiple[chiave]) == len(risposte_esatte[int(key.split('_')[1])]):
+                            for i in range(len(controllo)):
+                                concat_string = multiple[chiave]
+                                if concat_string[i] != controllo[i]:
+                                    formRisposta.fields['domanda_{}'.format(key.split('_')[1])].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+
+                    
                     else:
                         formRisposta.fields[key].initial = value
             ctx = [(d.domanda, d.variante, formRisposta[f'domanda_{n}'],  check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', d.domanda.tipo) for n, d in enumerate(test_to_render)]

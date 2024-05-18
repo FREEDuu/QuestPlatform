@@ -74,29 +74,70 @@ def get_stelle_statistics():
     return result_set 
 
 
-def get_users_tests_100():
+def get_users_tests_week_and_mean():
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT 
-                auth_user.username, 
-                COUNT(webapp_test."idTest") AS test_count
-            FROM 
-                auth_user
-            LEFT JOIN 
-                webapp_test ON webapp_test.utente_id = auth_user.id
-                    AND webapp_test."dataOraFine" IS NOT NULL
-                    AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
-            GROUP BY 
-                auth_user.username
-            HAVING 
-                COUNT(webapp_test."idTest") < 100
-            ORDER BY test_count DESC;
+                    SELECT 
+            auth_user.username,
+            COUNT(*) as test_count,
+            case 
+            WHEN
+                to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+            IS NULL then '0'
+            else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+            
+            
+            end AS time_difference_in_seconds
+
+            
+            FROM
+            auth_user
+        LEFT JOIN 
+            webapp_test ON webapp_test.utente_id = auth_user.id
+            and
+            webapp_test."dataOraFine" IS NOT NULL
+            AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+            
+        group by 
+            auth_user.username
+        order by test_count desc
         """)
         result_set = cursor.fetchall()
     return result_set 
 ###
 
+def get_user_mean(user_id):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+with Ultimi_100 as ( Select * 
+	from webapp_test 
+	where webapp_test.utente_id = '1' and webapp_test."dataOraFine" is not null
+	order by webapp_test."dataOraFine" DESC
+	limit 100
+)
+    SELECT 
+	case 
+	WHEN
+	    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	IS NULL then '0'
+	else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	
+	
+	end AS time_difference_in_seconds
 
+	
+	FROM
+    auth_user
+LEFT JOIN 
+    Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
+	
+    
+    where auth_user.id = %s
+group by 
+    auth_user.username""",[user_id])
+            result_set = cursor.fetchall()
+        return result_set[0][0] 
+        
 # HOME
 def ensure_statistiche_entries(user_id):
     with connection.cursor() as cursor:
@@ -204,5 +245,3 @@ def get_errori_per_tipo(user_id, tipologia):
             return result[0]
         else:
             return 0
-    
-###
