@@ -61,7 +61,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                Statistiche.objects.filter(utente=req.user, tipoDomanda=formRisposta[f'domanda_{n}'].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Statistiche.objects.filter(utente=req.user, tipoDomanda=test_to_render[n].tipo).update(nrErrori=F('nrErrori') + 1)
                 Test.objects.filter(idTest=idTest).update(numeroErrori=F('numeroErrori') + 1)
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})

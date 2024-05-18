@@ -289,7 +289,8 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
             else:
                 check1 = '4'
                 check2 = 'ciao_'
-            form_data = req.session[form_data]
+            
+            
             multiple = {}
             for key, value in form_data.items():
                 if key != 'csrfmiddlewaretoken':
