@@ -113,7 +113,7 @@ def get_user_mean(user_id):
             cursor.execute("""
 with Ultimi_100 as ( Select * 
 	from webapp_test 
-	where webapp_test.utente_id = '1' and webapp_test."dataOraFine" is not null
+	where webapp_test.utente_id = %s and webapp_test."dataOraFine" is not null
 	order by webapp_test."dataOraFine" DESC
 	limit 100
 )
@@ -136,7 +136,7 @@ LEFT JOIN
     
     where auth_user.id = %s
 group by 
-    auth_user.username""",[user_id])
+    auth_user.username""",[user_id, user_id])
             result_set = cursor.fetchall()
         return result_set[0][0] 
         
@@ -294,3 +294,37 @@ def get_test_details(idTest):
         } if result else None
 
 ###
+
+def media_delle_medie():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+WITH Ultimi_100 AS (
+    SELECT *
+    FROM webapp_test
+    WHERE webapp_test."dataOraFine" IS NOT NULL
+    ORDER BY webapp_test."dataOraFine" DESC
+    LIMIT 100
+),
+medie AS (
+    SELECT 
+        auth_user.id,
+        AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS time_difference_in_seconds
+    FROM auth_user
+    LEFT JOIN Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
+    GROUP BY auth_user.id
+    HAVING AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) > 0
+),
+user_avg AS (
+    SELECT 
+        medie.id,
+        medie.time_difference_in_seconds
+    FROM medie
+)
+SELECT 
+    to_char(AVG(user_avg.time_difference_in_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
+FROM user_avg
+WHERE 
+    user_avg.id not in (1,2,3)
+""")
+        result = cursor.fetchall()
+        return result
