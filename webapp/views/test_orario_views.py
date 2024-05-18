@@ -254,12 +254,12 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         
         # Store form data in the session by page
         req.session[page_key] = req.POST
-        req.session.save()  # Ensure the session data is saved
+        req.session.save()
 
         # Remove corrected errors from the session
         if req.session.get('Errori'):
             req.session['Errori'] = [error for error in req.session.get('Errori', []) if error not in corrected_errors]
-            req.session.save()  # Ensure the session data is saved
+            req.session.save() 
 
         if test['nrGruppo'] - 1 <= displayer:
             if random.randint(0, 1) == 1:
@@ -289,38 +289,40 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
             else:
                 check1 = '4'
                 check2 = 'ciao_'
-            
-            
+
             multiple = {}
             for key, value in form_data.items():
                 if key != 'csrfmiddlewaretoken':
-                    chiave = key.split('_')[0]+'_'+key.split('_')[1]
-                    if len(key.split('_')) == 3:
-                        
-                        controllo = risposte_esatte[int( check2.split('_')[1])]
-                        if chiave in multiple.keys():
-                            if value == '':
-                                multiple[chiave] += ' '
-                            else:
-                                multiple[chiave] += value
-                        else:
-                            if value == ' ':
-                                multiple[chiave] = ' '
-                            else:
-                                multiple[chiave] = value
-                        formRisposta.fields[chiave].initial = multiple[chiave]
-                    
-                    if multiple.get(chiave) != None:
-                        if  len(multiple[chiave]) == len(risposte_esatte[int(key.split('_')[1])]):
-                            for i in range(len(controllo)):
-                                concat_string = multiple[chiave]
-                                if concat_string[i] != controllo[i]:
-                                    formRisposta.fields['domanda_{}'.format(key.split('_')[1])].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                    parts = key.split('_')
+                    if len(parts) >= 2 and parts[1].isdigit():
+                        chiave = parts[0] + '_' + parts[1]
+                        index = int(parts[1])
 
-                    
-                    else:
-                        formRisposta.fields[key].initial = value
-            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'],  check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
+                        if len(parts) == 3:
+                            controllo = risposte_esatte[index]
+
+                            if chiave in multiple.keys():
+                                if value == '':
+                                    multiple[chiave] += ' '
+                                else:
+                                    multiple[chiave] += value
+                            else:
+                                if value == ' ':
+                                    multiple[chiave] = ' '
+                                else:
+                                    multiple[chiave] = value
+                            formRisposta.fields[chiave].initial = multiple[chiave]
+
+                            if multiple.get(chiave) is not None and len(multiple[chiave]) == len(risposte_esatte[index]):
+                                for i in range(len(controllo)):
+                                    concat_string = multiple[chiave]
+                                    if concat_string[i] != controllo[i]:
+                                        formRisposta.fields['domanda_{}'.format(index)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                        else:
+                            formRisposta.fields[key].initial = value
+
+            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
+
             if req.session.get('Errori'):
                 if req.session.get('Errori')[0]['pagina'] == displayer:
                     del req.session['Errori']

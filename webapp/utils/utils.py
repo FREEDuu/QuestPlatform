@@ -19,7 +19,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
     existing_errors = req.session.get('Errori', [])
 
     for n in range(len(domande_to_render)):
-        if domande_to_render[n] == 'm' and not req.session.get('Trovato', False):
+        if domande_to_render[n] == 'm':
             concat_string = ''
             for i in range(len(risposte_esatte[n])):
                 user_input = req.POST.get(f'domanda_{n}_{i}')
@@ -41,7 +41,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
                     errors.append({'pagina': displayer, f'domanda_{n}_multipla': user_input})
             else:
                 
-                corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}', 'errore': user_input})
+                corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}_multipla', 'errore': user_input})
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].tipo])
 
         elif domande_to_render[n] == 'cr':
