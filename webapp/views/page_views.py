@@ -66,10 +66,15 @@ def accettaSfida(req,idGruppi,id):
 # HOME
 @login_required(login_url='login')
 def home(req):
+    utils.pulisci_sessione(req)
+    media = queries.get_user_mean(req.user.id)
+    tempo_ref = queries.media_delle_medie()[0][0]
     staff = True    
     if req.user.is_staff == False:
         staff = False
-
+    user_utente = req.user.username
+    if '.' in user_utente:
+        user_utente = user_utente.split('.')[0]
     if len(Statistiche.objects.filter(utente = req.user, tipoDomanda = 'stelle')) == 0:
         Statistiche.objects.create(utente = req.user, tipoDomanda = 'stelle', nrErrori = 0)
         Statistiche.objects.create(utente = req.user, tipoDomanda = 't', nrErrori = 0)
@@ -164,7 +169,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', {'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
+    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
 
 
 
@@ -317,7 +322,7 @@ def controllo(req):
         return redirect('home')
     
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrTest', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tests = [dict(zip(columns, row)) for row in result_set]
 
     # Paginazione
@@ -331,7 +336,7 @@ def controllo(req):
         dataOraFine_str = el['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraFine'] else ''
         dataOraInizio_str = el['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S") if el['dataOraInizio'] else ''
         
-        # Calcula totale secondi
+        # calcola totale secondi
         duration_seconds = (el['dataOraFine'] - el['dataOraInizio']).total_seconds() if el['dataOraFine'] and el['dataOraInizio'] else 0
 
         arr_display.append([
@@ -340,15 +345,15 @@ def controllo(req):
             dataOraFine_str,
             dataOraInizio_str,
             el['nrGruppo'],
-            el['nrTest'],
+            el['nrDomande'],
             el['numeroErrori'],
             el['malusF5'],
             duration_seconds
         ])
 
 
-    # Fetch users with fewer than 100 tests this week
-    utenti_inf = queries.get_users_tests_100()
+    # Utenti con meno di 100 test in questa settimana
+    utenti_inf = queries.get_users_tests_week_and_mean()
 
     utenti_stelle = queries.get_stelle_statistics()
 
@@ -373,24 +378,28 @@ def csv_riepilogo_test(req):
     
     writer = csv.writer(csv_buffer, delimiter=';')
 
+    # Estrazione dati test
+    result_set = queries.get_user_test_info()
+    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    tutti_test = [dict(zip(columns, row)) for row in result_set]
+    
+    # Titoli colonne header del CSV
     header_row = ['Utente', 'ID Test', 'Data Inizio', 'Data Fine', 'Nr Pagine', 'Nr Domande', 'Nr Errori', 'Penalty refresh', 'Tempo Completamento']
     writer.writerow(header_row)
-
-    tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
     
     for test in tutti_test:
-        tempo_completamento = (test.dataOraFine - test.dataOraInizio).total_seconds()
+        tempo_completamento = (test['dataOraFine'] - test['dataOraInizio']).total_seconds()
         tempo_completamento_str = str(tempo_completamento).replace('.', ',')
 
         writer.writerow([
-            test.utente.username,
-            test.idTest,
-            test.dataOraInizio.strftime("%d/%m/%Y %H:%M:%S"),
-            test.dataOraFine.strftime("%d/%m/%Y %H:%M:%S"),
-            test.nrGruppo,
-            test.nrTest,
-            test.numeroErrori,
-            test.malusF5,
+            test['username'],
+            test['idTest'],
+            test['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S"),
+            test['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S"),
+            test['nrGruppo'],
+            test['nrDomande'],
+            test['numeroErrori'],
+            test['malusF5'],
             tempo_completamento_str
         ])
 
@@ -437,15 +446,35 @@ def creaDomandeDisplay(req):
     return render(req, 'creaDomande/displayDom.html', {'form' : FormDomandaCollettiva()})
 
 
-def RiepilogoTest(req, idGruppi, idTest ,counter):
+def RiepilogoTest(req, idGruppi, idTest, counter, seed):
+    utils.print_sessione(req)
+    test_compilato = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante')
 
-    random.seed(idTest)
-    test_compilato = Test_Domande_Varianti.objects.filter(test = idTest)
-    scelte = random.sample(range(1, len(test_compilato)), 4)
-    
+    num_items = len(test_compilato)
+
+    if num_items >= 6:
+        scelte = random.sample(range(num_items), 6)
+    else:
+        scelte = list(range(num_items))
+
+    random.seed(datetime.now().second)
+    randomico = random.randint(0, 2)
+
     context = []
     for scelta in scelte:
-        context.append([test_compilato[scelta].domanda, test_compilato[scelta]])
+        selected_item = test_compilato[scelta]
+        context.append([selected_item.domanda.corpo + ' ' + selected_item.variante.corpo, selected_item.variante.rispostaEsatta])
 
-    print(context)
-    return render(req ,'RiepilogoTest/RiepilogoTest.html', {'idGruppi' : idGruppi, 'idTest' : idTest, 'ctx' : context, 'counter' : counter})
+    return render(req, 'RiepilogoTest/RiepilogoTest.html', {
+        'idGruppi': idGruppi,
+        'idTest': idTest,
+        'ctx': context,
+        'counter': counter,
+        'random': randomico,
+        'seed': seed 
+    })
+
+
+
+def CheckTest():
+    print('ciao')

@@ -9,7 +9,7 @@ class Domande(models.Model):
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     tipo = models.CharField(max_length=100, default = 't')
     numeroPagine = models.IntegerField(default = -1)
-
+    attivo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.corpo 
@@ -28,7 +28,7 @@ class Varianti(models.Model):
     corpo = models.CharField(max_length=100)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     rispostaEsatta = models.CharField(max_length=100 , default = '')  
-    is_dynamic = models.BooleanField(default=False)
+    #is_dynamic = models.BooleanField(default=False)
 
     def __str__(self):
         return self.corpo
@@ -85,7 +85,7 @@ class Test_Domande_Varianti(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
     variante = models.ForeignKey(Varianti, on_delete=models.CASCADE)
-    
+    nrPagina =  models.IntegerField(default=0)
     def __str__(self):
         return f'idTest: {self.test.idTest} domanda: {self.domanda.corpo} variante: {self.variante.corpo}'
     

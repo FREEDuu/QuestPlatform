@@ -143,3 +143,5 @@ webapp/assets/webapp/*
 webapp/assets/staticfiles.json
 webapp/docz.adoc
 .vscode/settings.json
+webapp/output.pdf
+webapp/repo2pdf.ignore

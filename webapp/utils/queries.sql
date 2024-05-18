@@ -48,3 +48,89 @@ WHERE
     AND "dataOraFine" IS NULL 
     AND "dataOraInizio" <= CURRENT_DATE - INTERVAL '1 day'
 ORDER BY "dataOraInizio" desc;
+
+
+-- Query per vedere domande con poche varianti associate
+SELECT 
+    d."idDomanda",
+    MAX(d.corpo) as corpo,
+    MAX(d.tipo) as tipo,
+    COUNT(*),
+    STRING_AGG(v.corpo, ', ') AS varianti_corpo,
+    STRING_AGG(v."rispostaEsatta", ', ') AS "varianti_rispostaEsatta"
+FROM 
+    webapp_domande d
+JOIN 
+    webapp_varianti v ON d."idDomanda" = v.domanda_id
+WHERE 
+    d.corpo not like '%(%' 
+    AND d.tipo != 'cr'
+GROUP BY 
+    d."idDomanda" having COUNT(*) <= 3
+ order by corpo asc
+
+
+-- Query per controllare se esistono varianti con rispostaEsatta vuoto.
+-- varianti con rispostaEsatta vuoto possono causare bug sulla creazione del form dei test su genRandomFromSeed
+select  
+	webapp_domande."idDomanda",
+	webapp_domande.tipo,
+	webapp_domande.corpo as "corpoDomanda",
+	webapp_varianti."idVariante",
+	webapp_varianti.corpo as "corpoVariante",
+	webapp_varianti."rispostaEsatta",
+	webapp_varianti."dataOraInserimento"
+from webapp_varianti 
+join webapp_domande on webapp_domande."idDomanda" = webapp_varianti.domanda_id 
+where "rispostaEsatta" = ''
+
+
+-- Conta numero di test totali per ogni utente
+select 
+	auth_user.username,
+	COUNT(*) as nrTest
+from webapp_test 
+join auth_user on auth_user.id = webapp_test.utente_id 
+where 
+	webapp_test."dataOraInserimento" > '2024-05-01' 
+	and utente_id not in (1,2,3)
+group by
+	auth_user.username
+order by nrTest desc
+
+
+
+
+-- Query per cercare le domande "doppioni"
+select 
+	STRING_AGG(wd."idDomanda"::TEXT, ', ') AS "idDomande",
+	wd.corpo,
+	COUNT(*)
+from webapp_domande wd 
+group by  wd.corpo having COUNT(*) > 3
+
+ -- Query per ritornare le medie di tutti negli ultimi test della settimana
+ SELECT 
+    auth_user.username,
+    COUNT(*) as test_count,
+	case 
+	WHEN
+	    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	IS NULL then '0'
+	else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	
+	
+	end AS time_difference_in_seconds
+
+	
+	FROM
+    auth_user
+LEFT JOIN 
+    webapp_test ON webapp_test.utente_id = auth_user.id
+	and
+	webapp_test."dataOraFine" IS NOT NULL
+    AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+    
+group by 
+    auth_user.username
+order by test_count desc

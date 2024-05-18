@@ -1,4 +1,6 @@
 from django.db import connection
+from collections import namedtuple
+
 
 # CONTROLLO
 def get_user_test_count():
@@ -14,24 +16,42 @@ def get_user_test_count():
         result_set = cursor.fetchall()
     return result_set
 
+def get_user_media():
+    with connection.cursor() as cursor:
+        #calcola la media di quell'utente
+        cursor.execute("""
 
+        """)
+        result_set = cursor.fetchall()
+    return result_set
 #tutti_test = Test.objects.select_related('utente').filter(dataOraFine__isnull=False).exclude(Q(tipo="sfida") | Q(tipo__startswith="collettivo")).order_by('-dataOraInizio')
 def get_user_test_info():
     with connection.cursor() as cursor:
         cursor.execute("""
+            WITH conteggioDomande as (
+                SELECT 
+                    test_id,
+                    COUNT(*) as "nrDomande"
+                FROM 
+                    webapp_test_domande_varianti
+                GROUP BY
+                    test_id
+            )
             SELECT 
                 auth_user.username, 
                 webapp_test."idTest", 
                 webapp_test."dataOraFine", 
                 webapp_test."dataOraInizio", 
                 webapp_test."nrGruppo", 
-                webapp_test."nrTest", 
+                conteggioDomande."nrDomande",
                 webapp_test."numeroErrori", 
                 webapp_test."malusF5"
             FROM 
                 webapp_test
             JOIN 
                 auth_user ON webapp_test.utente_id = auth_user.id
+            JOIN 
+                conteggioDomande ON conteggioDomande.test_id = webapp_test."idTest"
             WHERE 
                 webapp_test."dataOraFine" IS NOT NULL AND 
                 NOT (webapp_test.tipo = 'sfida' OR webapp_test.tipo LIKE 'collettivo%')
@@ -56,29 +76,70 @@ def get_stelle_statistics():
     return result_set 
 
 
-def get_users_tests_100():
+def get_users_tests_week_and_mean():
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT 
-                auth_user.username, 
-                COUNT(webapp_test."idTest") AS test_count
-            FROM 
-                auth_user
-            LEFT JOIN 
-                webapp_test ON webapp_test.utente_id = auth_user.id
-                    AND webapp_test."dataOraFine" IS NOT NULL
-                    AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
-            GROUP BY 
-                auth_user.username
-            HAVING 
-                COUNT(webapp_test."idTest") < 100
-            ORDER BY test_count DESC;
+                    SELECT 
+            auth_user.username,
+            COUNT(*) as test_count,
+            case 
+            WHEN
+                to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+            IS NULL then '0'
+            else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+            
+            
+            end AS time_difference_in_seconds
+
+            
+            FROM
+            auth_user
+        LEFT JOIN 
+            webapp_test ON webapp_test.utente_id = auth_user.id
+            and
+            webapp_test."dataOraFine" IS NOT NULL
+            AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+            
+        group by 
+            auth_user.username
+        order by test_count desc
         """)
         result_set = cursor.fetchall()
     return result_set 
 ###
 
+def get_user_mean(user_id):
+        with connection.cursor() as cursor:
+            cursor.execute("""
+with Ultimi_100 as ( Select * 
+	from webapp_test 
+	where webapp_test.utente_id = %s and webapp_test."dataOraFine" is not null
+	order by webapp_test."dataOraFine" DESC
+	limit 100
+)
+    SELECT 
+	case 
+	WHEN
+	    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	IS NULL then '0'
+	else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
+	
+	
+	end AS time_difference_in_seconds
 
+	
+	FROM
+    auth_user
+LEFT JOIN 
+    Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
+	
+    
+    where auth_user.id = %s
+group by 
+    auth_user.username""",[user_id, user_id])
+            result_set = cursor.fetchall()
+        return result_set[0][0] 
+        
 # HOME
 def ensure_statistiche_entries(user_id):
     with connection.cursor() as cursor:
@@ -102,7 +163,7 @@ def get_stelle_errors(user_id):
             LIMIT 1;
         """, [user_id])
         result = cursor.fetchone()
-        return result[0] if result else 0  # Default to 0 if no entry found
+        return result[0] if result else 0  
 
 
 def get_tests_group_data(user_id, test_type):
@@ -188,3 +249,100 @@ def get_errori_per_tipo(user_id, tipologia):
             return 0
     
 ###
+
+
+
+### TEST
+
+def get_test_to_render(idTest, displayer):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+            	d."idDomanda",
+            	d.corpo as "corpoDomanda",
+            	d.tipo,
+            	v."idVariante",
+            	v.corpo as "corpoVariante",
+            	v."rispostaEsatta"
+            FROM webapp_test_domande_varianti tdv
+            JOIN webapp_domande d ON tdv.domanda_id = d."idDomanda"
+            JOIN webapp_varianti v ON tdv.variante_id = v."idVariante"
+            WHERE tdv.test_id = %s AND tdv."nrPagina" = %s
+            ORDER BY tdv.id;
+        """, [idTest, displayer])
+
+        columns = [col[0] for col in cursor.description]
+        TestToRender = namedtuple('TestToRender', columns)
+        
+        results = [TestToRender(*row) for row in cursor.fetchall()]
+        return results
+    
+    
+def get_test_details(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "nrGruppo", "dataOraInizio", "inSequenza"
+            FROM webapp_test
+            WHERE "idTest" = %s
+            LIMIT 1;
+        """, [idTest])
+        result = cursor.fetchone()
+        return {
+            'nrGruppo': result[0],
+            'dataOraInizio': result[1],
+            'inSequenza': result[2]
+        } if result else None
+
+###
+
+def media_delle_medie():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+WITH Ultimi_100 AS (
+    SELECT *
+    FROM webapp_test
+    WHERE webapp_test."dataOraFine" IS NOT NULL
+    ORDER BY webapp_test."dataOraFine" DESC
+    LIMIT 100
+),
+medie AS (
+    SELECT 
+        auth_user.id,
+        AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS time_difference_in_seconds
+    FROM auth_user
+    LEFT JOIN Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
+    GROUP BY auth_user.id
+    HAVING AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) > 0
+),
+user_avg AS (
+    SELECT 
+        medie.id,
+        medie.time_difference_in_seconds
+    FROM medie
+)
+SELECT 
+    to_char(AVG(user_avg.time_difference_in_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
+FROM user_avg
+WHERE 
+    user_avg.id not in (1,2,3)
+""")
+        result = cursor.fetchall()
+        return result
+
+
+def update_test_numero_errori(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_test
+            SET "numeroErrori" = "numeroErrori" + 1
+            WHERE "idTest" = %s;
+        """, [idTest])
+        
+        
+def update_statistiche_nr_errori(user_id, tipoDomanda):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_statistiche
+            SET "nrErrori" = "nrErrori" + 1
+            WHERE utente_id = %s AND "tipoDomanda" = %s;
+        """, [user_id, tipoDomanda])

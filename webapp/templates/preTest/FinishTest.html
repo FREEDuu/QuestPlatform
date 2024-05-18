@@ -50,7 +50,9 @@
             HAI RICEVUTO UNO SVANTAGGIO PER AVER RICARICATO LA PAGINA (SONO STATI AGGIUNTI 5 SECONDI AL TUO TEMPO FINALE)
         </h5>
         {% endif %}
+        <p class="m-4"></p>
         <a href= "{% url 'preTest' idGruppi idTest %}"  {{idGruppi}} {{idTest}}><button class="btn btn-primary float-end" type="button" style=" width: 100px; background-color: #022d5e;">Inizia</button></a>
+        <a href= "{% url 'home' %}"  ><button class="btn btn-primary float-start" type="button" style=" width: 100px; background-color: #022d5e;">Home</button></a>
 
   </div>
 

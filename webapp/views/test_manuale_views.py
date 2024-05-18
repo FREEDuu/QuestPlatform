@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from . import test_common_views
 from ..utils import utils
 import random
+from django.db.models import Q
 
 
 
@@ -173,7 +174,7 @@ def preTest(req, idGruppi, idTest):
         
         if(nrTest >= 0):
             
-            domande = Domande.objects.filter(numeroPagine = -1).exclude(tipo='cr')
+            domande = Domande.objects.filter(numeroPagine = -1).exclude(Q(tipo='cr') | Q(attivo=False))
             choice = random.sample(range(0, len(domande)), 16)
             app_list = list()
 
@@ -186,7 +187,7 @@ def preTest(req, idGruppi, idTest):
 
                 app_list.append(Test_Domande_Varianti(test = singolo_test, domanda = domande[random_domanda], variante = varianti[randint(0, len(varianti)-1)]))
         
-            domande_cr = Domande.objects.filter(tipo='cr')
+            domande_cr = Domande.objects.filter(tipo='cr', attivo=True)
             random_domanda_cr = randint(0, len(domande_cr)-1)
             varianti_cr = Varianti.objects.filter(domanda = domande_cr[random_domanda_cr])
             random_variante_cr = randint(0, len(varianti_cr)-1)
