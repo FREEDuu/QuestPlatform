@@ -328,3 +328,21 @@ WHERE
 """)
         result = cursor.fetchall()
         return result
+
+
+def update_test_numero_errori(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_test
+            SET "numeroErrori" = "numeroErrori" + 1
+            WHERE "idTest" = %s;
+        """, [idTest])
+        
+        
+def update_statistiche_nr_errori(user_id, tipoDomanda):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_statistiche
+            SET "nrErrori" = "nrErrori" + 1
+            WHERE utente_id = %s AND "tipoDomanda" = %s;
+        """, [user_id, tipoDomanda])
