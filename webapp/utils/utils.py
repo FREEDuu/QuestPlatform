@@ -24,19 +24,14 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             for i in range(len(risposte_esatte[n])):
                 user_input = req.POST.get(f'domanda_{n}_{i}')
                 concat_string = ''.join([concat_string, user_input])
-                '''
 
-                if user_input != risposte_esatte[n][i]:
-                    formRisposta.fields[f'domanda_{n}'].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
-
-                    '''
                 # Salva tutti gli input
                 form_data[f'domanda_{n}_{i}'] = user_input
 
             if concat_string != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                queries.update_test_numero_errori(idTest)
-                queries.update_statistiche_nr_errori(req.user.id, 'm')
+                aggiorna_statistiche(req.user.id, idTest, 'm')
+                
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}_multipla': user_input})
             else:
@@ -48,8 +43,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != '1':
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                queries.update_test_numero_errori(idTest)
-                queries.update_statistiche_nr_errori(req.user.id, 'cr')
+                aggiorna_statistiche(req.user.id, idTest, 'cr')
 
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
@@ -63,8 +57,7 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                queries.update_test_numero_errori(idTest)
-                queries.update_statistiche_nr_errori(req.user.id, test_to_render[n].tipo)
+                aggiorna_statistiche(req.user.id, idTest, test_to_render[n].tipo)
 
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
@@ -90,7 +83,50 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
     return ctx, corrected_errors
 
 
+### GENERIC TEST ###
 
+def repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, displayer, errors):
+    if errors:
+        check1 = errors[0]['pagina']
+        check2 = list(errors[0].keys())[1]
+    else:
+        check1 = '4'
+        check2 = 'ciao_'
+
+    multiple = {}
+    for key, value in form_data.items():
+        if key != 'csrfmiddlewaretoken':
+            parts = key.split('_')
+            if len(parts) >= 2 and parts[1].isdigit():
+                chiave = parts[0] + '_' + parts[1]
+                index = int(parts[1])
+
+                if len(parts) == 3:
+                    controllo = risposte_esatte[index]
+
+                    if chiave in multiple.keys():
+                        if value == '':
+                            multiple[chiave] += ' '
+                        else:
+                            multiple[chiave] += value
+                    else:
+                        if value == ' ':
+                            multiple[chiave] = ' '
+                        else:
+                            multiple[chiave] = value
+                    formRisposta.fields[chiave].initial = multiple[chiave]
+
+                    if multiple.get(chiave) is not None and len(multiple[chiave]) == len(risposte_esatte[index]):
+                        for i in range(len(controllo)):
+                            concat_string = multiple[chiave]
+                            if concat_string[i] != controllo[i]:
+                                formRisposta.fields['domanda_{}'.format(index)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                else:
+                    formRisposta.fields[key].initial = value
+
+    return [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
+
+###
 
 
 
@@ -241,3 +277,15 @@ def pulisci_sessione(req):
     form_data_keys = [key for key in req.session.keys() if key.startswith('form_data_page')]
     for key in form_data_keys:
         del req.session[key]
+
+
+
+### STATISTICHE ###
+def aggiorna_statistiche(utente_id, idTest, tipoDomanda):
+    
+    if queries.check_statistica_esistente(tipoDomanda, utente_id) == False:
+        queries.insert_nuova_statistica(tipoDomanda, utente_id)
+    else:
+        queries.update_statistiche_nr_errori(utente_id, tipoDomanda)
+    queries.update_test_numero_errori(idTest)
+

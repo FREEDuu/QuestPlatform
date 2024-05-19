@@ -302,6 +302,7 @@ def statistiche(req):
     errori_t = queries.get_errori_per_tipo(req.user.id, 't')
     errori_s = queries.get_errori_per_tipo(req.user.id, 's')
     errori_c = queries.get_errori_per_tipo(req.user.id, 'c')
+    errori_cr = queries.get_errori_per_tipo(req.user.id, 'cr')
     errori_m = queries.get_errori_per_tipo(req.user.id, 'm')
     
     test_incompleti = queries.get_test_incompleti(req.user.id)
@@ -312,6 +313,7 @@ def statistiche(req):
         'errori_t': errori_t,
         'errori_s': errori_s,
         'errori_c': errori_c,
+        'errori_cr': errori_c,
         'errori_m': errori_m
     })
 
