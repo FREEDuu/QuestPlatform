@@ -194,7 +194,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
 
 @login_required(login_url='login')
 def FinishTestOrario(req, idGruppi, idTest, counter, seed):
-    print("Errori: ", req.session.get('Errori'))
 
     if req.session.get('Errori'):
         primo_errore = req.session['Errori'][0]

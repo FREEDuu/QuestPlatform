@@ -554,3 +554,58 @@ def update_test_end_time_with_malus(idTest, end_time):
 
 ###
 
+
+
+### TEST COLLETTIVI/PROGRAMMATI ###
+
+def get_nr_gruppo(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "nrGruppo"
+            FROM webapp_test
+            WHERE "idTest" = %s;
+        """, [idTest])
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+def get_test_domande_varianti(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            select
+                d."idDomanda",
+                d.corpo as "corpoDomanda",
+                d.tipo,
+                d."numeroPagine",
+                v."idVariante",
+                v.corpo as "corpoVariante",
+                v."rispostaEsatta"
+            from
+                webapp_test_domande_varianti tdv
+            join webapp_domande d on
+                tdv.domanda_id = d."idDomanda"
+            join webapp_varianti v on
+                tdv.variante_id = v."idVariante"
+            where
+                tdv.test_id = %s
+            order by
+                tdv.id;
+        """, [idTest])
+        columns = [col[0] for col in cursor.description]
+        TestToRender = namedtuple('TestToRender', columns)
+        
+        results = [TestToRender(*row) for row in cursor.fetchall()]
+        return results
+
+
+def get_test_data(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "nrGruppo", "dataOraInizio"
+            FROM webapp_test
+            WHERE "idTest" = %s;
+        """, [idTest])
+        row = cursor.fetchone()
+        return dict(zip([col[0] for col in cursor.description], row)) if row else None
+
+
+###
