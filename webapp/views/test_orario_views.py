@@ -51,59 +51,51 @@ def creaTestOrarioEsatto(req):
 
 
 def CreazioneTestOrario(req, idGruppi, counter):
-    TestsGroup.objects.filter(idGruppi=idGruppi).update(nrGruppo=F('nrGruppo') + 1)
-    singolo_test = Test.objects.create(utente=req.user, nrGruppo=randint(2, 3))
+    queries.update_tests_group_nrGruppo(idGruppi)
+    singolo_test = queries.create_new_test(req.user.id)
 
-    domande = queries.get_filtered_domande() # Senza le cr
+    domande = queries.get_filtered_domande()
     random.shuffle(domande)
-    
-    app_list = list()
 
-    for p in range(singolo_test.nrGruppo):
-        for _ in range(randint(2, 4)):
-            if len(domande) == 0:
+    domanda_ids = [d[0] for d in domande]
+    varianti = queries.get_varianti_for_domande(domanda_ids)
+    varianti_dict = {domanda_id: [] for domanda_id in domanda_ids}
+    for var in varianti:
+        varianti_dict[var[1]].append(var)
+    
+    for p in range(singolo_test['nrGruppo']):
+        for _ in range(random.randint(2, 4)):
+            if not domande:
                 break
 
             random_domanda = domande.pop()
-            r_domanda = Domande(
-                random_domanda[0],
-                random_domanda[1],
-                random_domanda[2],
-                random_domanda[3],
-                random_domanda[4]
-            )
-
-            varianti = Varianti.objects.filter(domanda=random_domanda)
-            if not varianti.exists():
-                continue
-
-            random_variante = randint(0, len(varianti) - 1)
-            domanda_test = Test_Domande_Varianti(
-                test=singolo_test,
-                domanda=r_domanda,
-                variante=varianti[random_variante],
-                nrPagina=p
-            )
-            app_list.append(domanda_test)
-
-        if randint(0, 1) == 1:
-            domande_cr = list(Domande.objects.filter(tipo='cr', attivo=True))
-            if domande_cr:
-                random_domanda_cr = random.choice(domande_cr)
-                varianti_cr = Varianti.objects.filter(domanda=random_domanda_cr)
-                if varianti_cr.exists():
-                    random_variante_cr = randint(0, len(varianti_cr) - 1)
-                    domanda_test_cr = Test_Domande_Varianti(
-                        test=singolo_test,
-                        domanda=random_domanda_cr,
-                        variante=varianti_cr[random_variante_cr],
+            random_domanda_id = random_domanda[0]
+            if random_domanda_id in varianti_dict:
+                varianti = varianti_dict[random_domanda_id]
+                if varianti:
+                    random_variante = random.choice(varianti)
+                    queries.bulk_create_test_domande_varianti(
+                        test_id=singolo_test['idTest'],
+                        domanda_id=random_domanda_id,
+                        variante_id=random_variante[0],
                         nrPagina=p
                     )
-                    app_list.append(domanda_test_cr)
-    
-    Test_Domande_Varianti.objects.bulk_create(app_list)
-    return redirect('preTestOrario', idGruppi=idGruppi, idTest=singolo_test.idTest, counter=counter)
+        
+        if random.randint(0, 1) == 1:
+            domande_cr = queries.get_filtered_domande_cr()
+            if domande_cr:
+                random_domanda_cr = random.choice(domande_cr)
+                varianti_cr = queries.get_varianti_for_domande([random_domanda_cr[0]])
+                if varianti_cr:
+                    random_variante_cr = random.choice(varianti_cr)
+                    queries.bulk_create_test_domande_varianti(
+                        test_id=singolo_test['idTest'],
+                        domanda_id=random_domanda_cr[0],
+                        variante_id=random_variante_cr[0],
+                        nrPagina=p
+                    )
 
+    return redirect('preTestOrario', idGruppi=idGruppi, idTest=singolo_test['idTest'], counter=counter)
 
 
 @login_required(login_url='login')
@@ -131,7 +123,6 @@ def preTestOrario(req, idGruppi, idTest, counter):
             return redirect('testStartOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, displayer=0, seed=random.randint(0, 1000))
     else:
         return test_common_views.cancella_un_test(req, idGruppi)
-
 
 
 @login_required(login_url='login')
@@ -221,20 +212,20 @@ def FinishTestOrario(req, idGruppi, idTest, counter, seed):
     utils.pulisci_sessione(req)
 
     counter += 1
-    end = Test.objects.filter(idTest=idTest).values('dataOraFine', 'malusF5')[0]
+    end_data = queries.get_test_end_data(idTest)
     malus = False
 
-    if end['dataOraFine'] is None:
-        Test.objects.filter(idTest=idTest).update(dataOraFine=datetime.now())
+    if end_data[0] is None:
+        queries.update_test_end_time(idTest)
 
-    tt = Test.objects.filter(idTest=idTest)
-    tempo_test_finale = tt[0].dataOraFine
-    tempo_test_iniziale = tt[0].dataOraInizio
+    test_times = queries.get_test_times(idTest)
+    tempo_test_finale = test_times[0]
+    tempo_test_iniziale = test_times[1]
     tempo_end = (tempo_test_finale - tempo_test_iniziale).total_seconds()
-    if end['malusF5']:
+    if end_data[1]:  # if malusF5 is True
         malus = True
-        tempo_end = (tempo_test_finale - tempo_test_iniziale + timedelta(seconds=5)).total_seconds()
-        Test.objects.filter(idTest=idTest).update(dataOraFine=tempo_test_finale + timedelta(seconds=5))
+        tempo_end += 5  # Add 5 seconds
+        tempo_test_finale = queries.update_test_end_time_with_malus(idTest, tempo_test_finale)
 
     return render(req, 'preTestOrario/FinishTest.html', {
         'idGruppi': idGruppi,

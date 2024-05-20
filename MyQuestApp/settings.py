@@ -97,6 +97,7 @@ DATABASES = {
         "PASSWORD": "pondsama", #pondsama #mZT4Uo9u2aB7Y2ApZB3ZP45VwN5zmRlG
         "HOST": "2.56.212.172", #2.56.212.172 #dpg-cnnihula73kc739tq2lg-a.frankfurt-postgres.render.com
         "PORT": "5432",
+        "CONN_MAX_AGE": 3600,
     }
 }
 

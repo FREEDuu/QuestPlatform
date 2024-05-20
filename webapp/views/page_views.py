@@ -449,7 +449,6 @@ def creaDomandeDisplay(req):
 
 
 def RiepilogoTest(req, idGruppi, idTest, counter, seed):
-    utils.print_sessione(req)
     test_compilato = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante')
 
     num_items = len(test_compilato)

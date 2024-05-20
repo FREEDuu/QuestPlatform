@@ -6,8 +6,7 @@ import random
 import string
 from django.db.models import F
 from ..utils import queries
-
-from webapp.models import Domande, Varianti, Test, Test_Domande_Varianti, Statistiche
+import time 
 
 ### VALIDAZIONE ###
 def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte, displayer):
@@ -17,6 +16,9 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
     form_data = {}
 
     existing_errors = req.session.get('Errori', [])
+    stats_updates = []
+    test_updates = []
+    new_stats = []
 
     for n in range(len(domande_to_render)):
         if domande_to_render[n] == 'm':
@@ -30,12 +32,15 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
 
             if concat_string != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                aggiorna_statistiche(req.user.id, idTest, 'm')
+                if queries.check_statistica_esistente('m', req.user.id):
+                    stats_updates.append((req.user.id, 'm'))
+                else:
+                    new_stats.append((req.user.id, 'm'))
+                test_updates.append(idTest)
                 
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}_multipla': user_input})
             else:
-                
                 corrected_errors.append({'pagina': displayer, 'domanda': f'domanda_{n}_multipla', 'errore': user_input})
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', test_to_render[n].tipo])
 
@@ -43,7 +48,11 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != '1':
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                aggiorna_statistiche(req.user.id, idTest, 'cr')
+                if queries.check_statistica_esistente('cr', req.user.id):
+                    stats_updates.append((req.user.id, 'cr'))
+                else:
+                    new_stats.append((req.user.id, 'cr'))
+                test_updates.append(idTest)
 
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
@@ -57,7 +66,11 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
             user_input = req.POST.get(f'domanda_{n}')
             if user_input != test_to_render[n].rispostaEsatta:
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], True, f'domanda_{n}', test_to_render[n].tipo])
-                aggiorna_statistiche(req.user.id, idTest, test_to_render[n].tipo)
+                if queries.check_statistica_esistente(test_to_render[n].tipo, req.user.id):
+                    stats_updates.append((req.user.id, test_to_render[n].tipo))
+                else:
+                    new_stats.append((req.user.id, test_to_render[n].tipo))
+                test_updates.append(idTest)
 
                 if len(errors) == 0:
                     errors.append({'pagina': displayer, f'domanda_{n}': user_input})
@@ -67,6 +80,11 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
 
             form_data[f'domanda_{n}'] = user_input
 
+    # Bulk update/insert statistiche
+    queries.bulk_update_statistiche(stats_updates)
+    queries.bulk_insert_nuova_statistica(new_stats)
+    queries.bulk_update_test_numero_errori(test_updates)
+
     # Rimuovi errori corretti dagli errori ancora esistenti
     for ce in corrected_errors:
         existing_errors = [error for error in existing_errors if not (error['pagina'] == ce['pagina'] and list(error.keys())[1] == ce['domanda'])]
@@ -74,13 +92,14 @@ def Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, ri
     combined_errors = existing_errors + errors
 
     # Salva errori in sessione
-    if not req.session.get('Errori'):
-        req.session['Errori'] = combined_errors
+    req.session['Errori'] = combined_errors
 
     req.session[f'form_data_page_{displayer}'] = form_data
     req.session.save()
 
     return ctx, corrected_errors
+
+
 
 
 ### GENERIC TEST ###
@@ -277,15 +296,4 @@ def pulisci_sessione(req):
     form_data_keys = [key for key in req.session.keys() if key.startswith('form_data_page')]
     for key in form_data_keys:
         del req.session[key]
-
-
-
-### STATISTICHE ###
-def aggiorna_statistiche(utente_id, idTest, tipoDomanda):
-    
-    if queries.check_statistica_esistente(tipoDomanda, utente_id) == False:
-        queries.insert_nuova_statistica(tipoDomanda, utente_id)
-    else:
-        queries.update_statistiche_nr_errori(utente_id, tipoDomanda)
-    queries.update_test_numero_errori(idTest)
 
