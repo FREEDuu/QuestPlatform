@@ -51,186 +51,78 @@ def creaTestOrarioEsatto(req):
 
 
 def CreazioneTestOrario(req, idGruppi, counter):
-    TestsGroup.objects.filter(idGruppi=idGruppi).update(nrGruppo=F('nrGruppo') + 1)
-    singolo_test = Test.objects.create(utente=req.user, nrGruppo=randint(2, 3))
+    queries.update_tests_group_nrGruppo(idGruppi)
+    singolo_test = queries.create_new_test(req.user.id)
 
-    domande = list(Domande.objects.filter(numeroPagine=-1).exclude(Q(tipo='cr') | Q(attivo=False)))
+    domande = queries.get_filtered_domande()
     random.shuffle(domande)
-    
-    app_list = list()
 
-    for p in range(singolo_test.nrGruppo):
-        for _ in range(randint(2, 4)):
-            if len(domande) == 0:
+    domanda_ids = [d[0] for d in domande]
+    varianti = queries.get_varianti_for_domande(domanda_ids)
+    varianti_dict = {domanda_id: [] for domanda_id in domanda_ids}
+    for var in varianti:
+        varianti_dict[var[1]].append(var)
+    
+    for p in range(singolo_test['nrGruppo']):
+        for _ in range(random.randint(2, 4)):
+            if not domande:
                 break
 
             random_domanda = domande.pop()
-
-            varianti = Varianti.objects.filter(domanda=random_domanda)
-            if not varianti.exists():
-                continue
-
-            random_variante = randint(0, len(varianti) - 1)
-            domanda_test = Test_Domande_Varianti(
-                test=singolo_test,
-                domanda=random_domanda,
-                variante=varianti[random_variante],
-                nrPagina=p
-            )
-            app_list.append(domanda_test)
-
-        if randint(0, 1) == 1:
-            domande_cr = list(Domande.objects.filter(tipo='cr', attivo=True))
-            if domande_cr:
-                random_domanda_cr = random.choice(domande_cr)
-                varianti_cr = Varianti.objects.filter(domanda=random_domanda_cr)
-                if varianti_cr.exists():
-                    random_variante_cr = randint(0, len(varianti_cr) - 1)
-                    domanda_test_cr = Test_Domande_Varianti(
-                        test=singolo_test,
-                        domanda=random_domanda_cr,
-                        variante=varianti_cr[random_variante_cr],
+            random_domanda_id = random_domanda[0]
+            if random_domanda_id in varianti_dict:
+                varianti = varianti_dict[random_domanda_id]
+                if varianti:
+                    random_variante = random.choice(varianti)
+                    queries.bulk_create_test_domande_varianti(
+                        test_id=singolo_test['idTest'],
+                        domanda_id=random_domanda_id,
+                        variante_id=random_variante[0],
                         nrPagina=p
                     )
-                    app_list.append(domanda_test_cr)
-    
-    Test_Domande_Varianti.objects.bulk_create(app_list)
-    return redirect('preTestOrario', idGruppi=idGruppi, idTest=singolo_test.idTest, counter=counter)
+        
+        if random.randint(0, 1) == 1:
+            domande_cr = queries.get_filtered_domande_cr()
+            if domande_cr:
+                random_domanda_cr = random.choice(domande_cr)
+                varianti_cr = queries.get_varianti_for_domande([random_domanda_cr[0]])
+                if varianti_cr:
+                    random_variante_cr = random.choice(varianti_cr)
+                    queries.bulk_create_test_domande_varianti(
+                        test_id=singolo_test['idTest'],
+                        domanda_id=random_domanda_cr[0],
+                        variante_id=random_variante_cr[0],
+                        nrPagina=p
+                    )
 
-
-
-def preTestOrario(req, idGruppi, idTest, counter):
-
-    tests = TestsGroup.objects.filter(idGruppi = idGruppi).values('nrTest' , 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
-    test = Test.objects.filter(idTest = idTest).values( 'secondiRitardo', 'dataOraInizio', 'nrGruppo')
-
-    if test[0]['dataOraInizio'] is None:
-        Test.objects.filter(idTest = idTest).update(dataOraInizio = datetime.now() + timedelta(0,tests[0]['secondiRitardo']))
-        return preTestOrario(req, idGruppi, idTest, counter)
-    
-    nrTest = tests[0]['nrTest'] - tests[0]['nrGruppo']
-    random.seed(idTest)
-    if random.randint(0,1) == 1:
-        variazione_randomica =  test[0]['dataOraInizio'] - timedelta(seconds=1)
-    else:
-        variazione_randomica = test[0]['dataOraInizio'] + timedelta(seconds=1)
-    if nrTest >= 0 : 
-        if(datetime.now() < variazione_randomica):
-            return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : test[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
-        else:
-            TestsGroup.objects.filter(idGruppi = idGruppi).update(dataOraInizio = None)
-
-            return redirect('testStartOrario', idGruppi = idGruppi, idTest=idTest, counter = counter, displayer = 0, seed = randint(0,1000))
-    else:
-        return test_common_views.cancella_un_test(req, idGruppi)
-
+    return redirect('preTestOrario', idGruppi=idGruppi, idTest=singolo_test['idTest'], counter=counter)
 
 
 @login_required(login_url='login')
-def testStartOrario1(req, idGruppi, idTest, counter, displayer, seed, num):
+def preTestOrario(req, idGruppi, idTest, counter):
+    tests = queries.get_tests_group_details(idGruppi)
+    test = queries.get_test_details(idTest)
 
+    if test['dataOraInizio'] is None:
+        new_time = datetime.now() + timedelta(seconds=tests['secondiRitardo'])
+        queries.update_test_dataOraInizio(idTest, new_time)
+        return preTestOrario(req, idGruppi, idTest, counter)
 
-    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
-    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
-
-    domande_to_render = [d.domanda.tipo for d in test_to_render]
-    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
-    random.seed(seed)
-    
-    ctx = []
-    if req.method == 'POST':
-        Test.objects.filter(idTest = idTest).update(inSequenza = False)
-        formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
-        check = False
-        
-        # VALIDAZIONE RISPOSTE
-        for n in range(displayer * 5, ((displayer + 1) * 5)- num):
-
-            if domande_to_render[n] == 'm': 
-                concat_string = ''
-                for i in range(len(risposte_esatte[n])):
-                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
-                    concat_string = ''.join([concat_string, user_input])
-                    
-                    if user_input != risposte_esatte[n][i]: 
-                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
-                
-                if concat_string != test_to_render[n].variante.rispostaEsatta:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                    check = True
-                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
-                else:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-            elif domande_to_render[n] == 'cr':
-                if req.POST.get('domanda_{}'.format(n)) != '1':
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                    check = True
-                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-
-                else:
-                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-                check = True
-                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
-                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
-
-            else:
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-
-
-        if check:
-            for n in range(displayer * 5, ((displayer + 1) * 5)- num):
-                if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-                else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
-                    
-            return render(req, 'preTestOrario/TestSelect.html', {'random' : randint(0,2) , 'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx, 'seed': seed , 'num' : num})
-        
-        else:
-            Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
-            if test['nrGruppo'] -1 <= displayer:
-                if random.randint(0,1) == 1:
-                    return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter, seed = seed)
-                else: 
-                    return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
-            displayer += 1
-            seed += 1
-            num = randint(0,3)
-            ctx = []
-            for n in range(displayer * 5,((displayer + 1) * 5)- num):
-                if domande_to_render[n] == 'cr':
-                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-                else:
-                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
-                    
-                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-            return render(req, 'preTestOrario/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx , 'seed': seed , 'num' : num})
-
+    nrTest = tests['nrTest'] - tests['nrGruppo']
+    random.seed(idTest)
+    if random.randint(0, 1) == 1:
+        variazione_randomica = test['dataOraInizio'] - timedelta(seconds=1)
     else:
-        if test['inSequenza'] == True:
-            Test.objects.filter(idTest = idTest).update(malusF5 = True)
-        Test.objects.filter(idTest = idTest).update(inSequenza = True)
-        formRisposta = FormDomanda(domande_to_render, risposte_esatte)
+        variazione_randomica = test['dataOraInizio'] + timedelta(seconds=1)
 
-        for n in range(displayer * 5,((displayer + 1) * 5)- num):
-            
-            if domande_to_render[n] == 'cr':
-                formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
-            else:
-                formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
-                
-            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
-
-   
-        return render(req,'preTestOrario/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi,'ultimo': test['nrGruppo'] - 1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed, 'num' : num})
+    if nrTest >= 0:
+        if datetime.now() < variazione_randomica:
+            return render(req, 'preTestOrario/preTestOrario.html', {'time_display': test['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
+        else:
+            queries.update_testsgroup_dataOraInizio(idGruppi, None)
+            return redirect('testStartOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, displayer=0, seed=random.randint(0, 1000))
+    else:
+        return test_common_views.cancella_un_test(req, idGruppi)
 
 
 @login_required(login_url='login')
@@ -238,7 +130,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
     print("Errori: ", req.session.get('Errori'))
     page_key = f'form_data_page_{displayer}'
 
-    # Replace ORM queries with raw SQL queries
     test_to_render = queries.get_test_to_render(idTest, displayer)
     test = queries.get_test_details(idTest)
 
@@ -283,49 +174,10 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         if not form_data:
             ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
         else:
-            if req.session.get('Errori'):
-                check1 = req.session.get('Errori')[0]['pagina']
-                check2 = list(req.session.get('Errori')[0].keys())[1]
-            else:
-                check1 = '4'
-                check2 = 'ciao_'
+            ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, displayer, req.session.get('Errori'))
 
-            multiple = {}
-            for key, value in form_data.items():
-                if key != 'csrfmiddlewaretoken':
-                    parts = key.split('_')
-                    if len(parts) >= 2 and parts[1].isdigit():
-                        chiave = parts[0] + '_' + parts[1]
-                        index = int(parts[1])
-
-                        if len(parts) == 3:
-                            controllo = risposte_esatte[index]
-
-                            if chiave in multiple.keys():
-                                if value == '':
-                                    multiple[chiave] += ' '
-                                else:
-                                    multiple[chiave] += value
-                            else:
-                                if value == ' ':
-                                    multiple[chiave] = ' '
-                                else:
-                                    multiple[chiave] = value
-                            formRisposta.fields[chiave].initial = multiple[chiave]
-
-                            if multiple.get(chiave) is not None and len(multiple[chiave]) == len(risposte_esatte[index]):
-                                for i in range(len(controllo)):
-                                    concat_string = multiple[chiave]
-                                    if concat_string[i] != controllo[i]:
-                                        formRisposta.fields['domanda_{}'.format(index)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
-                        else:
-                            formRisposta.fields[key].initial = value
-
-            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
-
-            if req.session.get('Errori'):
-                if req.session.get('Errori')[0]['pagina'] == displayer:
-                    del req.session['Errori']
+            if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == displayer:
+                del req.session['Errori']
 
     return render(req, 'GenericTest/GenericTestSelect.html', {
         'random': randint(0, 2),
@@ -337,7 +189,6 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         'ctx': ctx,
         'seed': seed
     })
-
 
    
 
@@ -361,20 +212,20 @@ def FinishTestOrario(req, idGruppi, idTest, counter, seed):
     utils.pulisci_sessione(req)
 
     counter += 1
-    end = Test.objects.filter(idTest=idTest).values('dataOraFine', 'malusF5')[0]
+    end_data = queries.get_test_end_data(idTest)
     malus = False
 
-    if end['dataOraFine'] is None:
-        Test.objects.filter(idTest=idTest).update(dataOraFine=datetime.now())
+    if end_data[0] is None:
+        queries.update_test_end_time(idTest)
 
-    tt = Test.objects.filter(idTest=idTest)
-    tempo_test_finale = tt[0].dataOraFine
-    tempo_test_iniziale = tt[0].dataOraInizio
+    test_times = queries.get_test_times(idTest)
+    tempo_test_finale = test_times[0]
+    tempo_test_iniziale = test_times[1]
     tempo_end = (tempo_test_finale - tempo_test_iniziale).total_seconds()
-    if end['malusF5']:
+    if end_data[1]:  # if malusF5 is True
         malus = True
-        tempo_end = (tempo_test_finale - tempo_test_iniziale + timedelta(seconds=5)).total_seconds()
-        Test.objects.filter(idTest=idTest).update(dataOraFine=tempo_test_finale + timedelta(seconds=5))
+        tempo_end += 5  # Add 5 seconds
+        tempo_test_finale = queries.update_test_end_time_with_malus(idTest, tempo_test_finale)
 
     return render(req, 'preTestOrario/FinishTest.html', {
         'idGruppi': idGruppi,

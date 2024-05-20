@@ -1,0 +1,105 @@
+@login_required(login_url='login')
+def testStartOrario1(req, idGruppi, idTest, counter, displayer, seed, num):
+
+
+    test_to_render = Test_Domande_Varianti.objects.filter(test=idTest).select_related('domanda', 'variante').order_by('id')
+    test = Test.objects.filter(idTest=idTest).values('nrGruppo', 'dataOraInizio', 'inSequenza').first()
+
+    domande_to_render = [d.domanda.tipo for d in test_to_render]
+    risposte_esatte = [d.variante.rispostaEsatta for d in test_to_render]
+    random.seed(seed)
+    
+    ctx = []
+    if req.method == 'POST':
+        Test.objects.filter(idTest = idTest).update(inSequenza = False)
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
+        check = False
+        
+        # VALIDAZIONE RISPOSTE
+        for n in range(displayer * 5, ((displayer + 1) * 5)- num):
+
+            if domande_to_render[n] == 'm': 
+                concat_string = ''
+                for i in range(len(risposte_esatte[n])):
+                    user_input = req.POST.get('domanda_{}_{}'.format(n, i))
+                    concat_string = ''.join([concat_string, user_input])
+                    
+                    if user_input != risposte_esatte[n][i]: 
+                        formRisposta.fields['domanda_{}'.format(n)].widget.widgets[i].attrs.update({'style': 'width: 38px; margin-right: 10px; border: 1px solid red;'})
+                
+                if concat_string != test_to_render[n].variante.rispostaEsatta:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = 'm').update(nrErrori=F('nrErrori') + 1)
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif domande_to_render[n] == 'cr':
+                if req.POST.get('domanda_{}'.format(n)) != '1':
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                    check = True
+                    Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                    Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
+                else:
+                    ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            elif req.POST.get('domanda_{}'.format(n)) != test_to_render[n].variante.rispostaEsatta:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], True, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+                check = True
+                Statistiche.objects.filter(utente = req.user, tipoDomanda = formRisposta['domanda_{}'.format(n)].field.widget.input_type[0]).update(nrErrori=F('nrErrori') + 1)
+                Test.objects.filter(idTest = idTest).update(numeroErrori=F('numeroErrori') + 1)
+
+            else:
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False, 'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+
+
+        if check:
+            for n in range(displayer * 5, ((displayer + 1) * 5)- num):
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                    
+            return render(req, 'preTestOrario/TestSelect.html', {'random' : randint(0,2) , 'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx, 'seed': seed , 'num' : num})
+        
+        else:
+            Test.objects.filter(idTest = idTest).update(nrTest=F('nrTest') + (5-num))
+            if test['nrGruppo'] -1 <= displayer:
+                if random.randint(0,1) == 1:
+                    return redirect('FinishTestOrario', idGruppi = idGruppi, idTest = idTest, counter = counter, seed = seed)
+                else: 
+                    return redirect('RiepilogoTest', idGruppi = idGruppi, idTest = idTest, counter = counter)
+            displayer += 1
+            seed += 1
+            num = randint(0,3)
+            ctx = []
+            for n in range(displayer * 5,((displayer + 1) * 5)- num):
+                if domande_to_render[n] == 'cr':
+                    formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+                else:
+                    formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                    
+                ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+            return render(req, 'preTestOrario/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi, 'ultimo': test['nrGruppo'] - 1, 'idTest': idTest, 'counter': counter, 'displayer': displayer, 'ctx': ctx , 'seed': seed , 'num' : num})
+
+    else:
+        if test['inSequenza'] == True:
+            Test.objects.filter(idTest = idTest).update(malusF5 = True)
+        Test.objects.filter(idTest = idTest).update(inSequenza = True)
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte)
+
+        for n in range(displayer * 5,((displayer + 1) * 5)- num):
+            
+            if domande_to_render[n] == 'cr':
+                formRisposta.fields['domanda_{}'.format(n)].choices = utils.genRandomStaticAnswers('cr', test_to_render[n].variante.rispostaEsatta)
+            else:
+                formRisposta.fields['domanda_{}'.format(n)].choices, seed = utils.genRandomFromSeed(domande_to_render[n], seed, test_to_render[n].variante.rispostaEsatta)
+                
+            ctx.append([test_to_render[n].domanda, test_to_render[n].variante, formRisposta['domanda_{}'.format(n)], False,'domanda_{}'.format(n), test_to_render[n].domanda.tipo])
+
+   
+        return render(req,'preTestOrario/TestSelect.html', {'random' : randint(0,2) ,'idGruppi': idGruppi,'ultimo': test['nrGruppo'] - 1,'idTest': idTest,'counter': counter,'displayer': displayer,'ctx': ctx,'seed': seed, 'num' : num})

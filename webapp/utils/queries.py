@@ -1,5 +1,7 @@
+import random
 from django.db import connection
 from collections import namedtuple
+from datetime import datetime, timedelta
 
 
 # CONTROLLO
@@ -203,7 +205,7 @@ def get_tests_group_by_type(user_id, test_type):
 ###
 
 
-# STATISTICHE
+###STATISTICHE###
 def get_test_incompleti(user_id):
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -227,7 +229,8 @@ def get_numero_errori(user_id):
                         WHEN 't' THEN 1
                         WHEN 's' THEN 2
                         WHEN 'c' THEN 3
-                        when 'r' then 4
+                        WHEN 'cr' THEN 4
+                        when 'm' THEN 5
                     END;
         """, [user_id])
         return cursor.fetchall()
@@ -248,6 +251,47 @@ def get_errori_per_tipo(user_id, tipologia):
         else:
             return 0
     
+    
+def check_statistica_esistente(tipoDomanda, utente_id):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT COUNT(*) 
+            FROM webapp_statistiche
+            WHERE "tipoDomanda" = %s AND utente_id = %s
+        """, [tipoDomanda, utente_id])
+        result = cursor.fetchone()
+        
+        if result[0] > 0:
+            return True
+        else:
+            return False
+
+
+def bulk_update_statistiche(updates):
+    if updates:
+        with connection.cursor() as cursor:
+            cursor.executemany("""
+                UPDATE webapp_statistiche
+                SET "nrErrori" = "nrErrori" + 1
+                WHERE utente_id = %s AND "tipoDomanda" = %s;
+            """, updates)
+
+def bulk_insert_nuova_statistica(new_stats):
+    if new_stats:
+        with connection.cursor() as cursor:
+            cursor.executemany("""
+                INSERT INTO webapp_statistiche (utente_id, "tipoDomanda", "nrErrori")
+                VALUES (%s, %s, 1);
+            """, new_stats)
+
+def bulk_update_test_numero_errori(test_ids):
+    if test_ids:
+        with connection.cursor() as cursor:
+            cursor.executemany("""
+                UPDATE webapp_test
+                SET "numeroErrori" = "numeroErrori" + 1
+                WHERE "idTest" = %s;
+            """, [(test_id,) for test_id in test_ids])
 ###
 
 
@@ -298,51 +342,215 @@ def get_test_details(idTest):
 def media_delle_medie():
     with connection.cursor() as cursor:
         cursor.execute("""
-WITH Ultimi_100 AS (
-    SELECT *
-    FROM webapp_test
-    WHERE webapp_test."dataOraFine" IS NOT NULL
-    ORDER BY webapp_test."dataOraFine" DESC
-    LIMIT 100
-),
-medie AS (
-    SELECT 
-        auth_user.id,
-        AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS time_difference_in_seconds
-    FROM auth_user
-    LEFT JOIN Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
-    GROUP BY auth_user.id
-    HAVING AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) > 0
-),
-user_avg AS (
-    SELECT 
-        medie.id,
-        medie.time_difference_in_seconds
-    FROM medie
-)
-SELECT 
-    to_char(AVG(user_avg.time_difference_in_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
-FROM user_avg
-WHERE 
-    user_avg.id not in (1,2,3)
+            WITH Ultimi_100 AS (
+                SELECT *
+                FROM webapp_test
+                WHERE webapp_test."dataOraFine" IS NOT NULL
+                ORDER BY webapp_test."dataOraFine" DESC
+                LIMIT 100
+            ),
+            medie AS (
+                SELECT 
+                    auth_user.id,
+                    AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS time_difference_in_seconds
+                FROM auth_user
+                LEFT JOIN Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
+                GROUP BY auth_user.id
+                HAVING AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) > 0
+            ),
+            user_avg AS (
+                SELECT 
+                    medie.id,
+                    medie.time_difference_in_seconds
+                FROM medie
+            )
+            SELECT 
+                to_char(AVG(user_avg.time_difference_in_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
+            FROM user_avg
+            WHERE 
+                user_avg.id not in (1,2,3)
 """)
         result = cursor.fetchall()
         return result
 
 
-def update_test_numero_errori(idTest):
+### PRETESTORARIO ###
+def get_tests_group_details(idGruppi):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "nrTest", "secondiRitardo", "dataOraInizio", "nrGruppo"
+            FROM webapp_testsgroup
+            WHERE "idGruppi" = %s;
+        """, [idGruppi])
+        result = cursor.fetchone()
+        if result:
+            return {
+                'nrTest': result[0],
+                'secondiRitardo': result[1],
+                'dataOraInizio': result[2],
+                'nrGruppo': result[3]
+            }
+        return None
+
+
+def get_test_details(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "secondiRitardo", "dataOraInizio", "nrGruppo"
+            FROM webapp_test
+            WHERE "idTest" = %s;
+        """, [idTest])
+        result = cursor.fetchone()
+        if result:
+            return {
+                'secondiRitardo': result[0],
+                'dataOraInizio': result[1],
+                'nrGruppo': result[2]
+            }
+        return None
+
+
+def update_test_dataOraInizio(idTest, new_time):
     with connection.cursor() as cursor:
         cursor.execute("""
             UPDATE webapp_test
-            SET "numeroErrori" = "numeroErrori" + 1
+            SET "dataOraInizio" = %s
             WHERE "idTest" = %s;
-        """, [idTest])
-        
-        
-def update_statistiche_nr_errori(user_id, tipoDomanda):
+        """, [new_time, idTest])
+
+def update_testsgroup_dataOraInizio(idGruppi, new_time=None):
     with connection.cursor() as cursor:
         cursor.execute("""
-            UPDATE webapp_statistiche
-            SET "nrErrori" = "nrErrori" + 1
-            WHERE utente_id = %s AND "tipoDomanda" = %s;
-        """, [user_id, tipoDomanda])
+            UPDATE webapp_testsgroup
+            SET "dataOraInizio" = %s
+            WHERE "idGruppi" = %s;
+        """, [new_time, idGruppi])
+
+
+### CREAZIONETESTORARIO ###
+
+
+def get_filtered_domande():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "idDomanda", corpo, "dataOraInserimento", tipo, "numeroPagine", attivo 
+            FROM webapp_domande
+            WHERE "numeroPagine" = -1 AND attivo = TRUE AND tipo != 'cr';
+        """)
+        result = cursor.fetchall()
+        return result
+
+def update_tests_group_nrGruppo(idGruppi):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_testsgroup
+            SET "nrGruppo" = "nrGruppo" + 1
+            WHERE "idGruppi" = %s;
+        """, [idGruppi])
+        
+def create_new_test(user_id):
+    now = datetime.now()
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO webapp_test (utente_id, "nrGruppo", "inSequenza", "tipo", "secondiRitardo", "dataOraInserimento", "nrTest", "malusF5", "numeroErrori")
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, [user_id, random.randint(2, 3), False, "manuale", 1, now, 0, False, 0])
+        row = cursor.fetchone()
+        if row:
+            test_data = {
+                'idTest': row[0],
+                'nrGruppo': row[4],
+            }
+            return test_data
+        return None
+
+    
+def get_filtered_domande():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "idDomanda", corpo, "dataOraInserimento", tipo, "numeroPagine", attivo 
+            FROM webapp_domande
+            WHERE "numeroPagine" = -1 AND attivo = TRUE AND tipo != 'cr';
+        """)
+        domande = cursor.fetchall()
+        return domande
+    
+def get_filtered_domande_cr():
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "idDomanda", corpo, "dataOraInserimento", tipo, "numeroPagine", attivo 
+            FROM webapp_domande
+            WHERE "numeroPagine" = -1 AND attivo = TRUE AND tipo = 'cr';
+        """)
+        domande_cr = cursor.fetchall()
+        return domande_cr
+    
+def get_varianti_for_domande(domanda_ids):
+    if not domanda_ids:
+        return []
+    
+    with connection.cursor() as cursor:
+        # Ensure domanda_ids is a tuple
+        cursor.execute("""
+            SELECT "idVariante", domanda_id, corpo, "dataOraInserimento", "rispostaEsatta"
+            FROM webapp_varianti
+            WHERE domanda_id IN %s;
+        """, [tuple(domanda_ids)])
+        varianti = cursor.fetchall()
+        return varianti
+
+    
+def bulk_create_test_domande_varianti(test_id, domanda_id, variante_id, nrPagina):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO webapp_test_domande_varianti (test_id, domanda_id, variante_id, "nrPagina")
+            VALUES (%s, %s, %s, %s);
+        """, [test_id, domanda_id, variante_id, nrPagina])
+###
+
+
+
+### FINISHTESTORARIO ###
+def get_test_end_data(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "dataOraFine", "malusF5"
+            FROM webapp_test
+            WHERE "idTest" = %s;
+        """, [idTest])
+        return cursor.fetchone()
+
+def update_test_end_time(idTest, end_time=None):
+    if end_time is None:
+        end_time = datetime.now()
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_test
+            SET "dataOraFine" = %s
+            WHERE "idTest" = %s;
+        """, [end_time, idTest])
+
+def get_test_times(idTest):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT "dataOraFine", "dataOraInizio"
+            FROM webapp_test
+            WHERE "idTest" = %s;
+        """, [idTest])
+        return cursor.fetchone()
+
+def update_test_end_time_with_malus(idTest, end_time):
+    malus_seconds = 5
+    new_end_time = end_time + timedelta(seconds=malus_seconds)
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_test
+            SET "dataOraFine" = %s
+            WHERE "idTest" = %s;
+        """, [new_end_time, idTest])
+    return new_end_time
+
+
+###
+
