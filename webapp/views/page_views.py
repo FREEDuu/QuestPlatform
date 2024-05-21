@@ -370,7 +370,6 @@ def controllo(req):
     return TemplateResponse(req, template_name, context)
 
 
-
 @login_required(login_url='login')
 def csv_riepilogo_test(req):
     current_date = datetime.now().strftime("%Y%m%d")

@@ -1,98 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistiche Utenti</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <style>
+    .pagination .page-link.active {
+      background-color: darkgreen;
+      border-color: darkgreen;
+      color: white;
+    }
+  </style>
+</head>
+<body>
   <script src="https://unpkg.com/htmx.org@1.9.11"></script>
 
-  <body>
-    {% extends 'base.html' %}
-    {% block title %}
-      Statistiche Utenti
-    {% endblock %}
-    {% load crispy_forms_tags %}
+  {% extends 'base.html' %}
+  {% block title %} Statistiche Utenti {% endblock %}
+  {% load crispy_forms_tags %}
 
-    {% block content %}
+  {% block content %}
 
-      <!-- Bootstrap Icons -->
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <main class="container">
+    <div class="p-4 p-md-5 mb-4 my-3 rounded bg-body rounded shadow-lg text-center">
+      <div class="px-0 text-align-center" id="target">
+        <h2 class="">Test effettuati questa settimana</h2>
 
-
-      <main class="container">
-        <div class="p-4 p-md-5 mb-4 my-3 rounded bg-body rounded shadow-lg text-center">
-
-          <div class="px-0 text-align-center" id="target">
-            <h2 class="">Test effettuati questa settimana (questa settimana)</h2>
-
-            <!-- TABELLA -->
-            <div class="mt-4 d-flex justify-content-center">
-              <div class="col-md-6">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th scope="col">Utente</th>
-                      <th scope="col">Numero Test</th>
-                      <th scope="col">Media</th>
-
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for ut, num, mean in utenti_inf %}
-                    <tr>
-                      <td>{{ ut }}</td>
-                      <td>{{ num }}</td>
-                      <td>{{ mean }}</td>
-
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <h2 class="m-2">Utenti con più Stelle </h2>
-
-            <!-- TABELLA -->
-            <div class="mt-4 d-flex justify-content-center">
-              <div class="col-md-6">
-                <table class="table table-striped">
-                  <thead>
-                    <tr>
-                      <th scope="col">Utente</th>
-                      <th scope="col">Numero Test</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for ut, num in utenti_stelle %}
-                    <tr>
-                      <td>{{ ut }}</td>
-                      <td>{{ num }}</td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            
-
-            <h2 class="m-2 mt-4">Riepilogo Test </h2>
-
-            <div class="mt-4 d-flex justify-content-center">
-              <div class="col-md-10" hx-get="{% url 'controllo' %}" hx-trigger="click[closest .pagination a]" hx-target="this">
-                {% include "utenti/tabellaRiepilogoTest.html" %}
-              </div>
-          </div>
-          
-          
-          <!-- SCARICA CSV -->
-            <a href="{% url 'csv_riepilogo_test' %}" class="btn btn-md btn-success">
-              <i class="bi bi-file-earmark-text"></i>
-              Scarica CSV
-            </a>
-          
-
+        <!-- TABELLA -->
+        <div class="mt-4 d-flex justify-content-center">
+          <div class="col-md-6">
+            <table id="testTable" class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Utente</th>
+                  <th scope="col">Numero Test</th>
+                  <th scope="col">Media</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ut, num, mean in utenti_inf %}
+                <tr>
+                  <td>{{ ut }}</td>
+                  <td>{{ num }}</td>
+                  <td>{{ mean }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <ul id="pagination" class="pagination justify-content-center mt-3"></ul>
           </div>
         </div>
-      </main>
-      
-    {% endblock %}
 
-  </body>
+        <h2 class="m-2">Utenti con più Stelle </h2>
+
+        <!-- TABELLA -->
+        <div class="mt-4 d-flex justify-content-center">
+          <div class="col-md-6">
+            <table id="starsTable" class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Utente</th>
+                  <th scope="col">Numero Test</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ut, num in utenti_stelle %}
+                <tr>
+                  <td>{{ ut }}</td>
+                  <td>{{ num }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <ul id="pagination-stars" class="pagination justify-content-center mt-3"></ul>
+          </div>
+        </div>
+        
+        <h2 class="m-2 mt-4">Riepilogo Test </h2>
+
+        <div class="mt-4 d-flex justify-content-center">
+          <div class="col-md-10" hx-get="{% url 'controllo' %}" hx-trigger="click[closest .pagination a]" hx-target="this">
+            {% include "utenti/tabellaRiepilogoTest.html" %}
+          </div>
+        </div>
+        
+        <!-- SCARICA CSV -->
+        <a href="{% url 'csv_riepilogo_test' %}" class="btn btn-md btn-success">
+          <i class="bi bi-file-earmark-text"></i>
+          Scarica CSV
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    $(document).ready(function() {
+      function paginateTable(tableId, paginationId, rowsPerPage) {
+        var rows = $(tableId + ' tbody tr');
+        var rowsCount = rows.length;
+        var pageCount = Math.ceil(rowsCount / rowsPerPage);
+        var pagination = $(paginationId);
+
+        pagination.empty();
+        for (var i = 0; i < pageCount; i++) {
+          pagination.append('<li class="page-item"><a href="#" class="page-link">' + (i + 1) + '</a></li>');
+        }
+
+        $(paginationId + ' li:first-child a').addClass('active');
+        displayRows(1);
+
+        $(paginationId + ' a').click(function(e) {
+          e.preventDefault();
+          $(paginationId + ' a').removeClass('active');
+          $(this).addClass('active');
+          var page = $(this).text();
+          displayRows(page);
+        });
+
+        function displayRows(index) {
+          var start = (index - 1) * rowsPerPage;
+          var end = start + rowsPerPage;
+          rows.hide();
+          rows.slice(start, end).show();
+        }
+      }
+
+      paginateTable('#testTable', '#pagination', 10);
+      paginateTable('#starsTable', '#pagination-stars', 10);
+    });
+  </script>
+
+  {% endblock %}
+</body>
 </html>

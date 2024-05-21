@@ -24,8 +24,7 @@ class Domande(models.Model):
             models.Index(fields=['corpo']),
             models.Index(fields=['dataOraInserimento']),
             models.Index(fields=['tipo']),
-            models.Index(fields=['attivo']),
-            models.Index(fields=['numeroPagine']),
+            models.Index(fields=['attivo'])
         ]
 
 
@@ -78,7 +77,6 @@ class Test(models.Model):
         indexes = [
             models.Index(fields=['utente']),
             models.Index(fields=['nrGruppo']),
-            models.Index(fields=['dataOraInserimento']),
             models.Index(fields=['dataOraInizio']),
             models.Index(fields=['dataOraFine']),
             models.Index(fields=['tipo']),
@@ -107,7 +105,6 @@ class TestsGroup(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['utente']),
-            models.Index(fields=['nrGruppo']),
             models.Index(fields=['dataOraInserimento']),
             models.Index(fields=['dataOraInizio']),
             models.Index(fields=['tipo']),
@@ -141,9 +138,7 @@ class Statistiche(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['utente']),
-            models.Index(fields=['tipoDomanda']),
-            models.Index(fields=['nrErrori']),
+            models.Index(fields=['utente'])
         ]
 
 
@@ -166,7 +161,5 @@ class Sfide(models.Model):
             models.Index(fields=['utente']),
             models.Index(fields=['utenteSfidato']),
             models.Index(fields=['nrGruppo']),
-            models.Index(fields=['dataOraInserimento']),
-            models.Index(fields=['dataOraInizio']),
-            models.Index(fields=['tipo']),
+            models.Index(fields=['dataOraInizio'])
         ]
