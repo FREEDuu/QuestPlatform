@@ -26,7 +26,8 @@
             
           </svg>
           <div class="text-center">
-            <span>Tempo di Riferimento (generale) {{tempo_ref}}</span>
+            <span class="text-sm" style="margin-right: 60px;">Tempo di Riferimento: <span style="color: green;">{{tempo_ref}}</span> </span>
+            <span class="text-sm">La mia media: <span style="color: green;">{{media}}</span> </span>
           </div>
 
         </h5>
@@ -222,7 +223,7 @@
 
                 <!-- GRAFICI -->
                 <div class="bg-body rounded shadow-lg my-4">
-                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test ( la tua media {{media}})</h6>
+                  <h6 class="border-bottom pb-2 mb-0 text-center p-3">Ultimi 100 test</h6>
                   <p></p>
                   <div>
                     <canvas id="lineChart"></canvas>

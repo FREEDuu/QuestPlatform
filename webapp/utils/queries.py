@@ -81,30 +81,31 @@ def get_stelle_statistics():
 def get_users_tests_week_and_mean():
     with connection.cursor() as cursor:
         cursor.execute("""
-                    SELECT 
-            auth_user.username,
-            COUNT(*) as test_count,
-            case 
-            WHEN
-                to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
-            IS NULL then '0'
-            else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
-            
-            
-            end AS time_difference_in_seconds
-
-            
-            FROM
-            auth_user
-        LEFT JOIN 
-            webapp_test ON webapp_test.utente_id = auth_user.id
-            and
-            webapp_test."dataOraFine" IS NOT NULL
-            AND webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
-            
-        group by 
-            auth_user.username
-        order by test_count desc
+            select
+                auth_user.username,
+                COUNT(*) as test_count,
+                case
+                    when
+                    to_char(AVG((cast(extract(epoch from ("dataOraFine" - "dataOraInizio")) as double precision) )),
+                    'FM999999999.00') 
+                        is null then '0'
+                    else to_char(AVG((cast(extract(epoch from ("dataOraFine" - "dataOraInizio")) as double precision) )),
+                    'FM999999999.00')
+                end as time_difference_in_seconds
+            from
+                auth_user
+            left join webapp_test 
+                on (
+                webapp_test.utente_id = auth_user.id
+                and webapp_test."dataOraFine" is not null
+                and webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+                )
+            where
+                auth_user.id not in (1, 2, 3)
+            group by
+                auth_user.username
+            order by
+                test_count desc, time_difference_in_seconds asc
         """)
         result_set = cursor.fetchall()
     return result_set 
@@ -113,32 +114,37 @@ def get_users_tests_week_and_mean():
 def get_user_mean(user_id):
         with connection.cursor() as cursor:
             cursor.execute("""
-with Ultimi_100 as ( Select * 
-	from webapp_test 
-	where webapp_test.utente_id = %s and webapp_test."dataOraFine" is not null
-	order by webapp_test."dataOraFine" DESC
-	limit 100
-)
-    SELECT 
-	case 
-	WHEN
-	    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
-	IS NULL then '0'
-	else     to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )), 'FM999999999.00') 
-	
-	
-	end AS time_difference_in_seconds
-
-	
-	FROM
-    auth_user
-LEFT JOIN 
-    Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
-	
-    
-    where auth_user.id = %s
-group by 
-    auth_user.username""",[user_id, user_id])
+            with Ultimi_100 as (
+            Select
+                *
+            from
+                webapp_test
+            where
+                webapp_test.utente_id = %s
+                and webapp_test."dataOraFine" is not null
+            order by
+                webapp_test."dataOraFine" DESC
+            limit 100
+            )
+                SELECT 
+                case
+                    WHEN
+                    to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )),
+                    'FM999999999.00') 
+                IS NULL then '0'
+                    else to_char(AVG((cast(extract(epoch FROM ("dataOraFine" - "dataOraInizio")) as double precision) )),
+                    'FM999999999.00')
+                end AS time_difference_in_seconds
+            FROM
+                auth_user
+            LEFT JOIN 
+                Ultimi_100 ON
+                Ultimi_100.utente_id = auth_user.id
+            WHERE
+                auth_user.id = %s
+            group by
+                auth_user.username
+    """,[user_id, user_id])
             result_set = cursor.fetchall()
         return result_set[0][0] 
         
@@ -342,33 +348,42 @@ def get_test_details(idTest):
 def media_delle_medie():
     with connection.cursor() as cursor:
         cursor.execute("""
-            WITH Ultimi_100 AS (
-                SELECT *
-                FROM webapp_test
-                WHERE webapp_test."dataOraFine" IS NOT NULL
-                ORDER BY webapp_test."dataOraFine" DESC
-                LIMIT 100
-            ),
-            medie AS (
+            WITH user_last_100_tests AS (
                 SELECT 
-                    auth_user.id,
-                    AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS time_difference_in_seconds
-                FROM auth_user
-                LEFT JOIN Ultimi_100 ON Ultimi_100.utente_id = auth_user.id
-                GROUP BY auth_user.id
-                HAVING AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) > 0
+                    webapp_test.utente_id,
+                    webapp_test."dataOraFine",
+                    webapp_test."dataOraInizio",
+                    ROW_NUMBER() OVER (PARTITION BY webapp_test.utente_id ORDER BY webapp_test."dataOraFine" DESC) AS row_num
+                FROM 
+                    webapp_test
+                WHERE 
+                    webapp_test."dataOraFine" IS NOT NULL
             ),
-            user_avg AS (
+            last_100_tests_per_user AS (
                 SELECT 
-                    medie.id,
-                    medie.time_difference_in_seconds
-                FROM medie
+                    utente_id,
+                    "dataOraFine",
+                    "dataOraInizio"
+                FROM 
+                    user_last_100_tests
+                WHERE 
+                    row_num <= 100
+            ),
+            average_time_per_user AS (
+                SELECT 
+                    utente_id,
+                    AVG(EXTRACT(EPOCH FROM ("dataOraFine" - "dataOraInizio"))) AS avg_time_seconds
+                FROM 
+                    last_100_tests_per_user
+                GROUP BY 
+                    utente_id
             )
             SELECT 
-                to_char(AVG(user_avg.time_difference_in_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
-            FROM user_avg
+                to_char(AVG(avg_time_seconds), 'FM999999999.00') AS overall_average_time_in_seconds
+            FROM 
+                average_time_per_user
             WHERE 
-                user_avg.id not in (1,2,3)
+                utente_id NOT IN (1, 2, 3);
 """)
         result = cursor.fetchall()
         return result
