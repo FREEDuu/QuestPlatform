@@ -476,5 +476,8 @@ def RiepilogoTest(req, idGruppi, idTest, counter, seed):
 
 
 
-def CheckTest():
-    print('ciao')
+def esciDalTest(req):
+    queries.insert_nuova_statistica(req.user.id, 'esci')
+    queries.update_incrementa_statistica(req.user.id, 'esci')
+    
+    return redirect('home')

@@ -155,11 +155,11 @@ def ensure_statistiche_entries(user_id):
         types = ['stelle', 't', 's', 'r']
         for type in types:
             cursor.execute("""
-                INSERT INTO webapp_statistiche (utente_id, tipoDomanda, nrErrori)
+                INSERT INTO webapp_statistiche (utente_id, "tipoDomanda", "nrErrori")
                 SELECT %s, %s, 0
                 WHERE NOT EXISTS (
                     SELECT 1 FROM webapp_statistiche
-                    WHERE utente_id = %s AND tipoDomanda = %s
+                    WHERE utente_id = %s AND "tipoDomanda" = %s
                 );
             """, [user_id, type, user_id, type])
 
@@ -298,6 +298,25 @@ def bulk_update_test_numero_errori(test_ids):
                 SET "numeroErrori" = "numeroErrori" + 1
                 WHERE "idTest" = %s;
             """, [(test_id,) for test_id in test_ids])
+            
+def insert_nuova_statistica(user_id, type):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO webapp_statistiche (utente_id, "tipoDomanda", "nrErrori")
+            SELECT %s, %s, 0
+            WHERE NOT EXISTS (
+                SELECT 1 FROM webapp_statistiche
+                WHERE utente_id = %s AND "tipoDomanda" = %s
+            );
+        """, [user_id, type, user_id, type])
+        
+def update_incrementa_statistica(user_id, type):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            UPDATE webapp_statistiche
+            SET "nrErrori" = "nrErrori" + 1
+            WHERE utente_id = %s AND "tipoDomanda" = %s;
+        """, [user_id, type])
 ###
 
 
