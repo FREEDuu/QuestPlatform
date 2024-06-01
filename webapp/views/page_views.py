@@ -145,6 +145,9 @@ def home(req):
     chart_tests = Test.objects.filter(utente=req.user.id, dataOraFine__isnull=False).order_by('dataOraInizio')
     chart_tests_json = serialize('json', chart_tests)
     
+    # Conteggio test fatti questa settimana
+    weekly_test_count = queries.get_weekly_test_count(req.user.id)[0][0]
+    
     gruppi_manuale = []
     gruppi_orario = []
     if len(display_test_manuale) != 0:
@@ -169,7 +172,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle})
+    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle, 'weekly_test_count': weekly_test_count})
 
 
 
@@ -471,7 +474,8 @@ def RiepilogoTest(req, idGruppi, idTest, counter, seed):
         'ctx': context,
         'counter': counter,
         'random': randomico,
-        'seed': seed 
+        'seed': seed,
+        'idTestSfida': seed
     })
 
 

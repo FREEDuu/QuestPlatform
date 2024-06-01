@@ -65,7 +65,6 @@ def TestProgrammatiStart(req, idTest, counter):
     risposte_esatte = [row.rispostaEsatta for row in test_to_render] 
             
     if req.method == 'POST':
-        utils.print_sessione(req)
         formRisposta = FormDomanda(tipi_domande_to_render, risposte_esatte, req.POST)
         ctx, corrected_errors = utils.Validazione(req, formRisposta, tipi_domande_to_render, idTest, test_to_render, risposte_esatte, counter)
 
@@ -83,7 +82,6 @@ def TestProgrammatiStart(req, idTest, counter):
 
         form_data = req.session.get(page_key, None)
 
-        utils.print_sessione(req)
         if not form_data:
             for n in range(len(test_to_render)):
                 formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)

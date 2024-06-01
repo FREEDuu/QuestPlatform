@@ -35,13 +35,13 @@
   
         {% if ultimo == displayer %}
         {% csrf_token %}
-        {% for domanda, variante, form, corretto, dom in ctx %}
+        {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'testStartOrarioSfida' idTest displayer %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{displayer}} {{seed}}  novalidate>
+            <form method="post" action = "{% url 'testStartOrarioSfida' idTest displayer idTestSfida %}" {{idTest}} {{displayer}} {{idTestSfida}}  novalidate>
                 <div class="{% if corretto %} border border-danger {% endif%}">
 
-                <h6 class="p-2  ">{{domanda}} {{variante}} {{dom}}  </h6>
+                <h6 class="p-2  ">{{domanda}} {{variante}}  </h6>
 
                 {{form}}
             </div>
@@ -58,7 +58,7 @@
             {% for domanda, variante, form, corretto, dom, tipo in ctx %}
             {% csrf_token %}
 
-            <form method="post" action = "{% url 'testStartOrarioSfida' idTest displayer %}" {{idGruppi}} {{idTest}} {{counter}} {{displayer}} {{seed}} >
+            <form method="post" action = "{% url 'testStartOrarioSfida' idTest displayer idTestSfida %}" {{idTest}} {{displayer}} {{idTestSfida}} >
                 <div>
 
               
