@@ -270,12 +270,16 @@ def preTestSfida(req, idGruppi, idTestSfida):
     if(datetime.now() < tests[0]['dataOraInizio']):
         return render(req, 'preTestOrario/preTestOrario.html', {'time_display' : tests[0]['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
     else:
-        singolo_test = queries.create_new_test(req.user.id)
 
-        queries.update_test_dataOraInizio(singolo_test['idTest'], datetime.now())
 
         domande = queries.get_filtered_domande()
+        random.seed(idTestSfida)
         random.shuffle(domande)
+        
+        nrGruppo = random.randint(2, 3)
+
+        singolo_test = queries.create_new_test_sfida(req.user.id, nrGruppo)
+        queries.update_test_dataOraInizio(singolo_test['idTest'], datetime.now())
 
         domanda_ids = [d[0] for d in domande]
         varianti = queries.get_varianti_for_domande(domanda_ids)

@@ -517,6 +517,22 @@ def create_new_test(user_id):
             return test_data
         return None
 
+def create_new_test_sfida(user_id, nrGruppo):
+    now = datetime.now()
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            INSERT INTO webapp_test (utente_id, "nrGruppo", "inSequenza", "tipo", "secondiRitardo", "dataOraInserimento", "nrTest", "malusF5", "numeroErrori")
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, [user_id, nrGruppo, False, "sfida", 1, now, 0, False, 0])
+        row = cursor.fetchone()
+        if row:
+            test_data = {
+                'idTest': row[0],
+                'nrGruppo': row[4],
+            }
+            return test_data
+        return None
     
 def get_filtered_domande():
     with connection.cursor() as cursor:

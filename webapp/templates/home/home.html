@@ -178,7 +178,7 @@
                                 <strong class="m-1">{{data}}  </strong>|  {{utente_sfidante}} 
                               </div>
                             
-                                <a class="" href="{% url 'accettaSfida' idGruppi id%}" {{idGruppi}} {{idTestSfida}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
+                                <a class="" href="{% url 'accettaSfida' idGruppi idTestSfida%}" {{idGruppi}} {{idTestSfida}} data-bs-toggle="tooltip" data-bs-placement="top" title="Accetta sfida">
                                   <button class="btn btn-success float-end m-2">
                                 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
@@ -187,7 +187,7 @@
                                       </svg>
                                   </button>
                                 </a>
-                                <a class="" href="{% url 'rifiutaSfida' idGruppi id%}" {{idGruppi}} {{idTestSfida}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
+                                <a class="" href="{% url 'rifiutaSfida' idGruppi idTestSfida%}" {{idGruppi}} {{idTestSfida}} data-bs-toggle="tooltip" data-bs-placement="top" title="Rifiuta sfida">
                                   <button class="btn btn-danger float-end m-2">
                                 
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
