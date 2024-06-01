@@ -276,7 +276,7 @@ def creaTestCollettivoDisplay(req, idTest, n):
             varianti = Varianti.objects.create(domanda = domanda_test, corpo = varianti, rispostaEsatta = risposta)
             test = Test.objects.filter(idTest = idTest)[0]
             print(test)
-            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = varianti)    
+            Test_Domande_Varianti.objects.create(test = test, domanda = domanda_test, variante = varianti, nrPagina = n)    
 
             return HttpResponse(domanda+' '+risposta+'  '+ str(varianti))
 

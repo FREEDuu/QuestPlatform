@@ -71,10 +71,19 @@
         <h6>Cliccare su Avanti per Inviare</h6>
         <p class="mt-4"></p>
         <div class="d-flex justify-content-between">
-            <form method="POST" action="{% url 'FinishTestOrario' idGruppi idTest counter seed %}">
-                {% csrf_token %}
-                <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
-            </form>            
+
+            {% if idGruppi == 0 %}
+                <form method="POST" action="{% url 'TestProgrammatiFinish' idTest %}">
+                    {% csrf_token %}
+                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
+                </form>
+            {% else %}
+                <form method="POST" action="{% url 'FinishTestOrario' idGruppi idTest counter seed %}">
+                    {% csrf_token %}
+                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
+                </form>
+            {% endif %}
+            
             <button class="btn btn-primary" type="button" style="background-color: #022d5e;" onclick="exitTest()">ESCI</button>
             <button class="btn btn-primary" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
         </div>  

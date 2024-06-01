@@ -602,7 +602,7 @@ def get_nr_gruppo(idTest):
         row = cursor.fetchone()
         return row[0] if row else None
 
-def get_test_domande_varianti(idTest):
+def get_test_domande_varianti(idTest, nrPagina):
     with connection.cursor() as cursor:
         cursor.execute("""
             select
@@ -620,10 +620,10 @@ def get_test_domande_varianti(idTest):
             join webapp_varianti v on
                 tdv.variante_id = v."idVariante"
             where
-                tdv.test_id = %s
+                tdv.test_id = %s and tdv."nrPagina" = %s
             order by
                 tdv.id;
-        """, [idTest])
+        """, [idTest, nrPagina])
         columns = [col[0] for col in cursor.description]
         TestToRender = namedtuple('TestToRender', columns)
         

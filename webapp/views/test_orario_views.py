@@ -221,9 +221,9 @@ def FinishTestOrario(req, idGruppi, idTest, counter, seed):
     tempo_test_finale = test_times[0]
     tempo_test_iniziale = test_times[1]
     tempo_end = (tempo_test_finale - tempo_test_iniziale).total_seconds()
-    if end_data[1]:  # if malusF5 is True
+    if end_data[1]: 
         malus = True
-        tempo_end += 5  # Add 5 seconds
+        tempo_end += 5 
         tempo_test_finale = queries.update_test_end_time_with_malus(idTest, tempo_test_finale)
 
     return render(req, 'preTestOrario/FinishTest.html', {

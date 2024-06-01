@@ -117,12 +117,12 @@ class FormDomandaCollettiva(forms.Form):
     )
     Varianti = forms.CharField(
         widget=forms.Textarea(attrs={
-            "required": "required",
             "class": "form-control",
             "autocomplete": "off",
             'placeholder': 'Inserisci varianti separate da punto e virgola...',
             'rows': 2
-        })
+        }),
+        required=False
     )
 class FormDomandaCollettivaCrea(forms.Form):
     

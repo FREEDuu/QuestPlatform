@@ -58,76 +58,40 @@ def TestProgrammatiStart(req, idTest, counter):
     ctx = []
     page_key = f'form_data_page_{counter}'
 
-    ultimo = False
-    if queries.get_nr_gruppo(idTest) - 1 <= counter:
-        ultimo = True
-
-    test_to_render = queries.get_test_domande_varianti(idTest)
+    test_to_render = queries.get_test_domande_varianti(idTest, counter)
     test = queries.get_test_data(idTest)
     
-    dom_to_r = []
-    var_to_r = []
-    domande_to_render = []
-    risposte_esatte = []
-    for d in test_to_render:
-        if d.numeroPagine == counter:
-            domande_to_render.append(d.tipo)
-            risposte_esatte.append(d.rispostaEsatta) 
-            dom_to_r.append(d.corpoDomanda)
-            var_to_r.append(d)   
+    tipi_domande_to_render = [row.tipo for row in test_to_render] 
+    risposte_esatte = [row.rispostaEsatta for row in test_to_render] 
             
     if req.method == 'POST':
-        formRisposta = FormDomanda(domande_to_render, risposte_esatte, req.POST)
-        ctx, corrected_errors = utils.Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte, counter)
+        utils.print_sessione(req)
+        formRisposta = FormDomanda(tipi_domande_to_render, risposte_esatte, req.POST)
+        ctx, corrected_errors = utils.Validazione(req, formRisposta, tipi_domande_to_render, idTest, test_to_render, risposte_esatte, counter)
 
-        if corrected_errors:
-            return render(req, 'preTest/TestSelectProgrammati.html', {
-                'ultimo': ultimo,
-                'idTest': idTest,
-                'counter': counter,
-                'ctx': ctx
-            })
-        else:
-            if test['nrGruppo'] - 1 == counter:
-                return redirect('TestProgrammatiFinish', idTest=idTest)
-                        
-            test_to_render = queries.get_test_domande_varianti(idTest)
-            test = queries.get_test_data(idTest)
-            
-            counter += 1
-            domande_to_render = []
-            dom_to_r = []
-            var_to_r = []
-            risposte_esatte = []
-            for d in test_to_render:
-                if d.numeroPagine == counter:
-                    domande_to_render.append(d.tipo)
-                    dom_to_r.append(d.corpoDomanda)
-                    risposte_esatte.append(d.rispostaEsatta)  
-                    var_to_r.append(d)
-            ctx = []
-            formRisposta = FormDomanda(domande_to_render, risposte_esatte)
-            
-            for n in range(len(domande_to_render)):
-                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(var_to_r[n].corpoVariante, var_to_r[n].rispostaEsatta)
-                ctx.append([dom_to_r[n], var_to_r[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', domande_to_render[n]])
-
-            return render(req, 'preTest/TestSelectProgrammati.html', {
-                'ultimo': ultimo,
-                'idTest': idTest,
-                'counter': counter,
-                'ctx': ctx
-            })
+        if test['nrGruppo'] - 1 == counter:
+            return redirect('RiepilogoTest', idGruppi=0, idTest=idTest, counter=counter, seed=idTest)
+                 
+        counter += 1   
+        return redirect(reverse('TestProgrammatiStart', kwargs={
+            'idTest': idTest,
+            'counter': counter
+        }))
+        
     else:
-        formRisposta = FormDomanda(domande_to_render, risposte_esatte)
+        formRisposta = FormDomanda(tipi_domande_to_render, risposte_esatte)
 
         form_data = req.session.get(page_key, None)
 
+        utils.print_sessione(req)
         if not form_data:
-            for n in range(len(domande_to_render)):
-                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(var_to_r[n].corpoVariante, var_to_r[n].rispostaEsatta)
-                ctx.append([dom_to_r[n], var_to_r[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', domande_to_render[n]])
+            for n in range(len(test_to_render)):
+                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
+                ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', tipi_domande_to_render[n]])
         else:
+            for n in range(len(test_to_render)):
+                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
+
             # Pre-populate the form with data from the session for the current page
             ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, counter, req.session.get('Errori'))
 
@@ -135,7 +99,6 @@ def TestProgrammatiStart(req, idTest, counter):
                 del req.session['Errori']
 
         return render(req, 'preTest/TestSelectProgrammati.html', {
-            'ultimo': ultimo,
             'idTest': idTest,
             'counter': counter,
             'ctx': ctx
@@ -156,7 +119,6 @@ def TestProgrammatiFinish(req, idTest):
        
         
     test_finito = Test.objects.filter(utente = req.user, tipo = 'collettivo_finito_' + str(idTest))
-    print(test_finito)
 
     if len(test_finito) == 0:
         
@@ -166,14 +128,11 @@ def TestProgrammatiFinish(req, idTest):
     else :
         test_finito = Test.objects.filter(utente = req.user, tipo = 'collettivo_finito_' + str(idTest))[0]
 
-    tempo_test_finale = test_finito.dataOraFine.second
-    tempo_test_iniziale = test_finito.dataOraInizio.second
+    tempo_test_finale = test_finito.dataOraFine
+    tempo_test_iniziale = test_finito.dataOraInizio
 
-    if tempo_test_finale < tempo_test_iniziale:
-        tempo_finish = tempo_test_finale +60  - tempo_test_iniziale
-    else:
-        tempo_finish = tempo_test_finale - tempo_test_iniziale
-    
+    tempo_finish = (tempo_test_finale - tempo_test_iniziale).total_seconds()
+
     utils.pulisci_sessione(req)
 
     return render(req, 'preTest/FinishTestProgrammati.html', {'tempo' : tempo_finish})

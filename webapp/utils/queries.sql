@@ -105,9 +105,12 @@ order by nrTest desc
 select 
 	STRING_AGG(wd."idDomanda"::TEXT, ', ') AS "idDomande",
 	wd.corpo,
+	STRING_AGG(wd.tipo::text, ', ') as tipi,
 	COUNT(*)
 from webapp_domande wd 
+where wd.attivo = true
 group by  wd.corpo having COUNT(*) > 3
+
 
  -- Query per ritornare le medie di tutti negli ultimi test della settimana
  SELECT 
