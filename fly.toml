@@ -27,3 +27,8 @@ console_command = "/code/manage.py shell"
 [[statics]]
   guest_path = "/code/static"
   url_prefix = "/static/"
+
+[services.concurrency]
+  type = "requests"
+  hard_limit = 8
+  soft_limit = 7

@@ -36,21 +36,26 @@ class MyUser(HttpUser):
         # check if login was successful
         if response.status_code != 200:
             print("Login failed!")
-            self.environment.runner.quit()
+            #self.environment.runner.quit()
             
 
-    @task
+    @task(weight=2)
     def test_home(self):
         response = self.client.get("/", headers={ 'X-CSRFToken': self.csrf_token })
         response.raise_for_status()
 
-    @task(weight=2)
-    def test_controllo(self):
-        data = {"page": "1"}
-        response = self.client.post("/controllo", data=data, headers={ 'X-CSRFToken': self.csrf_token })
+
+    @task(weight=1)
+    def test_creazione_test(self):
+        response = self.client.get("/creazione-test", headers={ 'X-CSRFToken': self.csrf_token })
         response.raise_for_status()
 
-    @task(weight=3)
+    @task(weight=1)
+    def test_sfide(self):
+        response = self.client.get("/Sfida", headers={ 'X-CSRFToken': self.csrf_token })
+        response.raise_for_status()
+        
+    @task(weight=1)
     def test_statistiche(self):
         response = self.client.get("/statistiche", headers={ 'X-CSRFToken': self.csrf_token })
         response.raise_for_status()
