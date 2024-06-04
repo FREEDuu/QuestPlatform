@@ -137,3 +137,35 @@ LEFT JOIN
 group by 
     auth_user.username
 order by test_count desc
+
+
+
+
+-- Query per vedere i risultati degli utenti nell'ultimo test collettivo fatto
+WITH LatestTests AS (
+    SELECT
+        t."idTest",
+        t."utente_id",
+        t."tipo",
+        t."dataOraInizio",
+        t."dataOraFine",
+        ROW_NUMBER() OVER (PARTITION BY t."utente_id" ORDER BY t."dataOraFine" DESC) AS row_num
+    FROM
+        webapp_test t
+    WHERE
+        t."tipo" LIKE 'collettivo_finito%'
+)
+SELECT
+    u.id,
+    u.username,
+    lt."idTest",
+    lt."dataOraInizio",
+    lt."dataOraFine",
+    EXTRACT(EPOCH FROM (lt."dataOraFine" - lt."dataOraInizio")) AS duration_seconds
+FROM
+    LatestTests lt
+JOIN
+    auth_user u ON u.id = lt."utente_id"
+WHERE
+    lt.row_num = 1;
+    AND date_trunc('day', lt."dataOraInizio") = date '2024-06-04';

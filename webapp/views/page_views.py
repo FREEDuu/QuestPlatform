@@ -360,6 +360,7 @@ def controllo(req):
     # Utenti con meno di 100 test in questa settimana
     utenti_inf = queries.get_users_tests_week_and_mean()
 
+    # Dati stelle utenti
     utenti_stelle = queries.get_stelle_statistics()
 
     # Render response based on HTMX request or not
@@ -485,3 +486,8 @@ def esciDalTest(req):
     queries.update_incrementa_statistica(req.user.id, 'esci')
     
     return redirect('home')
+
+
+
+
+

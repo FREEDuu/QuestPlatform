@@ -5,7 +5,7 @@ from django.db.models import Max
 
 class Domande(models.Model):
     idDomanda = models.AutoField(primary_key=True)
-    corpo = models.CharField(max_length=100)
+    corpo = models.CharField(max_length=400)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
     tipo = models.CharField(max_length=100, default='t')
     numeroPagine = models.IntegerField(default=-1)
@@ -31,9 +31,9 @@ class Domande(models.Model):
 class Varianti(models.Model):
     idVariante = models.AutoField(primary_key=True)
     domanda = models.ForeignKey(Domande, on_delete=models.CASCADE)
-    corpo = models.CharField(max_length=100)
+    corpo = models.CharField(max_length=400)
     dataOraInserimento = models.DateTimeField(auto_now_add=True)
-    rispostaEsatta = models.CharField(max_length=100, default='')
+    rispostaEsatta = models.CharField(max_length=200, default='')
 
     def __str__(self):
         return self.corpo
