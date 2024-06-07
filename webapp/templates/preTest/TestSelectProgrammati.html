@@ -73,10 +73,11 @@
         <p></p>
             {% endfor %}
 
-            <button type="submit" id="prosegui" class="btn text-light" style="background-color: #022d5e;">PROSEGUI</button>
-        
-            <button class="btn btn-primary float-end" type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
-
+            <div class="d-flex justify-content-between">
+                <button type="submit" id="prosegui" class="btn text-light" style="background-color: #022d5e;">PROSEGUI</button>
+                <button class="btn btn-primary " type="button" style="background-color: #022d5e;" onclick="location.reload()">RICARICA</button>
+                <button class="btn btn-primary " type="button" style="background-color: #022d5e;" onclick="history.back()">INDIETRO</button>
+            </div>
         </form>     
 
 

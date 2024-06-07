@@ -42,8 +42,8 @@ def get_user_test_info():
             SELECT 
                 auth_user.username, 
                 webapp_test."idTest", 
-                webapp_test."dataOraFine", 
                 webapp_test."dataOraInizio", 
+                webapp_test."dataOraFine", 
                 webapp_test."nrGruppo", 
                 conteggioDomande."nrDomande",
                 webapp_test."numeroErrori", 

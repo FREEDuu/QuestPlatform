@@ -68,24 +68,24 @@
         </div>
         {% endif %}
         <p></p>
-        <h6>Cliccare su Avanti per Inviare</h6>
+        <h6>Cliccare su Invia per continuare</h6>
         <p class="mt-4"></p>
         <div class="d-flex justify-content-between">
 
             {% if idGruppi == 0 %} <!--COLLETTIVI-->
                 <form method="POST" action="{% url 'TestProgrammatiFinish' idTest %}">
                     {% csrf_token %}
-                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
+                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>INVIA</button>
                 </form>
             {% elif idGruppi == 1 %} <!--SFIDE-->
                 <form method="POST" action="{% url 'FinishTestOrarioSfida' idTest idTestSfida %}">
                     {% csrf_token %}
-                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
+                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>INVIA</button>
                 </form>
             {% else %}
                 <form method="POST" action="{% url 'FinishTestOrario' idGruppi idTest counter seed %}">
                     {% csrf_token %}
-                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>AVANTI</button>
+                    <button id="prosegui" class="btn text-light float-start" type="submit" style="background-color: #069901;" disabled>INVIA</button>
                 </form>
             {% endif %}
             
