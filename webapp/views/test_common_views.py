@@ -8,14 +8,15 @@ from django.db.models import F
 from ..utils.utils import genRandomStaticAnswers
 from ..utils import queries, utils
 from django.urls import reverse
+from random import shuffle, seed
 
 
 from ..forms import *
-def genRandomFromSeedCollettivi(varianti, risposta):
+def genRandomFromSeedCollettivi(idTest, varianti, risposta):
 
     arr = varianti.split(';')
     arr.append( str(risposta))
-    ret = list()
+    ret = []
 
     for el in range(len(arr)):
 
@@ -23,6 +24,9 @@ def genRandomFromSeedCollettivi(varianti, risposta):
             ret.append((str(risposta), str(risposta)))
         else:
             ret.append((str(el), str(arr[el])))
+            
+    seed(idTest)
+    shuffle(ret)
 
     return ret    
 
@@ -84,11 +88,11 @@ def TestProgrammatiStart(req, idTest, counter):
 
         if not form_data:
             for n in range(len(test_to_render)):
-                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
+                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(idTest, test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
                 ctx.append([test_to_render[n].corpoDomanda, test_to_render[n].corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', tipi_domande_to_render[n]])
         else:
             for n in range(len(test_to_render)):
-                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
+                formRisposta.fields[f'domanda_{n}'].choices = genRandomFromSeedCollettivi(idTest, test_to_render[n].corpoVariante, test_to_render[n].rispostaEsatta)
 
             # Pre-populate the form with data from the session for the current page
             ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, counter, req.session.get('Errori'))

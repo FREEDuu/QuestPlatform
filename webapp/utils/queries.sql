@@ -142,30 +142,34 @@ order by test_count desc
 
 
 -- Query per vedere i risultati degli utenti nell'ultimo test collettivo fatto
-WITH LatestTests AS (
+    WITH UltimiTest AS (
+        SELECT
+            t."idTest",
+            t."utente_id",
+            t."tipo",
+            t."dataOraInizio",
+            t."dataOraFine",
+            t."numeroErrori",
+            ROW_NUMBER() OVER (PARTITION BY t."utente_id" ORDER BY t."dataOraFine" DESC) AS row_num
+        FROM
+            webapp_test t
+        WHERE
+            t."tipo" LIKE 'collettivo_finito%'
+    )
     SELECT
-        t."idTest",
-        t."utente_id",
-        t."tipo",
-        t."dataOraInizio",
-        t."dataOraFine",
-        ROW_NUMBER() OVER (PARTITION BY t."utente_id" ORDER BY t."dataOraFine" DESC) AS row_num
+        u.id,
+        u.username,
+        lt."idTest",
+        lt."dataOraInizio",
+        lt."dataOraFine",
+        lt."numeroErrori",
+        EXTRACT(EPOCH FROM (lt."dataOraFine" - lt."dataOraInizio")) AS duration_seconds
     FROM
-        webapp_test t
+        UltimiTest lt
+    JOIN
+        auth_user u ON u.id = lt."utente_id"
     WHERE
-        t."tipo" LIKE 'collettivo_finito%'
-)
-SELECT
-    u.id,
-    u.username,
-    lt."idTest",
-    lt."dataOraInizio",
-    lt."dataOraFine",
-    EXTRACT(EPOCH FROM (lt."dataOraFine" - lt."dataOraInizio")) AS duration_seconds
-FROM
-    LatestTests lt
-JOIN
-    auth_user u ON u.id = lt."utente_id"
-WHERE
-    lt.row_num = 1;
-    AND date_trunc('day', lt."dataOraInizio") = date '2024-06-04';
+        lt.row_num = 1
+        AND date_trunc('day', lt."dataOraInizio") = date %s
+        AND u.id not in (1,2,3)
+    ORDER by duration_seconds ASC;  

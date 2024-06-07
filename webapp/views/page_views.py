@@ -68,6 +68,8 @@ def accettaSfida(req,idGruppi,id):
 def home(req):
     utils.pulisci_sessione(req)
     media = queries.get_user_mean(req.user.id)
+    conteggio_test_settimanali = queries.get_single_users_tests_week_and_mean(req.user.id)[0][0]
+    
     tempo_ref = queries.media_delle_medie()[0][0]
     staff = True    
     if req.user.is_staff == False:
@@ -172,7 +174,7 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle, 'weekly_test_count': weekly_test_count})
+    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media, 'conteggio_test_settimanali': conteggio_test_settimanali,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle, 'weekly_test_count': weekly_test_count})
 
 
 
@@ -357,7 +359,7 @@ def controllo(req):
         ])
 
 
-    # Utenti con meno di 100 test in questa settimana
+    # Conteggio test utenti questa settimana
     utenti_inf = queries.get_users_tests_week_and_mean()
 
     # Dati stelle utenti

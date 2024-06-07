@@ -110,6 +110,26 @@ def get_users_tests_week_and_mean():
         result_set = cursor.fetchall()
     return result_set 
 
+def get_single_users_tests_week_and_mean(idUtente):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            select
+                COUNT(*) as test_count
+            from
+                auth_user
+            left join webapp_test 
+                on (
+                webapp_test.utente_id = auth_user.id
+                and webapp_test."dataOraFine" is not null
+                and webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
+                )
+            where
+                auth_user.id = %s and webapp_test.tipo in ('manuale','orario')
+            group by
+                auth_user.username
+        """, [idUtente])
+        result_set = cursor.fetchall()
+    return result_set 
 
 def get_weekly_test_count(user_id):
     with connection.cursor() as cursor:
