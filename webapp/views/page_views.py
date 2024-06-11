@@ -68,7 +68,12 @@ def accettaSfida(req,idGruppi,id):
 def home(req):
     utils.pulisci_sessione(req)
     media = queries.get_user_mean(req.user.id)
-    conteggio_test_settimanali = queries.get_single_users_tests_week_and_mean(req.user.id)[0][0]
+    results = queries.get_single_users_tests_week_and_mean(req.user.id)
+
+    if results:
+        conteggio_test_settimanali = results[0][0]  
+    else:
+        conteggio_test_settimanali = 0 
     
     tempo_ref = queries.media_delle_medie()[0][0]
     staff = True    
@@ -329,7 +334,7 @@ def controllo(req):
         return redirect('home')
     
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraInizio', 'dataOraFine', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tests = [dict(zip(columns, row)) for row in result_set]
 
     # Paginazione
@@ -387,7 +392,7 @@ def csv_riepilogo_test(req):
 
     # Estrazione dati test
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraInizio', 'dataOraFine', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tutti_test = [dict(zip(columns, row)) for row in result_set]
     
     # Titoli colonne header del CSV

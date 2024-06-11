@@ -156,6 +156,7 @@
                       <p></p>
 
                       {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
+                      {% if staff%}
                         <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                           
                           <div class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">
@@ -167,6 +168,7 @@
                               <span class="m-2">In attesa di conferma</span>
                           
                         </div>
+                        {% endif %}
                       {% endfor %}
                       <p></p>
 
