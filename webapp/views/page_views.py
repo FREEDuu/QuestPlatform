@@ -441,7 +441,7 @@ def csv_riepilogo_ultimo_collettivo(req):
     check_collettivo = queries.check_collettivo_available()
     
     if check_collettivo == 0:
-        return HttpResponse('')
+        return redirect('controllo')
         
     result_set = queries.get_risultati_collettivo()
     columns = ['username', 'dataOraInizio', 'dataOraFine', 'duration_seconds']
