@@ -68,7 +68,13 @@ def accettaSfida(req,idGruppi,id):
 def home(req):
     utils.pulisci_sessione(req)
     media = queries.get_user_mean(req.user.id)
-    conteggio_test_settimanali = queries.get_single_users_tests_week_and_mean(req.user.id)[0][0]
+    results = queries.get_single_users_tests_week_and_mean(req.user.id)
+    is_collettivi_nascosti = queries.get_is_collettivi_nascosti()
+    
+    if results:
+        conteggio_test_settimanali = results[0][0]  
+    else:
+        conteggio_test_settimanali = 0 
     
     tempo_ref = queries.media_delle_medie()[0][0]
     staff = True    
@@ -174,10 +180,13 @@ def home(req):
     for t in display_test_orario:
         if t['nrTest'] - t['nrGruppo'] > 0:
             gruppi_orario.append([t['idGruppi'], t['nrTest'] - t['nrGruppo'], t['dataOraInserimento'].strftime("%Y-%m-%d %H:%M:%S")])
-    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media, 'conteggio_test_settimanali': conteggio_test_settimanali,'user_utente': user_utente, 'staff':staff, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle, 'weekly_test_count': weekly_test_count})
+    return render(req, 'home/home.html', { 'tempo_ref' : tempo_ref, 'media' : media, 'conteggio_test_settimanali': conteggio_test_settimanali,'user_utente': user_utente, 'staff':staff, 'is_collettivi_nascosti': is_collettivi_nascosti, 'display_sfida_accettate': display_sfida_accettate, 'display_sfida_attesa_1' : display_sfida_attesa_1,'display_sfida_attesa_2' : display_sfida_attesa_2, 'gruppi_manuale': gruppi_manuale[::-1], 'chart_tests': chart_tests_json , 'gruppi_orario' : gruppi_orario[::-1], 'gruppi_programmati' : gruppi_programmati[::-1] , 'zero' : 0, 'stelle' : stelle, 'weekly_test_count': weekly_test_count})
 
-
-
+@login_required(login_url='login')
+def setVisibilitaCollettivi(req):
+    is_collettivi_nascosti = req.POST.get('is_collettivi_nascosti', None)
+    queries.set_is_collettivi_nascosti(is_collettivi_nascosti)
+    return redirect('home')
 
 @login_required(login_url='login')
 def creazioneTest(req):
@@ -329,7 +338,7 @@ def controllo(req):
         return redirect('home')
     
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraInizio', 'dataOraFine', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tests = [dict(zip(columns, row)) for row in result_set]
 
     # Paginazione
@@ -387,7 +396,7 @@ def csv_riepilogo_test(req):
 
     # Estrazione dati test
     result_set = queries.get_user_test_info()
-    columns = ['username', 'idTest', 'dataOraFine', 'dataOraInizio', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
+    columns = ['username', 'idTest', 'dataOraInizio', 'dataOraFine', 'nrGruppo', 'nrDomande', 'numeroErrori', 'malusF5']
     tutti_test = [dict(zip(columns, row)) for row in result_set]
     
     # Titoli colonne header del CSV

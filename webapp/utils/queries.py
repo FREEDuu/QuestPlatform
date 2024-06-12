@@ -295,6 +295,25 @@ def get_tests_group_by_type(user_id, test_type):
             WHERE utente_id = %s AND tipo = %s;
         """, [user_id, test_type])
         return cursor.fetchall()
+    
+    
+def get_is_collettivi_nascosti():
+    with connection.cursor() as cursor:
+        cursor.execute(f"""
+            SELECT 
+                "nrErrori"
+            FROM webapp_statistiche
+            WHERE "tipoDomanda" = 'is_collettivi_nascosti'
+        """)
+        return cursor.fetchall()[0][0]
+    
+    
+def set_is_collettivi_nascosti(is_collettivi_nascosti): #is_collettivi_nascosti deve essere 0 o 1
+    with connection.cursor() as cursor:
+        cursor.execute(f"""
+            update webapp_statistiche set "nrErrori" = %s where "tipoDomanda" = 'is_collettivi_nascosti'
+        """, [is_collettivi_nascosti])
+    
 ###
 
 

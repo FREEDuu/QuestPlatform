@@ -42,12 +42,38 @@
     <main>
       <div class="mb-5">
         {% load static %}
-        <a href="{% url 'test' %}" class="btn btn-primary btn-lg px-4">Crea Test</a>
-        {% if staff%}
-        <a href="{% url 'creaDomande' %}" class="btn btn-primary btn-lg px-4 ">Crea Domanda</a>
-        <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4 float-end">Test Collettivi</a>
-        {% endif %}
+        <div class="d-flex justify-content-between align-items-center">
+          <form method="get" action="{% url 'test' %}" style="margin: 0;">
+            <button type="submit" class="btn btn-primary btn-lg px-4">Crea Test</button>
+          </form>
+      
+          {% if staff %}
+            <div class="d-flex gap-2">
+              <form method="get" action="{% url 'creaDomande' %}" style="margin: 0;">
+                <button type="submit" class="btn btn-primary btn-lg px-4">Crea Domanda</button>
+              </form>
+      
+              {% if is_collettivi_nascosti == 0 %}
+                <form method="post" action="{% url 'setVisibilitaCollettivi' %}" style="margin: 0;">
+                  {% csrf_token %}
+                  <input type="hidden" name="is_collettivi_nascosti" value="1">
+                  <button type="submit" class="btn btn-warning btn-lg px-4">Nascondi collettivi</button>
+                </form>
+              {% elif is_collettivi_nascosti == 1 %}
+                <form method="post" action="{% url 'setVisibilitaCollettivi' %}" style="margin: 0;">
+                  {% csrf_token %}
+                  <input type="hidden" name="is_collettivi_nascosti" value="0">
+                  <button type="submit" class="btn btn-success btn-lg px-4">Mostra collettivi</button>
+                </form>
+              {% endif %}
+      
+              <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4">Test Collettivi</a>
+            </div>
+          {% endif %}
+        </div>
       </div>
+      
+      
 
                 <div class="row g-4">
 
@@ -129,6 +155,7 @@
                       <h5 class="border-bottom pb-2 mb-0 text-left">Test Programmati</h5>
                       <p></p>  
                       {% for idTest, data in gruppi_programmati %}
+                        {% if is_collettivi_nascosti == 0 or staff %}
                         <div class="d-flex flex-wrap justify-content-lg-end shadow">
                           <div
                               class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-center">                                 
@@ -145,6 +172,7 @@
                             </button>
                           </a>
                         </div>
+                        {% endif %}
                       {% endfor %}
                     </div>
 
@@ -154,7 +182,6 @@
                     <div class="my-3 p-3 bg-body rounded shadow-lg">
                       <h5 class="border-bottom pb-2 mb-0 text-left">Sfide Programmate</h5>
                       <p></p>
-
                       {% for data, idGruppi, utente_sfidato, id in display_sfida_attesa_1 %}
                         <div class="d-flex flex-wrap justify-content-lg-end shadow-sm rounded-2">
                           
