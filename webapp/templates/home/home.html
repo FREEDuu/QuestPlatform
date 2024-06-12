@@ -53,6 +53,8 @@
                 <button type="submit" class="btn btn-primary btn-lg px-4">Crea Domanda</button>
               </form>
       
+              <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4">Test Collettivi</a>
+
               {% if is_collettivi_nascosti == 0 %}
                 <form method="post" action="{% url 'setVisibilitaCollettivi' %}" style="margin: 0;">
                   {% csrf_token %}
@@ -67,7 +69,6 @@
                 </form>
               {% endif %}
       
-              <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4">Test Collettivi</a>
             </div>
           {% endif %}
         </div>
