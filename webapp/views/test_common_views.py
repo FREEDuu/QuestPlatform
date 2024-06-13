@@ -97,9 +97,13 @@ def TestProgrammatiStart(req, idTest, counter):
             if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == counter:
                 del req.session['Errori']
 
+        seed(idTest)
+        column_mode_c = randint(0, 1)
+
         return render(req, 'preTest/TestSelectProgrammati.html', {
             'idTest': idTest,
             'counter': counter,
+            'column_mode_c': column_mode_c,
             'ctx': ctx
         })
 

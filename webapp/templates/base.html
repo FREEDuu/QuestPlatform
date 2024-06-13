@@ -145,7 +145,6 @@
                             </a>
                         </li>
                         
-                        {% if user.is_staff %}
                         <li class="">
                             <a href='{% url "Sfida" %}' class="nav-link nav-element">
                                 <svg class="bi d-block mx-auto mb-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-trophy" viewBox="0 0 16 16">
@@ -155,7 +154,6 @@
                                 Sfide
                             </a>
                         </li>
-                        {% endif %}
 
                         <li class="">
                             <a href="{% url 'login' %}" class="nav-link nav-element">
