@@ -28,6 +28,32 @@ import json
 from ..utils import queries
 import random
 
+def get_domande(req):
+
+    dom = Domande.objects.filter()
+    var = Varianti.objects.filter()
+
+    return HttpResponse(var)
+
+def make_domande(req, CorpoDomanda, tipo, VariantiCorpo, VariantiRisposta):
+
+    try:
+
+        Domanda_Generata = Domande.objects.create(corpo = CorpoDomanda, tipo = tipo)
+        Varianti_to_generate = VariantiCorpo.split(', ')
+        Risposte_varianti = VariantiRisposta.split(', ')
+
+        Varianti_to_push = list()
+
+        for _ in range(len(Varianti_to_generate)):
+            Varianti_to_push.append(Varianti(domanda = Domanda_Generata, corpo = Varianti_to_generate[_], rispostaEsatta = Risposte_varianti[_]))
+        Varianti.objects.bulk_create(Varianti_to_push)
+
+        return HttpResponse('202 OK')
+    
+    except Exception as e:
+        return HttpResponse(e)
+
 # LOGIN
 def log_in(req):
 

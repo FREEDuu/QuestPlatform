@@ -172,13 +172,13 @@ def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
         form_data = req.session.get(page_key, None)
 
         if not form_data:
-            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
+            print('enter', risposte_esatte)
+            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, risposte_esatte[n], row.tipo) for n, row in enumerate(test_to_render)]
         else:
             ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, displayer, req.session.get('Errori'))
 
             if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == displayer:
                 del req.session['Errori']
-
     return render(req, 'GenericTest/GenericTestSelect.html', {
         'random': randint(0, 2),
         'idGruppi': idGruppi,

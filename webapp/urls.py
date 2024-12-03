@@ -42,5 +42,7 @@ urlpatterns = [
     path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario'),
     path('RiepilogoTest/<int:idGruppi>/<int:idTest>/<int:counter>/<int:seed>', page_views.RiepilogoTest, name = 'RiepilogoTest'),
     path('exit-test', page_views.esciDalTest, name = 'exit-test'),
-    path('setVisibilitaCollettivi/', page_views.setVisibilitaCollettivi, name='setVisibilitaCollettivi')
+    path('setVisibilitaCollettivi/', page_views.setVisibilitaCollettivi, name='setVisibilitaCollettivi'),
+    path('api/make_domande/<str:CorpoDomanda>/<str:tipo>/<str:VariantiCorpo>/<str:VariantiRisposta>', page_views.make_domande, name='make_domande'),
+    path('api/get_domande', page_views.get_domande, name='get_domande')
 ]
