@@ -149,7 +149,6 @@ order by test_count desc
             t."tipo",
             t."dataOraInizio",
             t."dataOraFine",
-            t."numeroErrori",
             ROW_NUMBER() OVER (PARTITION BY t."utente_id" ORDER BY t."dataOraFine" DESC) AS row_num
         FROM
             webapp_test t
@@ -157,12 +156,9 @@ order by test_count desc
             t."tipo" LIKE 'collettivo_finito%'
     )
     SELECT
-        u.id,
         u.username,
-        lt."idTest",
         lt."dataOraInizio",
         lt."dataOraFine",
-        lt."numeroErrori",
         EXTRACT(EPOCH FROM (lt."dataOraFine" - lt."dataOraInizio")) AS duration_seconds
     FROM
         UltimiTest lt

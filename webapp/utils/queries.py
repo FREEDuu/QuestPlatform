@@ -152,8 +152,27 @@ def get_weekly_test_count(user_id):
 
 ### CONTROLLO COLLETTIVI
 
+def check_collettivo_available():
+  with connection.cursor() as cursor:
+    cursor.execute("""
+        SELECT
+            COUNT(*)
+        FROM
+            webapp_test t
+        WHERE
+            t."tipo" LIKE 'collettivo_finito%'
+            AND date_trunc('day', t."dataOraInizio") = CURRENT_DATE
+    """,)
 
-def get_risultati_collettivo(dataTest):
+    columns = [col[0] for col in cursor.description] if cursor.description else []
+    TestCollettivoCheck = namedtuple('TestCollettivoCheck', columns)
+
+    results = [TestCollettivoCheck(*row) for row in cursor.fetchall()]
+
+  return results[0][0]
+
+
+def get_risultati_collettivo():
     with connection.cursor() as cursor:
         cursor.execute("""
             WITH UltimiTest AS (
@@ -163,7 +182,6 @@ def get_risultati_collettivo(dataTest):
                     t."tipo",
                     t."dataOraInizio",
                     t."dataOraFine",
-                    t."numeroErrori",
                     ROW_NUMBER() OVER (PARTITION BY t."utente_id" ORDER BY t."dataOraFine" DESC) AS row_num
                 FROM
                     webapp_test t
@@ -171,12 +189,9 @@ def get_risultati_collettivo(dataTest):
                     t."tipo" LIKE 'collettivo_finito%'
             )
             SELECT
-                u.id,
                 u.username,
-                lt."idTest",
                 lt."dataOraInizio",
                 lt."dataOraFine",
-                lt."numeroErrori",
                 EXTRACT(EPOCH FROM (lt."dataOraFine" - lt."dataOraInizio")) AS duration_seconds
             FROM
                 UltimiTest lt
@@ -184,13 +199,14 @@ def get_risultati_collettivo(dataTest):
                 auth_user u ON u.id = lt."utente_id"
             WHERE
                 lt.row_num = 1
-                AND date_trunc('day', lt."dataOraInizio") = date %s; 
-        """, [dataTest])
+                AND date_trunc('day', lt."dataOraInizio") = CURRENT_DATE
+            ORDER by duration_seconds ASC;          
+        """,)
 
-        columns = [col[0] for col in cursor.description]
+        columns = [col[0] for col in cursor.description] if cursor.description else []
         TestCollettivo = namedtuple('TestCollettivo', columns)
-        
         results = [TestCollettivo(*row) for row in cursor.fetchall()]
+        
         return results
 
 

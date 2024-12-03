@@ -8,6 +8,9 @@ media
 
 # Backup files # 
 *.bak 
+*.ps1
+*.fish
+ServerEnv
 
 # If you are using PyCharm # 
 # User-specific stuff

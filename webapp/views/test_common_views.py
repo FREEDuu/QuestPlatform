@@ -9,26 +9,23 @@ from ..utils.utils import genRandomStaticAnswers
 from ..utils import queries, utils
 from django.urls import reverse
 from random import shuffle, seed
-
-
 from ..forms import *
+
 def genRandomFromSeedCollettivi(idTest, varianti, risposta):
+  seed(varianti + risposta)
+  
+  arr = varianti.split(';')
+  insert_index = randint(1, len(arr))
+  arr.insert(insert_index, str(risposta))
 
-    arr = varianti.split(';')
-    arr.append( str(risposta))
-    ret = []
+  ret = []
+  for el in range(len(arr)):
+    if arr[el] == str(risposta):
+      ret.append((str(risposta), str(risposta)))
+    else:
+      ret.append((str(el), str(arr[el])))
 
-    for el in range(len(arr)):
-
-        if arr[el] == str(risposta):
-            ret.append((str(risposta), str(risposta)))
-        else:
-            ret.append((str(el), str(arr[el])))
-            
-    seed(idTest)
-    shuffle(ret)
-
-    return ret    
+  return ret
 
 @login_required(login_url='login')
 def delete_all_user_test(req):
@@ -100,9 +97,13 @@ def TestProgrammatiStart(req, idTest, counter):
             if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == counter:
                 del req.session['Errori']
 
+        seed(idTest)
+        column_mode_c = randint(0, 1)
+
         return render(req, 'preTest/TestSelectProgrammati.html', {
             'idTest': idTest,
             'counter': counter,
+            'column_mode_c': column_mode_c,
             'ctx': ctx
         })
 

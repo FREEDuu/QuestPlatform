@@ -92,11 +92,11 @@ WSGI_APPLICATION = 'MyQuestApp.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql", 
-        "NAME": "questapplicationlab", #questApplication #questapplicationlab
+        "NAME": "questapplicationlab",  #questapplicationlab #questapplication
         "USER": "carl",
-        "PASSWORD": "pondsama", #pondsama #mZT4Uo9u2aB7Y2ApZB3ZP45VwN5zmRlG
-        "HOST": "2.56.212.172", #2.56.212.172 #dpg-cnnihula73kc739tq2lg-a.frankfurt-postgres.render.com
-        "PORT": "5432",
+        "PASSWORD": "pondsama",
+        "HOST": "135.181.151.206",
+        "PORT": "5433", #5433, #5434
         "CONN_MAX_AGE": 3600,
     }
 }

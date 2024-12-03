@@ -3,8 +3,10 @@
 <head>
     
     <!-- Bootstrap core CSS & JS-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
@@ -47,16 +49,70 @@
                 </div>
                 <p></p>
 
+
+
+
             {% elif tipo == 'c' %}
-                <div class="d-flex flex-column">
-                    {% for radio in form %}
-                        <label for="{{ radio.id_for_label }}" >
-                            <span>{{ radio.tag }}</span>
-                            <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
-                        </label>
-                    {% endfor %}
-                </div>
+                {% if column_mode_c %}
+                    <div class="radio-container">
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                {% for radio in form %}
+                                    {% if radio.data.index <= "3" %}
+                                        <div class="radio-item">
+                                            <label for="{{ radio.id_for_label }}">
+                                                <span>{{ radio.tag }}</span>
+                                                <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-sm-auto">
+                                {% for radio in form %}
+                                    {% if radio.data.index >= "4" and radio.data.index <= "7" %}
+                                        <div class="radio-item">
+                                            <label for="{{ radio.id_for_label }}">
+                                                <span>{{ radio.tag }}</span>
+                                                <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="col-sm-auto">
+                                {% for radio in form %}
+                                    {% if radio.data.index >= "8" and radio.data.index <= "11" %}
+                                        <div class="radio-item">
+                                            <label for="{{ radio.id_for_label }}">
+                                                <span>{{ radio.tag }}</span>
+                                                <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                            </label>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                        <div class="radio-container">
+                            {% for radio in form %}
+                                <div class="radio-item">
+                                    <label for="{{ radio.id_for_label }}">
+                                        <span>{{ radio.tag }}</span>
+                                        <span style="{% if corretto %}color: red;{% endif %}">{{ radio.choice_label }}</span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                {% endif %}
                 <p></p>
+
+
+
+
 
             {% elif tipo == 'cr' %}
                 <div class="{% if corretto %}border border-danger rounded {% endif%}">

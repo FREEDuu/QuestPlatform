@@ -40,7 +40,7 @@
             <form method="post" class="clearfix" action = "{% url 'testStartOrario' idGruppi idTest counter displayer seed %}" {{idGruppi}} {{idTest}} {{displayer}} {{counter}} {{seed}} novalidate>
                 <div>
                     {% csrf_token %}
-                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}}</span> {% endif %}</h6>
+                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}} ( {{dom}} )</span> {% endif %}</h6>
 
                     {% if tipo == 'm' %}
                         <div class=" d-flex form-inline multiple">
@@ -113,7 +113,7 @@
                      <!--{{domanda}} / {{variante}} / {{dom}} / {{tipo}} -->
 
                     {% csrf_token %}
-                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}} </span> {% endif %}</h6>
+                    <h6 class="p-2 text-muted">{% if tipo != 'r' %} {{domanda}} <span class="text-dark"> {{variante}} ( {{dom}} )</span> {% endif %}</h6>
                     
                     {% if tipo == 'm' %}
                         <div class="d-flex form-inline multiple">

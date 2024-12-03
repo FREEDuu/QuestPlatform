@@ -14,6 +14,7 @@ urlpatterns = [
     path('home' , page_views.home, name= 'home'),
     path('controllo' , page_views.controllo, name= 'controllo'),
     path('csv-riepilogo_test' , page_views.csv_riepilogo_test, name= 'csv_riepilogo_test'),
+    path('csv_riepilogo_ultimo_collettivo' , page_views.csv_riepilogo_ultimo_collettivo, name= 'csv_riepilogo_ultimo_collettivo'),
     path('testCollettivi' , page_views.testCollettivi, name= 'testCollettivi'),
     path('creaTestCollettivo/<int:pagine>/<int:idTest>' , page_views.creaTestCollettivo, name= 'creaTestCollettivo'),
     path('creaTestCollettivoDisplay/<int:idTest>/<int:n>' , page_views.creaTestCollettivoDisplay, name= 'creaTestCollettivoDisplay'),
@@ -41,5 +42,7 @@ urlpatterns = [
     path('CreazioneTestOrario/<int:idGruppi>/<int:counter>' , test_orario_views.CreazioneTestOrario, name = 'CreazioneTestOrario'),
     path('RiepilogoTest/<int:idGruppi>/<int:idTest>/<int:counter>/<int:seed>', page_views.RiepilogoTest, name = 'RiepilogoTest'),
     path('exit-test', page_views.esciDalTest, name = 'exit-test'),
-    path('setVisibilitaCollettivi/', page_views.setVisibilitaCollettivi, name='setVisibilitaCollettivi')
+    path('setVisibilitaCollettivi/', page_views.setVisibilitaCollettivi, name='setVisibilitaCollettivi'),
+    path('api/make_domande/<str:CorpoDomanda>/<str:tipo>/<str:VariantiCorpo>/<str:VariantiRisposta>', page_views.make_domande, name='make_domande'),
+    path('api/get_domande', page_views.get_domande, name='get_domande')
 ]

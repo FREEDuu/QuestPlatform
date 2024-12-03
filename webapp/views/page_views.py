@@ -28,6 +28,32 @@ import json
 from ..utils import queries
 import random
 
+def get_domande(req):
+
+    dom = Domande.objects.filter()
+    var = Varianti.objects.filter()
+
+    return HttpResponse(var)
+
+def make_domande(req, CorpoDomanda, tipo, VariantiCorpo, VariantiRisposta):
+
+    try:
+
+        Domanda_Generata = Domande.objects.create(corpo = CorpoDomanda, tipo = tipo)
+        Varianti_to_generate = VariantiCorpo.split(', ')
+        Risposte_varianti = VariantiRisposta.split(', ')
+
+        Varianti_to_push = list()
+
+        for _ in range(len(Varianti_to_generate)):
+            Varianti_to_push.append(Varianti(domanda = Domanda_Generata, corpo = Varianti_to_generate[_], rispostaEsatta = Risposte_varianti[_]))
+        Varianti.objects.bulk_create(Varianti_to_push)
+
+        return HttpResponse('202 OK')
+    
+    except Exception as e:
+        return HttpResponse(e)
+
 # LOGIN
 def log_in(req):
 
@@ -428,6 +454,50 @@ def csv_riepilogo_test(req):
 
     return response
  
+
+@login_required(login_url='login')
+def csv_riepilogo_ultimo_collettivo(req):
+    current_date = datetime.now().strftime("%Y%m%d")
+    filename = f"risultati_collettivo_{current_date}.csv"
+    csv_buffer = StringIO()
+    
+    writer = csv.writer(csv_buffer, delimiter=';')
+
+    # Estrazione dati ultimo test collettivo
+    check_collettivo = queries.check_collettivo_available()
+    
+    if check_collettivo == 0:
+        return redirect('controllo')
+        
+    result_set = queries.get_risultati_collettivo()
+    columns = ['username', 'dataOraInizio', 'dataOraFine', 'duration_seconds']
+    tutti_test = [dict(zip(columns, row)) for row in result_set]
+    
+    # Titoli colonne header del CSV
+    header_row = ['Utente', 'Data Inizio', 'Data Fine', 'Tempo']
+    writer.writerow(header_row)
+    
+    for test in tutti_test:
+        tempo_completamento = (test['dataOraFine'] - test['dataOraInizio']).total_seconds()
+        tempo_completamento_str = str(tempo_completamento).replace('.', ',')
+
+        writer.writerow([
+            test['username'],
+            test['dataOraInizio'].strftime("%d/%m/%Y %H:%M:%S"),
+            test['dataOraFine'].strftime("%d/%m/%Y %H:%M:%S"),
+            tempo_completamento_str
+        ])
+
+    csv_content = csv_buffer.getvalue()
+
+    csv_buffer.close()
+
+    response = HttpResponse(csv_content, content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
+
+
 
 def creaDomande(req):
     

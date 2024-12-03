@@ -143,7 +143,7 @@ def repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, di
                 else:
                     formRisposta.fields[key].initial = value
 
-    return [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], check2 == f'domanda_{n}' and int(check1) == displayer, f'domanda_{n}', row.tipo) for n, row in enumerate(test_to_render)]
+    return [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], check2 == f'domanda_{n}' and int(check1) == displayer, risposte_esatte[n], row.tipo) for n, row in enumerate(test_to_render)]
 
 ###
 
