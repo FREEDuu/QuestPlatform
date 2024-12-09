@@ -5,7 +5,7 @@
   <div class="p-4 p-md-5 mb-4 my-3 rounded bg-body rounded shadow-lg">
     <h1 class="text-center">Gestione Domande</h1>
     <div class="row justify-content-center">
-      <div class="col-md-8">
+      <div class="col-md-10">
         <div class="card">
           <div class="card-body">
             <div class="mb-3">
@@ -31,9 +31,9 @@
                </div>
 
             <div id="pagination-controls" class="mb-3">
-              <button id="prev-page" class="btn btn-secondary">Precedente</button>
+              <button id="prev-page" class="btn btn-outline-success">Precedente</button>
               <span id="page-info" class="mx-2">Page 1</span>
-              <button id="next-page" class="btn btn-secondary">Prossimo</button>
+              <button id="next-page" class="btn btn-outline-success">Prossimo</button>
             </div>
 
             <table class="table table-striped table-hover">
@@ -41,6 +41,8 @@
                 <tr>
                   <th scope="col">Domanda</th>
                   <th scope="col">Tipo</th>
+                  <th scope="col">Varianti</th>
+                  <th scope="col">Risposte Esatte</th>
                   <th scope="col">Attivo</th>
                   <th scope="col">Azioni</th>
                 </tr>
@@ -48,30 +50,76 @@
               <tbody id="domande-table-body">
                 {% for domanda in domande %}
                 <tr data-id="{{ domanda.idDomanda }}" data-active="{{ domanda.attivo|lower }}" data-tipo="{{ domanda.tipo }}">
-                    <td class="domanda-corpo">{{ domanda.corpo }}</td>
-                    <td>
-                        {% if domanda.tipo == 't' %}Casella di testo
-                        {% elif domanda.tipo == 's' %}Select Tendina
-                        {% elif domanda.tipo == 'm' %}Caselle a singolo carattere
-                        {% elif domanda.tipo == 'c' %}Checkbox{% endif %}
-                      </td>
-                    <td class="{% if domanda.attivo %}text-success{% else %}text-danger{% endif %}">
+                  <td class="domanda-corpo">{{ domanda.corpo }}</td>
+                  <td>
+                    {% if domanda.tipo == 't' %}Casella di testo
+                    {% elif domanda.tipo == 's' %}Select Tendina
+                    {% elif domanda.tipo == 'm' %}Caselle a singolo carattere
+                    {% elif domanda.tipo == 'c' %}Checkbox{% endif %}
+                  </td>
+                  <td>
+                    {% if domanda.varianti_set.exists %}
+                    {{ domanda.varianti_set.all|join:"; " }}
+                    {% else %}
+                    Nessuna Variante
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if domanda.varianti_set.exists %}
+                    {{ domanda.varianti_set.all|join:", "|truncatechars:50 }}
+                    {% else %}
+                    Nessuna Risposta
+                    {% endif %}
+                  </td>
+                  <td class="{% if domanda.attivo %}text-success{% else %}text-danger{% endif %}">
                     {{ domanda.attivo }}
-                    </td>                    <td>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <button class="btn btn-primary btn-sm view-varianti-btn me-2" data-bs-toggle="modal" data-bs-target="#variantiModal" 
+                        data-id="{{ domanda.idDomanda }}" title="Visualizza dettagli">
+                        <i class="bi bi-search"></i>
+                      </button>
                       {% if domanda.attivo %}
-                        <button class="btn btn-warning btn-sm deactivate-btn" title="Disattiva">
-                          <i class="bi bi-toggle-off"></i>
-                        </button>
+                      <button class="btn btn-warning btn-sm deactivate-btn" title="Disattiva">
+                        <i class="bi bi-toggle-off"></i>
+                      </button>
                       {% else %}
-                        <button class="btn btn-success btn-sm activate-btn" title="Attiva">
-                          <i class="bi bi-toggle-on"></i>
-                        </button>
+                      <button class="btn btn-success btn-sm activate-btn" title="Attiva">
+                        <i class="bi bi-toggle-on"></i>
+                      </button>
                       {% endif %}
-                    </td>
-                  </tr>
+                    </div>
+                  </td>
+                </tr>
                 {% endfor %}
               </tbody>
             </table>
+
+            <!-- Modal for Varianti -->
+            <div class="modal fade" id="variantiModal" tabindex="-1" aria-labelledby="variantiModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="variantiModalLabel">Dettagli Varianti</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th scope="col">Variante</th>
+                          <th scope="col">Risposta Esatta</th>
+                        </tr>
+                      </thead>
+                      <tbody id="varianti-table-body">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -142,51 +190,49 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function handleDomandaAction(btn, action) {
-        const row = btn.closest('tr');
-        const domandaId = row.dataset.id;
-        
-        fetch('{% url "gestioneDomande" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: new URLSearchParams({
-                'domanda_id': domandaId,
-                'action': action
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const isActivating = action === 'activate';
-                row.dataset.active = isActivating.toString();
-                
-                const statusCell = row.querySelector('td:nth-child(3)');
-                statusCell.className = isActivating ? 'text-success' : 'text-danger';
-                statusCell.textContent = isActivating.toString();
-                
-                const tdActions = row.querySelector('td:last-child');
-                const newButton = document.createElement('button');
-                
-                if (isActivating) {
-                    newButton.className = 'btn btn-warning btn-sm deactivate-btn';
-                    newButton.title = 'Disattiva';
-                    newButton.innerHTML = '<i class="bi bi-toggle-off"></i>';
-                    newButton.addEventListener('click', () => handleDomandaAction(newButton, 'deactivate'));
-                } else {
-                    newButton.className = 'btn btn-success btn-sm activate-btn';
-                    newButton.title = 'Attiva';
-                    newButton.innerHTML = '<i class="bi bi-toggle-on"></i>';
-                    newButton.addEventListener('click', () => handleDomandaAction(newButton, 'activate'));
-                }
-                
-                tdActions.innerHTML = '';
-                tdActions.appendChild(newButton);
-                
-                filterRows(true);
-            }
-        });
+      const row = btn.closest('tr');
+      const domandaId = row.dataset.id;
+      
+      fetch('{% url "gestione_domande" %}', {
+          method: 'POST',
+          headers: {
+              'X-CSRFToken': '{{ csrf_token }}',
+              'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: new URLSearchParams({
+              'domanda_id': domandaId,
+              'action': action
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.status === 'success') {
+              const isActivating = action === 'activate';
+              row.dataset.active = isActivating.toString();
+              
+              const statusCell = row.querySelector('td:nth-child(3)');
+              statusCell.className = isActivating ? 'text-success' : 'text-danger';
+              statusCell.textContent = isActivating.toString();
+              
+              const newButton = document.createElement('button');
+              
+              if (isActivating) {
+                  newButton.className = 'btn btn-warning btn-sm deactivate-btn';
+                  newButton.title = 'Disattiva';
+                  newButton.innerHTML = '<i class="bi bi-toggle-off"></i>';
+                  newButton.addEventListener('click', () => handleDomandaAction(newButton, 'deactivate'));
+              } else {
+                  newButton.className = 'btn btn-success btn-sm activate-btn';
+                  newButton.title = 'Attiva';
+                  newButton.innerHTML = '<i class="bi bi-toggle-on"></i>';
+                  newButton.addEventListener('click', () => handleDomandaAction(newButton, 'activate'));
+              }
+              
+              btn.replaceWith(newButton);
+              
+              filterRows(true);
+          }
+      });
     }
     
     document.querySelectorAll('.deactivate-btn').forEach(btn => {
@@ -196,6 +242,31 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.activate-btn').forEach(btn => {
         btn.addEventListener('click', () => handleDomandaAction(btn, 'activate'));
     });
+
+
+    // Modal Varianti
+    document.querySelectorAll('.view-varianti-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const domandaId = button.getAttribute('data-id');
+        
+        fetch(`/get_varianti/${domandaId}`)
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('varianti-table-body');
+            tbody.innerHTML = '';
+            
+            data.varianti.forEach(variante => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${variante.corpo}</td>
+                <td>${variante.rispostaEsatta}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          });
+      });
+    });
+
     
     document.getElementById('filter-tipo').addEventListener('change', filterRows);
 
