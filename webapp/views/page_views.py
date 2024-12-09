@@ -570,5 +570,14 @@ def esciDalTest(req):
 
 
 
-
-
+def gestioneDomande(req):
+   if req.method == 'POST' and req.headers.get('X-Requested-With') == 'XMLHttpRequest':
+       domanda_id = req.POST.get('domanda_id')
+       action = req.POST.get('action')
+       domanda = Domande.objects.get(idDomanda=domanda_id)
+       domanda.attivo = True if action == 'activate' else False
+       domanda.save()
+       return JsonResponse({'status': 'success'})
+       
+   domande = Domande.objects.all()
+   return render(req, 'gestioneDomande/gestioneDomande.html', {'domande': domande})

@@ -57,7 +57,7 @@ def get_user_test_info():
             WHERE 
                 webapp_test."dataOraFine" IS NOT NULL AND 
                 NOT (webapp_test.tipo = 'sfida' OR webapp_test.tipo LIKE 'collettivo%')
-                AND webapp_test.utente_id NOT IN (1,2,3)
+                AND webapp_test.utente_id NOT IN (1,24)
             ORDER BY 
                 webapp_test."dataOraInizio" DESC;
         """)
@@ -101,7 +101,7 @@ def get_users_tests_week_and_mean():
                 and webapp_test."dataOraFine" >= date_trunc('week', CURRENT_DATE)
                 )
             where
-                auth_user.id not in (1, 2, 3)
+                auth_user.id not in (1,24)
             group by
                 auth_user.username
             order by
@@ -524,7 +524,7 @@ def media_delle_medie():
             FROM 
                 average_time_per_user
             WHERE 
-                utente_id NOT IN (1, 2, 3);
+                utente_id NOT IN (1,24);
 """)
         result = cursor.fetchall()
         return result
