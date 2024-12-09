@@ -69,7 +69,7 @@
                   </td>
                   <td>
                     {% if domanda.varianti_set.exists %}
-                    {{ domanda.varianti_set.all|join:", "|truncatechars:20 }}
+                    {{ domanda.get_risposte_esatte|truncatechars:20 }}
                     {% else %}
                     Nessuna Risposta
                     {% endif %}

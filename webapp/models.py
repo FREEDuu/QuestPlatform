@@ -19,6 +19,9 @@ class Domande(models.Model):
         random_domanda = cls.objects.order_by('?').first()
         return random_domanda
 
+    def get_risposte_esatte(self):
+        return "; ".join(str(v.rispostaEsatta) for v in self.varianti_set.all())
+
     class Meta:
         indexes = [
             models.Index(fields=['corpo']),
