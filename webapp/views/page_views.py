@@ -590,5 +590,68 @@ def gestione_domande(req):
 
 @login_required(login_url='login')
 def get_varianti(req, domanda_id):
-    varianti = Varianti.objects.filter(domanda_id=domanda_id).values('corpo', 'rispostaEsatta')
+    varianti = Varianti.objects.filter(domanda_id=domanda_id).values('idVariante', 'corpo', 'rispostaEsatta')
     return JsonResponse({'varianti': list(varianti)})
+
+
+@login_required(login_url='login')
+def add_variante(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            domanda_id = request.POST.get('domanda_id')
+            corpo = request.POST.get('corpo')
+            risposta_esatta = request.POST.get('risposta_esatta')
+            
+            domanda = Domande.objects.get(idDomanda=domanda_id)
+            variante = Varianti.objects.create(
+                domanda=domanda,
+                corpo=corpo,
+                rispostaEsatta=risposta_esatta
+            )
+            
+            return JsonResponse({
+                'status': 'success',
+                'variante': {
+                    'idVariante': variante.idVariante,
+                    'corpo': variante.corpo,
+                    'rispostaEsatta': variante.rispostaEsatta
+                }
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+@login_required(login_url='login')
+def delete_variante(request, variante_id):
+    if (request.method in ['DELETE', 'POST']) and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            variante = Varianti.objects.get(idVariante=variante_id)
+            variante.delete()
+            return JsonResponse({'status': 'success'})
+        except Varianti.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Variante non trovata'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+
+@login_required(login_url='login')
+def update_domanda(request, domanda_id):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            domanda = Domande.objects.get(idDomanda=domanda_id)
+            domanda.corpo = request.POST.get('corpo')
+            domanda.save()
+            return JsonResponse({
+                'status': 'success',
+                'domanda': {
+                    'corpo': domanda.corpo
+                }
+            })
+        except Domande.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Domanda non trovata'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
