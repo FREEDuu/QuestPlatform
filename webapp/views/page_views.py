@@ -27,6 +27,7 @@ from django.http import JsonResponse
 import json
 from ..utils import queries
 import random
+from django.db.models import Prefetch
 
 def get_domande(req):
 
@@ -570,5 +571,24 @@ def esciDalTest(req):
 
 
 
+# Gestione Domande
+@login_required(login_url='login')
+def gestione_domande(req):
+    if req.method == 'POST' and req.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        domanda_id = req.POST.get('domanda_id')
+        action = req.POST.get('action')
+        domanda = Domande.objects.get(idDomanda=domanda_id)
+        domanda.attivo = True if action == 'activate' else False
+        domanda.save()
+        return JsonResponse({'status': 'success'})
+
+    domande = Domande.objects.prefetch_related(
+        Prefetch('varianti_set', queryset=Varianti.objects.all())
+    )
+    return render(req, 'gestioneDomande/gestioneDomande.html', {'domande': domande})
 
 
+@login_required(login_url='login')
+def get_varianti(req, domanda_id):
+    varianti = Varianti.objects.filter(domanda_id=domanda_id).values('corpo', 'rispostaEsatta')
+    return JsonResponse({'varianti': list(varianti)})

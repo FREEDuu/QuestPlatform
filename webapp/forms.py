@@ -94,7 +94,7 @@ class FormDomandaCollettiva(forms.Form):
             "required": "required",
             "class": "form-control",
             "autocomplete": "off",
-            'placeholder': 'Tipo'  # Placeholder text adjusted for clarity
+            'placeholder': 'Tipo'
         })
     )
     Domanda = forms.CharField(
@@ -111,7 +111,7 @@ class FormDomandaCollettiva(forms.Form):
             "required": "required",
             "class": "form-control",
             "autocomplete": "off",
-            'placeholder': 'Inserisci la risposta qui...',
+            'placeholder': 'Inserisci le risposte separate da punto e virgola...',
             'rows': 2
         })
     )

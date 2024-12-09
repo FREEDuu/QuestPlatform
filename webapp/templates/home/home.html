@@ -49,11 +49,30 @@
       
           {% if staff %}
             <div class="d-flex gap-2">
-              <form method="get" action="{% url 'creaDomande' %}" style="margin: 0;">
-                <button type="submit" class="btn btn-primary btn-lg px-4">Crea Domanda</button>
-              </form>
-      
-              <a href="{% url 'testCollettivi' %}" class="btn btn-primary btn-lg px-4">Test Collettivi</a>
+              <div class="dropdown">
+                <button class="btn btn-primary btn-lg px-4 dropdown-toggle" type="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Controllo Admin
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                    <li>
+                        <form method="get" action="{% url 'creaDomande' %}" style="margin: 0;">
+                            <button type="submit" class="dropdown-item">
+                                <i class="bi bi-plus-lg me-2"></i>Crea Domanda
+                            </button>
+                        </form>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'testCollettivi' %}">
+                            <i class="bi bi-file-earmark-text me-2"></i>Crea Test Collettivo
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'gestione_domande' %}">
+                            <i class="bi bi-gear me-2"></i>Gestione Domande
+                        </a>
+                    </li>
+                </ul>
+             </div>
 
               {% if is_collettivi_nascosti == 0 %}
                 <form method="post" action="{% url 'setVisibilitaCollettivi' %}" style="margin: 0;">
