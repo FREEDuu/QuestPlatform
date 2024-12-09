@@ -10,25 +10,33 @@
           <div class="card-body">
             <div class="mb-3">
                 <input type="text" id="search-input" class="form-control mb-2" placeholder="Cerca domanda...">
-                <div class="row">
-                  <div class="col-md-6">
-                    <select id="filter-active" class="form-select mb-2">
-                      <option value="all">Tutti</option>
-                      <option value="true">Attivi</option>
-                      <option value="false">Non Attivi</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <select id="filter-tipo" class="form-select mb-2">
-                      <option value="all">Tutti i tipi</option>
-                      <option value="t">Casella di testo</option>
-                      <option value="s">Select Tendina</option>
-                      <option value="m">Caselle a singolo carattere</option>
-                      <option value="c">Checkbox</option>
-                    </select>
-                  </div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <input type="text" id="search-variante" class="form-control mb-2" placeholder="Cerca nelle varianti...">
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" id="search-risposta" class="form-control mb-2" placeholder="Cerca nelle risposte esatte...">
+                    </div>
                 </div>
-               </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <select id="filter-active" class="form-select mb-2">
+                            <option value="all">Tutti</option>
+                            <option value="true">Attivi</option>
+                            <option value="false">Non Attivi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <select id="filter-tipo" class="form-select mb-2">
+                            <option value="all">Tutti i tipi</option>
+                            <option value="t">Casella di testo</option>
+                            <option value="s">Select Tendina</option>
+                            <option value="m">Caselle a singolo carattere</option>
+                            <option value="c">Checkbox</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
               <div class="mb-3 d-flex justify-content-between align-items-center" style="max-width: 100%;">
               <div id="pagination-controls">
@@ -83,6 +91,10 @@
                         data-id="{{ domanda.idDomanda }}" title="Visualizza dettagli">
                         <i class="bi bi-search"></i>
                       </button>
+                      <button class="btn btn-info btn-sm edit-domanda-btn me-2" data-bs-toggle="modal" data-bs-target="#editDomandaModal" 
+                        data-id="{{ domanda.idDomanda }}" title="Modifica domanda">
+                        <i class="bi bi-pencil"></i>
+                      </button>
                       {% if domanda.attivo %}
                       <button class="btn btn-warning btn-sm deactivate-btn" title="Disattiva">
                         <i class="bi bi-toggle-off"></i>
@@ -112,16 +124,59 @@
                     <button type="button" class="btn-close position-absolute top-0 end-0 mt-2 me-2" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
+                    <form id="add-variante-form" class="mb-4">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <input type="text" class="form-control" id="new-variante-corpo" placeholder="Testo Variante" required>
+                        </div>
+                        <div class="col-md-6">
+                          <input type="text" class="form-control" id="new-variante-risposta" placeholder="Risposta Esatta" required>
+                        </div>
+                        <div class="col-12">
+                          <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-1"></i>Aggiungi Variante
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+
                     <table class="table">
                       <thead>
                         <tr>
                           <th scope="col">Variante</th>
                           <th scope="col">Risposta Esatta</th>
+                          <th scope="col">Azioni</th>
                         </tr>
                       </thead>
                       <tbody id="varianti-table-body">
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+            <!-- Modal for Edit Domanda -->
+            <div class="modal fade" id="editDomandaModal" tabindex="-1" aria-labelledby="editDomandaModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="editDomandaModalLabel">Modifica Domanda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <form id="edit-domanda-form">
+                      <div class="mb-3">
+                        <label for="edit-domanda-corpo" class="form-label">Testo della domanda</label>
+                        <textarea class="form-control" id="edit-domanda-corpo" rows="3" required></textarea>
+                      </div>
+                      <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-primary">Salva</button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>
@@ -136,6 +191,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    let currentDomandaId = null;
+
     const rowsPerPage = 10;
     let currentPage = 1;
     let filteredRows = [];
@@ -144,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function filterRows(preservePage = false) {
       const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const searchVariante = document.getElementById('search-variante').value.toLowerCase();
+      const searchRisposta = document.getElementById('search-risposta').value.toLowerCase();
       const activeFilter = document.getElementById('filter-active').value;
       const tipoFilter = document.getElementById('filter-tipo').value;
       
@@ -153,17 +212,22 @@ document.addEventListener('DOMContentLoaded', function() {
           const corpo = row.querySelector('.domanda-corpo').textContent.toLowerCase();
           const isActive = row.dataset.active;
           const tipo = row.dataset.tipo;
+          const variantiCell = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+          const risposteCell = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
           
           const matchesSearch = corpo.includes(searchTerm);
+          const matchesVariante = searchVariante === '' || variantiCell.includes(searchVariante);
+          const matchesRisposta = searchRisposta === '' || risposteCell.includes(searchRisposta);
           const matchesActive = activeFilter === 'all' || isActive === activeFilter;
           const matchesTipo = tipoFilter === 'all' || tipo === tipoFilter;
           
-          return matchesSearch && matchesActive && matchesTipo;
+          return matchesSearch && matchesVariante && matchesRisposta && matchesActive && matchesTipo;
       });
       
-      // Update total count display
       document.getElementById('total-count').textContent = `Totale risultati: ${filteredRows.length}`;
-      
+      document.getElementById('search-variante').addEventListener('input', filterRows);
+      document.getElementById('search-risposta').addEventListener('input', filterRows);
+
       if (!preservePage) currentPage = 1;
       showPage(preservePage ? previousPage : 1);
     }
@@ -258,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.view-varianti-btn').forEach(button => {
       button.addEventListener('click', function() {
         const domandaId = button.getAttribute('data-id');
+        currentDomandaId = domandaId;
         const row = button.closest('tr');
         const corpoDomanda = row.querySelector('.domanda-corpo').textContent;
         
@@ -273,13 +338,214 @@ document.addEventListener('DOMContentLoaded', function() {
             
             data.varianti.forEach(variante => {
               const row = document.createElement('tr');
+              row.setAttribute('data-variante-id', variante.idVariante);
               row.innerHTML = `
                 <td>${variante.corpo}</td>
                 <td>${variante.rispostaEsatta}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm delete-variante-btn" title="Elimina">
+                    <i class="bi bi-trash"> Elimina</i>
+                  </button>
+                </td>
               `;
               tbody.appendChild(row);
             });
+            
+            // Add event listeners for delete buttons
+            attachDeleteListeners();
           });
+      });
+    });
+
+    document.querySelectorAll('.edit-domanda-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const row = button.closest('tr');
+        const domandaId = row.dataset.id;
+        const corpoDomanda = row.querySelector('.domanda-corpo').textContent;
+        
+        // Pre-fill the form
+        document.getElementById('edit-domanda-corpo').value = corpoDomanda;
+        
+        // Update form submission handler
+        const form = document.getElementById('edit-domanda-form');
+        form.onsubmit = function(e) {
+          e.preventDefault();
+          
+          const newCorpo = document.getElementById('edit-domanda-corpo').value;
+          
+          fetch(`/update_domanda/${domandaId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams({
+              'corpo': newCorpo
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              // Update the row in the table
+              row.querySelector('.domanda-corpo').textContent = data.domanda.corpo;
+              
+              // Close the modal
+              const modal = bootstrap.Modal.getInstance(document.getElementById('editDomandaModal'));
+              modal.hide();
+              
+              // Show success message
+              const alert = document.createElement('div');
+              alert.className = 'alert alert-success alert-dismissible fade show';
+              alert.innerHTML = `
+                Domanda aggiornata con successo!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              `;
+              document.querySelector('.card-body').insertBefore(alert, document.querySelector('.card-body').firstChild);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => alert.remove(), 3000);
+            } else {
+              throw new Error(data.message);
+            }
+          })
+          .catch(error => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+              Errore durante l'aggiornamento della domanda: ${error.message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.modal-body').insertBefore(alert, form);
+          });
+        };
+      });
+    });
+
+    // Function to attach delete event listeners
+    function attachDeleteListeners() {
+      document.querySelectorAll('.delete-variante-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (confirm('Sei sicuro di voler eliminare questa variante?')) {
+            const row = btn.closest('tr');
+            const varianteId = row.getAttribute('data-variante-id');
+            
+            fetch(`/delete_variante/${varianteId}/`, {
+              method: 'DELETE',  // Changed from DELETE to POST
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest',
+              }
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.status === 'success') {
+                // Remove the row with animation
+                row.style.transition = 'opacity 0.3s';
+                row.style.opacity = '0';
+                setTimeout(() => row.remove(), 300);
+                
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show mt-2';
+                alert.innerHTML = `
+                  Variante eliminata con successo!
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.modal-body').insertBefore(alert, document.querySelector('.modal-body').firstChild);
+                
+                // Remove alert after 3 seconds
+                setTimeout(() => alert.remove(), 3000);
+              } else {
+                throw new Error(data.message || 'Errore sconosciuto');
+              }
+            })
+            .catch(error => {
+              const alert = document.createElement('div');
+              alert.className = 'alert alert-danger alert-dismissible fade show mt-2';
+              alert.innerHTML = `
+                Errore durante l'eliminazione della variante: ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              `;
+              document.querySelector('.modal-body').insertBefore(alert, document.querySelector('.modal-body').firstChild);
+            });
+          }
+        });
+      });
+    }
+
+
+    // Aggiungi variante
+    document.getElementById('add-variante-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const corpoInput = document.getElementById('new-variante-corpo');
+      const rispostaInput = document.getElementById('new-variante-risposta');
+      
+      fetch('{% url "add_variante" %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: new URLSearchParams({
+          'domanda_id': currentDomandaId,
+          'corpo': corpoInput.value,
+          'risposta_esatta': rispostaInput.value
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          // Add new row to table with delete button
+          const tbody = document.getElementById('varianti-table-body');
+          const row = document.createElement('tr');
+          row.setAttribute('data-variante-id', data.variante.idVariante);
+          row.innerHTML = `
+            <td>${data.variante.corpo}</td>
+            <td>${data.variante.rispostaEsatta}</td>
+            <td>
+              <button class="btn btn-danger btn-sm delete-variante-btn" title="Elimina">
+                <i class="bi bi-trash">Elimina</i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+          
+          // Attach delete listener to the new row
+          attachDeleteListeners();
+          
+          // Clear form
+          corpoInput.value = '';
+          rispostaInput.value = '';
+          
+          // Show success message
+          const alert = document.createElement('div');
+          alert.className = 'alert alert-success alert-dismissible fade show mt-2';
+          alert.innerHTML = `
+            Variante aggiunta con successo!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          `;
+          document.getElementById('add-variante-form').appendChild(alert);
+          
+          // Remove alert after 3 seconds
+          setTimeout(() => alert.remove(), 3000);
+        } else {
+          throw new Error(data.message);
+        }
+      })
+      .catch(error => {
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger alert-dismissible fade show mt-2';
+        alert.innerHTML = `
+          Errore durante l'aggiunta della variante: ${error.message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.getElementById('add-variante-form').appendChild(alert);
       });
     });
 
