@@ -100,9 +100,13 @@
             <div class="modal fade" id="variantiModal" tabindex="-1" aria-labelledby="variantiModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-                  <div class="modal-header">
+                  <div class="modal-header flex-column align-items-start">
                     <h5 class="modal-title" id="variantiModalLabel">Dettagli Varianti</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="text-muted">
+                      <p class="mb-0 text-xs" id="modal-domanda-id">ID Domanda: </p>
+                      <p class="mb-0 text-xs" id="modal-domanda-corpo">Corpo domanda: </p>
+                    </div>
+                    <button type="button" class="btn-close position-absolute top-0 end-0 mt-2 me-2" data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div class="modal-body">
                     <table class="table">
@@ -248,6 +252,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.view-varianti-btn').forEach(button => {
       button.addEventListener('click', function() {
         const domandaId = button.getAttribute('data-id');
+        const row = button.closest('tr');
+        const corpoDomanda = row.querySelector('.domanda-corpo').textContent;
+        
+        // Update modal header info
+        document.getElementById('modal-domanda-id').textContent = `ID Domanda: ${domandaId}`;
+        document.getElementById('modal-domanda-corpo').textContent = `Corpo domanda: ${corpoDomanda}`;
         
         fetch(`/get_varianti/${domandaId}`)
           .then(response => response.json())
