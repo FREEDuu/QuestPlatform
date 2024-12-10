@@ -126,76 +126,76 @@ def preTestOrario(req, idGruppi, idTest, counter):
             return test_common_views.cancella_un_test(req, idGruppi)
             
     except Exception as e:
+        messages.error(req, f'Si è verificato un errore prima del test: {e}')
         return redirect('home')
 
 
 
 @login_required(login_url='login')
 def testStartOrario(req, idGruppi, idTest, counter, displayer, seed):
-    #print("Errori: ", req.session.get('Errori'))
-    page_key = f'form_data_page_{displayer}'
+    try:
+        page_key = f'form_data_page_{displayer}'
+        test_to_render = queries.get_test_to_render(idTest, displayer)
+        test = queries.get_test_details(idTest)
+        domande_to_render = [row.tipo for row in test_to_render]
+        risposte_esatte = [row.rispostaEsatta for row in test_to_render]
+        random.seed(seed)
+        formRisposta = FormDomanda(domande_to_render, risposte_esatte)
+        utils.generaOpzioniRisposta(formRisposta, test_to_render, seed)
 
-    test_to_render = queries.get_test_to_render(idTest, displayer)
-    test = queries.get_test_details(idTest)
+        if req.method == 'POST':
+            ctx, corrected_errors = utils.Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte, displayer)
+            
+            # Store form data in the session by page
+            req.session[page_key] = req.POST
+            req.session.save()
+            
+            # Remove corrected errors from the session
+            if req.session.get('Errori'):
+                req.session['Errori'] = [error for error in req.session.get('Errori', []) if error not in corrected_errors]
+                req.session.save() 
 
-    domande_to_render = [row.tipo for row in test_to_render]
-    risposte_esatte = [row.rispostaEsatta for row in test_to_render]
-    random.seed(seed)
-    formRisposta = FormDomanda(domande_to_render, risposte_esatte)
-
-    utils.generaOpzioniRisposta(formRisposta, test_to_render, seed)
-
-    if req.method == 'POST':
-        ctx, corrected_errors = utils.Validazione(req, formRisposta, domande_to_render, idTest, test_to_render, risposte_esatte, displayer)
-        
-        # Store form data in the session by page
-        req.session[page_key] = req.POST
-        req.session.save()
-
-        # Remove corrected errors from the session
-        if req.session.get('Errori'):
-            req.session['Errori'] = [error for error in req.session.get('Errori', []) if error not in corrected_errors]
-            req.session.save() 
-
-        if test['nrGruppo'] - 1 <= displayer:
-            if random.randint(0, 1) == 1:
-                return redirect('FinishTestOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, seed=seed)
+            if test['nrGruppo'] - 1 <= displayer:
+                if random.randint(0, 1) == 1:
+                    return redirect('FinishTestOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, seed=seed)
+                else:
+                    return redirect('RiepilogoTest', idGruppi=idGruppi, idTest=idTest, counter=counter, seed=seed)
+                    
+            displayer += 1
+            return redirect(reverse('testStartOrario', kwargs={
+                'idGruppi': idGruppi,
+                'idTest': idTest,
+                'counter': counter,
+                'displayer': displayer,
+                'seed': seed
+            }))
+        else:
+            # Pre-populate the form with data from the session for the current page
+            form_data = req.session.get(page_key, None)
+            if not form_data:
+                ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, risposte_esatte[n], row.tipo) 
+                    for n, row in enumerate(test_to_render)]
             else:
-                return redirect('RiepilogoTest', idGruppi=idGruppi, idTest=idTest, counter=counter, seed=seed)
+                ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, displayer, req.session.get('Errori'))
+                if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == displayer:
+                    del req.session['Errori']
 
-        displayer += 1
-        return redirect(reverse('testStartOrario', kwargs={
+        return render(req, 'GenericTest/GenericTestSelect.html', {
+            'random': randint(0, 2),
             'idGruppi': idGruppi,
+            'ultimo': test['nrGruppo'] - 1,
             'idTest': idTest,
             'counter': counter,
             'displayer': displayer,
+            'ctx': ctx,
             'seed': seed
-        }))
+        })
+        
+    except Exception as e:
+        messages.error(req, f'Si è verificato un errore durante il test: {e}')
+        return redirect('home')
 
-    else:
-        # Pre-populate the form with data from the session for the current page
-        form_data = req.session.get(page_key, None)
 
-        if not form_data:
-            print('enter', risposte_esatte)
-            ctx = [(row.corpoDomanda, row.corpoVariante, formRisposta[f'domanda_{n}'], False, risposte_esatte[n], row.tipo) for n, row in enumerate(test_to_render)]
-        else:
-            ctx = utils.repopulate_form(formRisposta, form_data, test_to_render, risposte_esatte, displayer, req.session.get('Errori'))
-
-            if req.session.get('Errori') and req.session.get('Errori')[0]['pagina'] == displayer:
-                del req.session['Errori']
-    return render(req, 'GenericTest/GenericTestSelect.html', {
-        'random': randint(0, 2),
-        'idGruppi': idGruppi,
-        'ultimo': test['nrGruppo'] - 1,
-        'idTest': idTest,
-        'counter': counter,
-        'displayer': displayer,
-        'ctx': ctx,
-        'seed': seed
-    })
-
-   
 
 @login_required(login_url='login')
 def FinishTestOrario(req, idGruppi, idTest, counter, seed):
