@@ -100,29 +100,34 @@ def CreazioneTestOrario(req, idGruppi, counter):
 
 @login_required(login_url='login')
 def preTestOrario(req, idGruppi, idTest, counter):
-    tests = queries.get_tests_group_details(idGruppi)
-    test = queries.get_test_details(idTest)
-
-    if test['dataOraInizio'] is None:
-        new_time = datetime.now() + timedelta(seconds=tests['secondiRitardo'])
-        queries.update_test_dataOraInizio(idTest, new_time)
-        return preTestOrario(req, idGruppi, idTest, counter)
-
-    nrTest = tests['nrTest'] - tests['nrGruppo']
-    random.seed(idTest)
-    if random.randint(0, 1) == 1:
-        variazione_randomica = test['dataOraInizio'] - timedelta(seconds=1)
-    else:
-        variazione_randomica = test['dataOraInizio'] + timedelta(seconds=1)
-
-    if nrTest >= 0:
-        if datetime.now() < variazione_randomica:
-            return render(req, 'preTestOrario/preTestOrario.html', {'time_display': test['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
+    try:
+        tests = queries.get_tests_group_details(idGruppi)
+        test = queries.get_test_details(idTest)
+        if test['dataOraInizio'] is None:
+            new_time = datetime.now() + timedelta(seconds=tests['secondiRitardo'])
+            queries.update_test_dataOraInizio(idTest, new_time)
+            return preTestOrario(req, idGruppi, idTest, counter)
+        
+        nrTest = tests['nrTest'] - tests['nrGruppo']
+        random.seed(idTest)
+        if random.randint(0, 1) == 1:
+            variazione_randomica = test['dataOraInizio'] - timedelta(seconds=1)
         else:
-            queries.update_testsgroup_dataOraInizio(idGruppi, None)
-            return redirect('testStartOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, displayer=0, seed=random.randint(0, 1000))
-    else:
-        return test_common_views.cancella_un_test(req, idGruppi)
+            variazione_randomica = test['dataOraInizio'] + timedelta(seconds=1)
+            
+        if nrTest >= 0:
+            if datetime.now() < variazione_randomica:
+                return render(req, 'preTestOrario/preTestOrario.html', 
+                            {'time_display': test['dataOraInizio'].strftime("%Y-%m-%d %H:%M:%S")})
+            else:
+                queries.update_testsgroup_dataOraInizio(idGruppi, None)
+                return redirect('testStartOrario', idGruppi=idGruppi, idTest=idTest, counter=counter, displayer=0, seed=random.randint(0, 1000))
+        else:
+            return test_common_views.cancella_un_test(req, idGruppi)
+            
+    except Exception as e:
+        return redirect('home')
+
 
 
 @login_required(login_url='login')

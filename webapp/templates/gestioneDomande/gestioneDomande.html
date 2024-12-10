@@ -33,7 +33,8 @@
                             <option value="s">Select Tendina</option>
                             <option value="m">Caselle a singolo carattere</option>
                             <option value="c">Checkbox</option>
-                        </select>
+                          <option value="cr">Checkbox Statica</option>
+                    </select>
                     </div>
                 </div>
             </div>
@@ -66,7 +67,8 @@
                     {% if domanda.tipo == 't' %}Casella di testo
                     {% elif domanda.tipo == 's' %}Select Tendina
                     {% elif domanda.tipo == 'm' %}Caselle a singolo carattere
-                    {% elif domanda.tipo == 'c' %}Checkbox{% endif %}
+                    {% elif domanda.tipo == 'c' %}Checkbox
+                    {% elif domanda.tipo == 'cr' %}Checkbox Statica{% endif %}
                   </td>
                   <td>
                     {% if domanda.varianti_set.exists %}
