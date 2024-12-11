@@ -39,11 +39,14 @@
                 </div>
             </div>
 
-              <div class="mb-3 d-flex justify-content-between align-items-center" style="max-width: 100%;">
-              <div id="pagination-controls">
+            <div class="mb-3 d-flex justify-content-between align-items-center" style="max-width: 100%;">
+              <div id="pagination-controls" class="d-flex align-items-center">
                 <button id="prev-page" class="btn btn-outline-success">Precedente</button>
                 <span id="page-info" class="mx-2">Page 1</span>
                 <button id="next-page" class="btn btn-outline-success">Prossimo</button>
+                <button id="reload-data" class="btn btn-outline-primary ms-2" title="Ricarica risultati">
+                  <i class="bi bi-arrow-clockwise"></i>
+                </button>
               </div>
               <span id="total-count" class="text-muted">Totale risultati: 0</span>
             </div>
@@ -426,13 +429,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to attach delete event listeners
     function attachDeleteListeners() {
       document.querySelectorAll('.delete-variante-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        // Remove existing listeners first
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        // Add new listener
+        newBtn.addEventListener('click', function() {
           if (confirm('Sei sicuro di voler eliminare questa variante?')) {
-            const row = btn.closest('tr');
+            const row = newBtn.closest('tr');
             const varianteId = row.getAttribute('data-variante-id');
             
             fetch(`/delete_variante/${varianteId}/`, {
-              method: 'DELETE',  // Changed from DELETE to POST
+              method: 'DELETE',
               headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -479,6 +487,170 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
     }
+
+    // Ricarica i dati (utile dopo varie modifiche, per mantenere i filtri)
+    function reloadTableData() {
+      const reloadBtn = document.getElementById('reload-data');
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner-border spinner-border-sm ms-2';
+      spinner.setAttribute('role', 'status');
+      spinner.setAttribute('aria-hidden', 'true');
+      
+      // Add spinner after the button
+      reloadBtn.parentNode.insertBefore(spinner, reloadBtn.nextSibling);
+      reloadBtn.disabled = true;
+      
+      fetch('{% url "gestione_domande" %}', {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        }
+      })
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        const newRows = doc.querySelectorAll('#domande-table-body tr');
+        const tableBody = document.getElementById('domande-table-body');
+        tableBody.innerHTML = '';
+        newRows.forEach(row => tableBody.appendChild(row.cloneNode(true)));
+        
+        allRows.length = 0;
+        Array.from(document.querySelectorAll('#domande-table-body tr')).forEach(row => allRows.push(row));
+        
+        filterRows(true);
+        attachEventListeners();
+      })
+      .catch(error => {
+        console.error('Error reloading data:', error);
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger alert-dismissible fade show';
+        alert.innerHTML = `
+          Errore durante il caricamento dei dati: ${error.message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.card-body').insertBefore(alert, document.querySelector('.card-body').firstChild);
+      })
+      .finally(() => {
+        spinner.remove();
+        reloadBtn.disabled = false;
+      });
+    }
+    document.getElementById('reload-data').addEventListener('click', reloadTableData);
+
+
+  function attachEventListeners() {
+    document.querySelectorAll('.deactivate-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleDomandaAction(btn, 'deactivate'));
+    });
+    
+    document.querySelectorAll('.activate-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleDomandaAction(btn, 'activate'));
+    });
+    
+    // Modal Varianti
+    document.querySelectorAll('.view-varianti-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const domandaId = button.getAttribute('data-id');
+        currentDomandaId = domandaId;
+        const row = button.closest('tr');
+        const corpoDomanda = row.querySelector('.domanda-corpo').textContent;
+        
+        // Update modal header info
+        document.getElementById('modal-domanda-id').textContent = `ID Domanda: ${domandaId}`;
+        document.getElementById('modal-domanda-corpo').textContent = `Corpo domanda: ${corpoDomanda}`;
+        
+        fetch(`/get_varianti/${domandaId}`)
+          .then(response => response.json())
+          .then(data => {
+            const tbody = document.getElementById('varianti-table-body');
+            tbody.innerHTML = '';
+            
+            data.varianti.forEach(variante => {
+              const row = document.createElement('tr');
+              row.setAttribute('data-variante-id', variante.idVariante);
+              row.innerHTML = `
+                <td>${variante.corpo}</td>
+                <td>${variante.rispostaEsatta}</td>
+                <td>
+                  <button class="btn btn-danger btn-sm delete-variante-btn" title="Elimina">
+                    <i class="bi bi-trash"> Elimina</i>
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(row);
+            });
+            
+            // Add event listeners for delete buttons
+            attachDeleteListeners();
+          });
+      });
+    });
+    
+    document.querySelectorAll('.edit-domanda-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const row = button.closest('tr');
+        const domandaId = row.dataset.id;
+        const corpoDomanda = row.querySelector('.domanda-corpo').textContent;
+        
+        // Pre-fill the form
+        document.getElementById('edit-domanda-corpo').value = corpoDomanda;
+        
+        // Update form submission handler
+        const form = document.getElementById('edit-domanda-form');
+        form.onsubmit = function(e) {
+          e.preventDefault();
+          
+          const newCorpo = document.getElementById('edit-domanda-corpo').value;
+          
+          fetch(`/update_domanda/${domandaId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': '{{ csrf_token }}',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams({
+              'corpo': newCorpo
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              // Update the row in the table
+              row.querySelector('.domanda-corpo').textContent = data.domanda.corpo;
+              
+              // Close the modal
+              const modal = bootstrap.Modal.getInstance(document.getElementById('editDomandaModal'));
+              modal.hide();
+              
+              // Show success message
+              const alert = document.createElement('div');
+              alert.className = 'alert alert-success alert-dismissible fade show';
+              alert.innerHTML = `
+                Domanda aggiornata con successo!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              `;
+              document.querySelector('.card-body').insertBefore(alert, document.querySelector('.card-body').firstChild);
+              
+              // Remove alert after 3 seconds
+              setTimeout(() => alert.remove(), 3000);
+            } else {
+              throw new Error(data.message);
+            }
+          })
+          .catch(error => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+              Errore durante l'aggiornamento della domanda: ${error.message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.modal-body').insertBefore(alert, form);
+          });
+        };
+      });
+    });
+  }
 
 
     // Aggiungi variante
